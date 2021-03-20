@@ -3,13 +3,21 @@ const mongoose = require('mongoose');
 const User = mongoose.model(
     "User",
     new mongoose.Schema({
-        firstname:{
+        staff_id: {
+          type: String,
+          required: true
+        },
+        firstname: {
           type: String,
           required: true,
         },
-        lastname:{
+        lastname: {
           type: String,
           required: true,
+        },
+        fullname: {
+          type: String,
+          required: true
         },
         email: {
           type: String,
