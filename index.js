@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 
 //constant
-const PORT = process.env.PORT || 3000;
-const CLIENTPORT = 5000;
+const PORT = process.env.PORT || 5000;
+const CLIENTPORT = 3000;
 
 //database
 const db = require("./model");
@@ -17,7 +17,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.urlencoded());
 
 //logger
 const morgan = require('morgan');
@@ -47,7 +46,6 @@ app.use((req,res,next)=>{
         message: "404 error. File not Found!"
     })
 })
-
 
 app.listen(PORT,()=>{
     console.log(`App is running on PORT ${PORT}`);
