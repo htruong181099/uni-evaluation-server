@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const dbConfig = require('../config/db.config');
-const ADMIN = require('..config/admin.config');
+const ADMIN = require('../config/admin.config');
 
 //database object
 const db = {};
@@ -35,7 +35,7 @@ initDatabase = async ()=>{
     //create root admin
     User.estimatedDocumentCount(async (err,count)=>{
         if(err){
-            return next(err);
+            process.exit();
         }
         if (!err && count === 0) {
             try {
@@ -53,12 +53,11 @@ initDatabase = async ()=>{
                 await user.save();
                 console.log("Add root admin to database");
             } catch (error) {
-                next(error);
+                console.error(error);
+                process.exit();
             }
         }
     })
 }
-
-
 
 module.exports = db;

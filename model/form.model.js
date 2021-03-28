@@ -11,18 +11,10 @@ const Form = mongoose.model(
             type: mongoose.Schema.Types.ObjectId,
             ref: "FormType"
         },
-        formStandards : [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Standard"
-            }
-        ],
-        formCriteria : [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Criteria"
-            }
-        ]
+        review: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "EvaluationReview"
+        }
     })
 )
 

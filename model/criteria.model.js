@@ -13,3 +13,5 @@ const Criteria = mongoose.model(
         }
     })
 )
+
+module.exports = Criteria;
