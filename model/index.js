@@ -8,6 +8,8 @@ const db = {};
 db.mongoose = mongoose;
 db.user = require("./user.model");
 db.department = require("./department.model");
+
+
 const User = db.user;
 
 //connect database

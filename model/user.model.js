@@ -63,15 +63,19 @@ UserSchema.pre('save', function(next){
 })
   
 //check password method
-UserSchema.methods.comparePassword = (candidatePassword, cb)=>{
+UserSchema.methods.comparePassword = function(candidatePassword, cb){
+    if(!candidatePassword){
+        cb(null, false);
+    }
+    console.log(this);
     bcrypt.compare(candidatePassword, this.password, (err,isMatch)=>{
         if(err){
-        return cb(err);
+            return cb(err);
         }
         cb(null, isMatch);
     })
 }
 
-const User = mongoose.model("User",UserSchema);
+const User = mongoose.model("User", UserSchema);
 
 module.exports = User;
