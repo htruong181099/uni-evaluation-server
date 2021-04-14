@@ -8,7 +8,8 @@ const db = {};
 db.mongoose = mongoose;
 db.user = require("./user.model");
 db.department = require("./department.model");
-
+db.criteria = require("./criteria.model");
+db.standard = require("./standard.model");
 
 const User = db.user;
 

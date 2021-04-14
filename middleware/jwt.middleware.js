@@ -1,9 +1,16 @@
 const jwt = require('jsonwebtoken');
 const jwtConfig = require("../config/jwt.config");
 const SECRET = jwtConfig.secret;
+const User = require("../model").user;
 
 verifyToken = (req,res,next)=>{
-    const token = req.headers["Authorization"];
+    const authHeader = req.headers["authorization"];
+    if(!authHeader){
+        return res.status(403).send({
+            message: "Required Token!!!"
+        })
+    }
+    const token = authHeader.split(" ")[1];
     if(!token){
         return res.status(403).send({
             message: "Required Token!!!"
@@ -18,4 +25,29 @@ verifyToken = (req,res,next)=>{
         req.userId = decoded.id;
         next();
     })
+}
+
+getUser = async (req,res,next)=>{
+    if(req.userId){
+        const user = await User.findById(req.userId);
+        req.user = user;
+        return next();
+    }
+}
+
+isAdmin = async (req,res,next) =>{
+    try {
+        const user = await User.findById(req.userId);
+        if(user.roles == 'admin'){
+            return next();
+        }
+        res.status(403).send({message: "Require Admin Role!" });
+    } catch (err) {
+        next(err);   
+    }
+}
+
+module.exports = {
+    verifyToken,
+    isAdmin
 }
