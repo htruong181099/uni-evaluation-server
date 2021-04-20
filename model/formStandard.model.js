@@ -5,7 +5,7 @@ const FormStandard = mongoose.model(
     new mongoose.Schema({
         standard_id: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "standard"
+            ref: "Standard"
         },
         form_id: {
             type: mongoose.Schema.Types.ObjectId,

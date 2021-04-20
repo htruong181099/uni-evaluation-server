@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const dbConfig = require('../config/db.config');
 const ADMIN = require('../config/admin.config');
 
+require('dotenv').config();
+
 //database object
 const db = {};
 
@@ -14,6 +16,7 @@ db.standard = require("./standard.model");
 const User = db.user;
 
 //connect database
+console.log(process.env.MONGODB_URI);
 db.mongoose
     .connect(process.env.MONGODB_URI // mongoAtlas
         || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}` //mongoDB

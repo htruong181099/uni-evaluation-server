@@ -5,6 +5,7 @@ const Department = mongoose.model(
     new mongoose.Schema({
         department_code: {
             type: String,
+            unique: true,
             required: true
         },
         name: {
