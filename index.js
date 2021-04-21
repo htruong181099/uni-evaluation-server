@@ -13,11 +13,12 @@ const db = require("./model");
 
 //middleware
 const cors = require('cors'); //cross origin
-const corsOptions = {
-    origin: `http://localhost:${CLIENTPORT}`
-};
+// const corsOptions = {
+//     origin: `http://localhost:${CLIENTPORT}`
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 //logger
