@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const Form = mongoose.model(
-    "Form",
+const FormEvaluation = mongoose.model(
+    "FormEvaluation",
     new mongoose.Schema({
         mainUser_id: {
             type: mongoose.Schema.ObjectId,
@@ -29,4 +29,4 @@ const Form = mongoose.model(
     })
 )
 
-module.exports = Form;
+module.exports = FormEvaluation;

@@ -16,4 +16,4 @@ const FormUser = mongoose.model(
     })
 )
 
-module.exports = FormDepartment;
+module.exports = FormUser;
