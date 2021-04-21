@@ -10,8 +10,21 @@ const db = {};
 db.mongoose = mongoose;
 db.user = require("./user.model");
 db.department = require("./department.model");
+//danh muc tieu chuan, tieu chi
 db.criteria = require("./criteria.model");
 db.standard = require("./standard.model");
+//dot danh gia, form, loai form
+db.evaluationReview = require("./evaluationReview.model");
+db.form = require("./form.model");
+db.formType = require("./formType.model");
+//don vi, nguoi tham gia
+db.formDepartment = require("./formDepartment");
+db.formUser = require("./formUser.model");
+//danh gia, tieu chuan, tieu chi Form
+db.formEvaluation = require("./formEvaluation.model");
+db.formStandard = require("./formStandard.model");
+db.formCriteria = require("./formCriteria.model");
+db.criteriaOption = require("./criteriaOption.model");
 
 const User = db.user;
 

@@ -29,6 +29,7 @@ exports.signin = async (req,res,next)=>{
         req.userId = user._id;
         return res.json({
             userID : user._id,
+            roles: user.roles,
             token
         })
     })

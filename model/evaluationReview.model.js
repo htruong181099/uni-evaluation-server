@@ -4,6 +4,11 @@ const mongoose = require('mongoose');
 const EvaluationReview = mongoose.model(
     "EvaluationReview",
     new mongoose.Schema({
+        code: {
+            type: String,
+            unique: true,
+            required: true
+        },
         name: {
             type: String,
             required: true
