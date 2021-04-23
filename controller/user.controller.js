@@ -21,19 +21,3 @@ exports.getUser = async (req,res,next)=>{
         next(error);
     }
 }
-
-exports.getUsers = async (req,res,next)=>{
-    try{
-        const users = await User.find()
-                    .sort({"staff_code": 1})
-                    .select("-__v -password");
-        return res.status(200).json({
-            statusCode: 200,
-            message: "OK",
-            users: users
-        })
-    }
-    catch(error){
-        next(error);
-    }
-}

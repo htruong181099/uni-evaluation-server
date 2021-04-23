@@ -15,10 +15,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    fullname: {
-        type: String,
-        required: true
-    },
     birthday: {
         type: Date
     },

@@ -19,15 +19,14 @@ exports.signin = async (req,res,next)=>{
         }
         if(!isMatch){
             return res.status(401).send({
-                accessToken: null,
-                message: "Invalid Password"
+                message: "Invalid User or Password"
             })
         }
         const token = jwt.sign({id:user._id}, JWTconfig.secret,{
             expiresIn:86400
         })
         req.userId = user._id;
-        return res.json({
+        return res.status(200).json({
             userID : user._id,
             roles: user.roles,
             token

@@ -39,13 +39,10 @@ readExcel = () =>{
             }
             let temp;
             if(cellAsString[0] === 'B'){
-                temp = worksheet[cell].v;
-                user.lastname = temp.split(" ")[0];
-                user.fullname = worksheet[cell].v;
+                user.lastname = worksheet[cell].v;
             }
             if(cellAsString[0] === 'C'){
                 user.firstname = worksheet[cell].v;
-                user.fullname += ` ${user.firstname}`;
             }
             if(cellAsString[0] === 'D'){
                 user.birthday = worksheet[cell].v;
@@ -105,7 +102,6 @@ addToDB = async (users)=>{
             const user = new User({
                 staff_id: usr.staff_id,
                 lastname: usr.lastname,
-                fullname: usr.fullname,
                 firstname: usr.firstname,
                 birthday: new Date(birthday[2],birthday[1],birthday[0]),
                 gender: usr.birthday=="Nam"?"Male":"Female",
