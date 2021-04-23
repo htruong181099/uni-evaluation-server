@@ -16,7 +16,7 @@ db.standard = require("./standard.model");
 //dot danh gia, form, loai form
 db.evaluationReview = require("./evaluationReview.model");
 db.form = require("./form.model");
-db.formType = require("./formType.model");
+db.formType = require("./formtype.model");
 //don vi, nguoi tham gia
 db.formDepartment = require("./formDepartment");
 db.formUser = require("./formUser.model");
