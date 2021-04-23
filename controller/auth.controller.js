@@ -3,7 +3,24 @@ const User = db.user;
 const jwt = require('jsonwebtoken');
 const JWTconfig = require("../config/jwt.config");
 
+const { body, validationResult } = require('express-validator');
+
+exports.validate = ()=>{
+    console.log("Run");
+    return [
+        body('email').exists().isEmail(),
+        body('password', "Password required").exists(),
+        body('password', "Invalid password").isString()
+    ]
+}
+
 exports.signin = async (req,res,next)=>{
+    console.log("run");
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({ errors: [...new Set(errors.array().map(err=>err.msg))] });
+        return;
+    }
     const {email, password} = req.body;
     const user = await User.findOne({email})
             .select("-__v -create_date");
@@ -33,4 +50,11 @@ exports.signin = async (req,res,next)=>{
         })
     })
 
+}
+
+exports.logout = (req,res,next)=>{
+    req.session.destroy();
+    return res.send({
+        message: "Log out success"
+    })
 }

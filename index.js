@@ -10,6 +10,9 @@ const CLIENTPORT = 3000;
 //database
 const db = require("./model");
 
+//logger
+const morgan = require('morgan');
+app.use(morgan('dev'));
 
 //middleware
 const cors = require('cors'); //cross origin
@@ -18,31 +21,17 @@ const cors = require('cors'); //cross origin
 // };
 
 // app.use(cors(corsOptions));
-app.use(function (req, res, next) {
-
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', `http://localhost:${CLIENTPORT}`);
-
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
-
 app.use(cors());
 app.use(express.json());
 
-//logger
-const morgan = require('morgan');
-app.use(morgan('dev'));
+//set header
+app.use((req,res,next)=>{
+    res.header(
+        "Access-Control-Allow-Headers",
+        "x-access-token, Origin, Content-Type, Accept"
+    );
+    next();
+})
 
 //Router
 const Router = require('./routes');
