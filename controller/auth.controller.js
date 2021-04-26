@@ -15,7 +15,6 @@ exports.validate = ()=>{
 }
 
 exports.signin = async (req,res,next)=>{
-    console.log("run");
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         res.status(422).json({ errors: [...new Set(errors.array().map(err=>err.msg))] });
@@ -26,7 +25,7 @@ exports.signin = async (req,res,next)=>{
             .select("-__v -create_date");
     if(!user){
         return res.status(404).json({
-            message: "User not found."
+            message: "User not found"
         })
     }
 

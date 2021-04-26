@@ -1,4 +1,5 @@
 const adminController = require('../controller/admin.controller');
+const departmentController = require("../controller/department.controller")
 const jwtMiddleware = require('../middleware/jwt.middleware');
 
 module.exports = function(app){
@@ -22,4 +23,11 @@ module.exports = function(app){
         adminController.getUser
     )
 
+    app.get("/admin/department",
+        departmentController.getDepartments
+    )
+
+    app.get("/admin/department/:id",
+        departmentController.getDepartment
+    )
 }

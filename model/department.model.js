@@ -16,12 +16,10 @@ const Department = mongoose.model(
             type: mongoose.Schema.Types.ObjectId,
             ref : "User"
         },
-        include: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref : "Department"
-            }
-        ]
+        parent: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref : "Department"
+        }
     })
 )
 
