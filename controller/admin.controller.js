@@ -26,7 +26,7 @@ exports.getUsers = async (req,res,next)=>{
     try{
         const users = await User.find()
                     .sort({"staff_code": 1})
-                    .populate("department")
+                    .populate("department","department_code name")
                     .select("-__v -password");
 
         return res.status(200).json({
