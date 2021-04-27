@@ -1,5 +1,5 @@
 module.exports = {
-    staff_id: "000admin",
+    staff_id: "admin",
     email: "admin@gmail.com",
     firstname: "Admin",
     lastname: "Root",

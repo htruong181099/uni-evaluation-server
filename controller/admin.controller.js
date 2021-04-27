@@ -28,6 +28,7 @@ exports.getUsers = async (req,res,next)=>{
                     .sort({"staff_code": 1})
                     .populate("department")
                     .select("-__v -password");
+
         return res.status(200).json({
             statusCode: 200,
             message: "OK",

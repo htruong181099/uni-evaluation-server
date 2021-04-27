@@ -4,8 +4,8 @@ const workbook = xlsx.readFile(filePath);
 const worksheet = workbook.Sheets[workbook.SheetNames[0]]
 
 const mongoose = require('mongoose');
-// const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
-const MONGODB_URI = "";
+const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
+// const MONGODB_URI = "";
 const dbConfig = require("../config/db.config");
 
 mongoose
@@ -42,12 +42,12 @@ readExcel = () =>{
                 department.name = worksheet[cell].v;
             }
             if(cellAsString[0] === 'C'){
-                if(worksheet[cell].v){
+                if(worksheet[cell].v != 0){
                     const temp = worksheet[cell].v;
-                    department.include = temp.split(',');
+                    department.parent = temp;
                 }
                 else{
-                    department.include = [];
+                    department.parent = "";
                 }
                 departments.push(department);
                 department = {}
@@ -62,24 +62,33 @@ addToDB = async (departments)=>{
         const Department = require("../model/department.model");
         for (let i in departments){
             let dep = departments[i];
-            includelist = [];
-            if (dep.include.length != 0) {
-                for(i in dep.include){
-                    // console.log(code);
-                    const id = await Department.findOne({
-                        department_code: dep.include[i]
-                    }).select("_id");
-                    includelist.push(id._id);
-                }
+            // includelist = [];
+            // if (dep.include.length != 0) {
+            //     for(i in dep.include){
+            //         // console.log(code);
+            //         const id = await Department.findOne({
+            //             department_code: dep.include[i]
+            //         }).select("_id");
+            //         includelist.push(id._id);
+            //     }
+            // }
+            let parent;
+            if(dep.parent != ""){
+                const id = await Department.findOne({
+                    department_code: dep.parent
+                }).select("_id");
+                parent = id._id;
             }
             const department = new Department({
                 department_code : dep.department_code,
                 name : dep.name,
-                include: includelist
             });
+            if(parent){
+                department.parent = parent;
+            }
             await department.save();
-            console.log("Add to department");
         }
+        console.log("Add to department");
     }
     catch(err){
         console.error(err);
