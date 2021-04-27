@@ -21,7 +21,7 @@ exports.getDepartments = async (req,res,next)=>{
 
 exports.getDepartment = async (req,res,next)=>{
     try{
-        const {id} = req.params.id;
+        const {id} = req.params;
         const department = await Department.findById(id)
                     .select("-__v");
         if(!department){

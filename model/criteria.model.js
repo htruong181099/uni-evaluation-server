@@ -8,13 +8,20 @@ const Criteria = mongoose.model(
             unique: true,
             required: true
         },
-        content:{
+        name:{
             type: String,
             required: true
         },
         standard: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Standard"
+        },
+        description: {
+            type: String
+        },
+        create_date:{
+            type: Date,
+            default: Date.now()
         }
     })
 )
