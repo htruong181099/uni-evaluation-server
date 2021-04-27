@@ -5,6 +5,7 @@ exports.getDepartments = async (req,res,next)=>{
     try{
         const departments = await Department.find()
                     .sort({"department_code": 1})
+                    .populate("manager")
                     .select("-__v");
         return res.status(200).json({
             statusCode: 200,

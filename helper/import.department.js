@@ -32,19 +32,21 @@ readExcel = () =>{
 
     for (let cell in worksheet){
         const cellAsString = cell.toString();
+        // console.log(cellAsString);
         if(cellAsString[1] !== 'r'
-            && cellAsString !== 'm' && cellAsString[1] > 1
+            && cellAsString !== 'm' && (cellAsString[1] > 1 || (cellAsString[1] == 1 && cellAsString[2]))
+
         ){
             if(cellAsString[0] === 'A'){
+
                 department.department_code = worksheet[cell].v;
             }
             if(cellAsString[0] === 'B'){
                 department.name = worksheet[cell].v;
             }
             if(cellAsString[0] === 'C'){
-                if(worksheet[cell].v != 0){
-                    const temp = worksheet[cell].v;
-                    department.parent = temp;
+                if(worksheet[cell].v != "0"){
+                    department.parent =  worksheet[cell].v;
                 }
                 else{
                     department.parent = "";
@@ -62,16 +64,6 @@ addToDB = async (departments)=>{
         const Department = require("../model/department.model");
         for (let i in departments){
             let dep = departments[i];
-            // includelist = [];
-            // if (dep.include.length != 0) {
-            //     for(i in dep.include){
-            //         // console.log(code);
-            //         const id = await Department.findOne({
-            //             department_code: dep.include[i]
-            //         }).select("_id");
-            //         includelist.push(id._id);
-            //     }
-            // }
             let parent;
             if(dep.parent != ""){
                 const id = await Department.findOne({
@@ -86,7 +78,10 @@ addToDB = async (departments)=>{
             if(parent){
                 department.parent = parent;
             }
-            await department.save();
+            await department.save((error)=>{
+               if(error && error.code === 11000){
+               }
+            });
         }
         console.log("Add to department");
     }

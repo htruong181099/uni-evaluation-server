@@ -4,8 +4,8 @@ const workbook = xlsx.readFile(filePath);
 const worksheet = workbook.Sheets[workbook.SheetNames[0]]
 
 const mongoose = require('mongoose');
-const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
-// const MONGODB_URI = "";
+// const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
+const MONGODB_URI = "";
 const dbConfig = require("../config/db.config");
 
 mongoose
