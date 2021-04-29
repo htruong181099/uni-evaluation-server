@@ -77,9 +77,12 @@ exports.getCriterions = async (req,res,next)=>{
         const {id} = req.params;
         const standard = id;
         const criterions = await Criteria.find({standard})
+                            .populate("standard","code name")
                             .select("-__v -create_date");
-        res.status(200).json({
-            criterions
+        return res.status(200).json({
+            statusCode: 200,
+            criterions,
+            count: criterions.length
         })
     } catch (error) {
         next(error);

@@ -26,3 +26,18 @@ exports.addEvaluationReview = async (req,res,next)=>{
         next(err);
     }
 }
+
+exports.getEvaluationReview = async (req,res,next)=>{
+    try{
+        const reviews = await EvaluationReview.find()
+                            .sort("end_date")
+                            .select("-__v")
+        return res.status(200).json({
+            statusCode: 200,
+            reviews
+        })
+    }
+    catch(err){
+        next(err);
+    }
+}
