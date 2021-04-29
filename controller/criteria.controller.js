@@ -44,12 +44,12 @@ exports.addCriteria = async (req,res,next)=>{
                         message: 'Criteria already exists!'
                     });
                 }
-                return res.status(500).send({message: err});
+                return next(err);
             }
-        })
-        return res.status(200).json({
-            statusCode: 200,
-            message: "Add criteria successfully"
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Add criteria successfully"
+            })
         })
     }
     catch(error){
@@ -78,6 +78,7 @@ exports.getCriterions = async (req,res,next)=>{
         const standard = id;
         const criterions = await Criteria.find({standard})
                             .populate("standard","code name")
+                            .sort({"create_date": -1})
                             .select("-__v -create_date");
         return res.status(200).json({
             statusCode: 200,

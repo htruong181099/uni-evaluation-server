@@ -39,20 +39,25 @@ exports.addStandard = async (req,res,next)=>{
             name,
             description
         });
-        await standard.save((err)=>{
+        standard.save((err)=>{
             if(err){
                 if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
-                    return res.status(409).send({message: 'Standard already exists!'});
+                    return res.status(409).json({
+                        statusCode: 409,
+                        message: 'Standard already exists!'
+                    });
                 }
-                return res.status(500).send({message: err});
+                next(err);
             }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Add standard successfully"
+            })
         })
-        return res.status(200).json({
-            message: "Add standard successfully"
-        })
+        
     }
     catch(error){
-        next(err);
+        next(error);
     }
 }
 
