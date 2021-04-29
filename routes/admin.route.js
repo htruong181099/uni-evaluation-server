@@ -32,6 +32,9 @@ module.exports = function(app){
     app.get("/admin/department/:id",
         departmentController.getDepartment
     )
+    app.get("/admin/department/:id/user",
+        departmentController.getDepartmentUser
+    )
 
     //standard
     app.get("/admin/standard/",
