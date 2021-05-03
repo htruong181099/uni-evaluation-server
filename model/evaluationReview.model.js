@@ -13,11 +13,13 @@ const EvaluationReview = mongoose.model(
             type: String,
             required: true
         },
-        starting_date: {
-            type: Date
+        start_date: {
+            type: Date,
+            required: true
         },
         end_date: {
-            type: Date
+            type: Date,
+            required: true
         },
         description :{
             type: String

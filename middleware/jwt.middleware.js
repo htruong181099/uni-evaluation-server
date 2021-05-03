@@ -6,19 +6,19 @@ const User = require("../model").user;
 verifyToken = (req,res,next)=>{
     const authHeader = req.headers["authorization"];
     if(!authHeader){
-        return res.status(403).send({
+        return res.status(401).send({
             message: "Required Token!!!"
         })
     }
     const token = authHeader.split(" ")[1];
     if(!token){
-        return res.status(403).send({
+        return res.status(401).send({
             message: "Required Token!!!"
         })
     }
     jwt.verify(token, SECRET, (err, decoded)=>{
         if(err){
-            return res.status(403).send({
+            return res.status(401).send({
                 message: "Unauthorized or token had been expired!!"
             })
         }

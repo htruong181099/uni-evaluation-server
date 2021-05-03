@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dbConfig = require('../config/db.config');
 const ADMIN = require('../config/admin.config');
+const formTypeConfig = require('../config/formType.config');
 
 require('dotenv').config();
 
@@ -27,6 +28,7 @@ db.formCriteria = require("./formCriteria.model");
 db.criteriaOption = require("./criteriaOption.model");
 
 const User = db.user;
+const FormType = db.formType;
 
 //connect database
 console.log(process.env.MONGODB_URI);
@@ -71,6 +73,28 @@ initDatabase = async ()=>{
                 });
                 await user.save();
                 console.log("Add root admin to database");
+            } catch (error) {
+                console.error(error);
+                process.exit();
+            }
+        }
+    })
+
+    //create default form type
+    FormType.estimatedDocumentCount(async (err,count)=>{
+        if(err){
+            process.exit();
+        }
+        if (!err && count === 0) {
+            try {
+                formTypeConfig.forEach(async (e) =>{
+                    const typ = new FormType({
+                        code: e.code,
+                        name: e.name
+                    })
+                    await typ.save();
+                })
+                console.log("Add form type to database");
             } catch (error) {
                 console.error(error);
                 process.exit();

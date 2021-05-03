@@ -3,7 +3,12 @@ const mongoose = require('mongoose');
 const Form = mongoose.model(
     "Form",
     new mongoose.Schema({
-        title: {
+        code: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        name: {
             type: String,
             required: true
         },

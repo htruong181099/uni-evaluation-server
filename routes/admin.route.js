@@ -1,7 +1,12 @@
+//controller
 const adminController = require('../controller/admin.controller');
 const departmentController = require("../controller/department.controller");
 const standardController = require("../controller/standard.controller");
 const criteriaController = require("../controller/criteria.controller");
+const reviewController = require("../controller/evaluationReview.controller");
+const formTypeController = require("../controller/formType.controller");
+
+//middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 
 module.exports = function(app){
@@ -70,5 +75,19 @@ module.exports = function(app){
     app.post("/admin/criteria/:id/delete",
         criteriaController.validate('deleteCriteria'),
         criteriaController.deleteCriteria
+    )
+
+    //evaluation review
+    app.get("/admin/review",
+        reviewController.getEvaluationReview
+    )
+    app.post("/admin/review/add",
+        reviewController.validate('add'),
+        reviewController.addEvaluationReview
+    )
+
+    //formtype
+    app.get("/admin/form/formtype",
+        formTypeController.getFormType
     )
 }

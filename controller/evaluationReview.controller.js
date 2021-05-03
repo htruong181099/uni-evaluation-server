@@ -1,12 +1,27 @@
 const EvaluationReview = require("../model/").evaluationReview;
+const {body, param, query, validationResult} = require("express-validator");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'add': {
+            return [
+                body('code','Invalid Code').exists().isString(),
+                body('name','Invalid Name').exists().isString(),
+                body('start_date', 'Invalid starting date').exists(),
+                body('end_date', 'Invalid starting date').exists(),
+                body('description', "Invalid description format").optional().isString()
+            ]
+        };
+    }
+}
 
 exports.addEvaluationReview = async (req,res,next)=>{
     try{
-        const {code, name, starting_date, end_date, description} = req.body;
+        const {code, name, start_date, end_date, description} = req.body;
         const evaluationReview = new EvaluationReview({
             code,
             name,
-            starting_date,
+            start_date,
             end_date,
             description
         });
@@ -17,9 +32,9 @@ exports.addEvaluationReview = async (req,res,next)=>{
                 }
                 return res.status(500).send({message: err});
             }
-        })
-        return res.status(200).json({
-            message: "Add Evaluation Review successfully"
+            return res.status(200).json({
+                message: "Add Evaluation Review successfully"
+            })
         })
     }
     catch(error){
@@ -30,7 +45,7 @@ exports.addEvaluationReview = async (req,res,next)=>{
 exports.getEvaluationReview = async (req,res,next)=>{
     try{
         const reviews = await EvaluationReview.find()
-                            .sort("end_date")
+                            .sort({"end_date": 1})
                             .select("-__v")
         return res.status(200).json({
             statusCode: 200,

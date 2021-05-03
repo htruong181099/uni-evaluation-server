@@ -122,6 +122,7 @@ exports.deleteCriteria = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const criteria = await Criteria.findById(id).select("_id");
+        
         if(!criteria){
             return res.status(404).json({
                 statusCode: 404,
@@ -137,7 +138,6 @@ exports.deleteCriteria = async (req,res,next)=>{
                 message: "Delete successfully"
             })
         });
-
     } catch (error) {
         next(error);
     }        
