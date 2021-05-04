@@ -35,7 +35,7 @@ exports.addForm = async (req,res,next)=>{
         const {code, name} = req.body;
 
         const review = await EvaluationReview.findOne({code: rcode}).select("_id");
-        const type = await FormType.findById({code: ftcode}).select("_id");
+        const type = await FormType.findOne({code: ftcode}).select("_id");
         if(!review){
             return res.status(404).json({
                 statusCode: 404,
