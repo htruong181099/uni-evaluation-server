@@ -113,7 +113,7 @@ module.exports = function(app){
         formController.getForm
     )
 
-    app.get("/admin/review/:rid/formtype/:ftid/form/",
+    app.get("/admin/review/:rcode/formtype/:ftcode/form/",
         formController.validate('getFormfromFormTypeandReview'),
         getValidationResult,
         formController.getFormfromFormTypeandReview

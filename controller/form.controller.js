@@ -22,8 +22,8 @@ exports.validate = (method)=>{
         }
         case 'getFormfromFormTypeandReview': {
             return [
-                param("rid","Invalid Review ID").exists().isMongoId(),
-                param("ftid","Invalid Form type ID").exists().isMongoId(),
+                param("rcode","Invalid Review ID").exists().isString(),
+                param("ftcode","Invalid Form type ID").exists().isString(),
             ]
         }
     }
