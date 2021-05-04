@@ -59,7 +59,7 @@ exports.addStandard = async (req,res,next)=>{
 exports.getStandards = async (req,res,next)=>{
     try {
         const standards = await Standard.find()
-                        .sort({"create_date": -1})
+                        .sort({"code": 1})
                         .select("-__v -create_date");
         res.status(200).json({
             statusCode: 200,

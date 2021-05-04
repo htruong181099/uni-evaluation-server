@@ -89,7 +89,7 @@ exports.getCriterions = async (req,res,next)=>{
         const standard = id;
         const criterions = await Criteria.find({standard})
                             .populate("standard","code name")
-                            .sort({"create_date": -1})
+                            .sort({"code": -1})
                             .select("-__v -create_date");
         return res.status(200).json({
             statusCode: 200,
