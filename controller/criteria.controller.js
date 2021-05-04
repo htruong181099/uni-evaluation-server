@@ -12,14 +12,15 @@ exports.validate = (method)=>{
                 body('description', "Invalid description format").optional().isString()
             ]
         };
-        case 'getCriteria':{
+        case 'deleteCriteria':
+        case 'getCriteria': {
             return [
-                param('id','Invalid CriteriaId').exists().isMongoId()
+                param('id','Invalid Criteria ID').exists().isMongoId()
             ]
         };
-        case 'deleteCriteria':{
+        case 'getCriterions': {
             return [
-                param('id','Invalid CriteriaId').exists().isMongoId()
+                param('id','Invalid Standard Id').exists().isMongoId()
             ]
         }
     }
@@ -112,13 +113,6 @@ exports.getCriteria = async (req,res,next)=>{
 }
 
 exports.deleteCriteria = async (req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            statusCode: 422,
-            errors: [...new Set(errors.array().map(err=>err.msg))]
-        });
-    }
     try {
         const {id} = req.params;
         const criteria = await Criteria.findById(id).select("_id");

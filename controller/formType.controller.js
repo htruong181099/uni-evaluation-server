@@ -1,6 +1,6 @@
 const FormType = require("../model/").formType;
 
-exports.getFormType = async (req,res,next)=>{
+exports.getFormTypes = async (req,res,next)=>{
     try{
         const formTypeList = await FormType.find()
             .select("-__v")    

@@ -18,11 +18,13 @@ exports.validate = (method)=>{
 exports.addEvaluationReview = async (req,res,next)=>{
     try{
         const {code, name, start_date, end_date, description} = req.body;
+        const start = start_date.split("/");
+        const end = end_date.split("/");
         const evaluationReview = new EvaluationReview({
             code,
             name,
-            start_date,
-            end_date,
+            start_date: new Date(start[2],start[1],start[0]),
+            end_date: new Date(end[2],end[1],end[0]),
             description
         });
         await evaluationReview.save((err)=>{

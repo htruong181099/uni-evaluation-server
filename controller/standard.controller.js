@@ -4,7 +4,7 @@ const Standard = db.standard;
 
 exports.validate = (method)=>{
     switch(method){
-        case 'add': {
+        case 'addStandard': {
             return [
                 body('code','Invalid Code').exists().isString(),
                 body('name','Invalid Name').exists().isString(),
@@ -25,13 +25,6 @@ exports.validate = (method)=>{
 }
 
 exports.addStandard = async (req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            statusCode: 422,
-            errors: [...new Set(errors.array().map(err=>err.msg))]
-        });
-    }
     try{
         const {code, name, description} = req.body;
         const standard = new Standard({
@@ -80,13 +73,6 @@ exports.getStandards = async (req,res,next)=>{
 
 //get standard info
 exports.getStandard = async (req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            statusCode: 422,
-            errors: [...new Set(errors.array().map(err=>err.msg))]
-        });
-    }
     try {
         const {id} = req.params;
         const standard = await Standard.findById(id).select("-__v -create_date");
@@ -107,13 +93,6 @@ exports.getStandard = async (req,res,next)=>{
 }
 
 exports.deleteStandard = async (req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            statusCode: 422,
-            errors: [...new Set(errors.array().map(err=>err.msg))]
-        });
-    }
     try {
         const {id} = req.params;
         const standard = await Standard.findById(id).select("_id");
