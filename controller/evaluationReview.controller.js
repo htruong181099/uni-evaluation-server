@@ -18,13 +18,11 @@ exports.validate = (method)=>{
 exports.addEvaluationReview = async (req,res,next)=>{
     try{
         const {code, name, start_date, end_date, description} = req.body;
-        const start = start_date.split("/");
-        const end = end_date.split("/");
         const evaluationReview = new EvaluationReview({
             code,
             name,
-            start_date: new Date(start[2],start[1],start[0],0),
-            end_date: new Date(end[2],end[1],end[0],23),
+            start_date: new Date(start_date),
+            end_date: new Date(end_date),
             description
         });
         await evaluationReview.save((err)=>{
@@ -60,6 +58,10 @@ exports.getEvaluationReview = async (req,res,next)=>{
 }
 
 exports.test = async (req,res,next)=>{
-    console.log(req.body)
+    console.log(req.body);
+    res.status(200).json({
+        message: "ok",
+        test: new Date(req.body.start_date)
+    })
 
 }
