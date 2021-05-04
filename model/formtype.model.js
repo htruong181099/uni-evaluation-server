@@ -11,6 +11,10 @@ const FormType = mongoose.model(
         name: {
             type: String,
             required: true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

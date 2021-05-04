@@ -12,6 +12,10 @@ const FormUser = mongoose.model(
             type: mongoose.Schema.Types.ObjectId,
             ref: "FormDepartment",
             required: true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

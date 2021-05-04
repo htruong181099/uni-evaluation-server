@@ -15,6 +15,10 @@ const FormDepartment = mongoose.model(
         level: {
             type: Number,
             required: true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

@@ -23,6 +23,10 @@ const EvaluationReview = mongoose.model(
         },
         description :{
             type: String
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

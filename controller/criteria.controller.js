@@ -46,6 +46,7 @@ exports.addCriteria = async (req,res,next)=>{
             description,
             standard: standard._id
         });
+
         await criteria.save((err)=>{
             if(err){
                 if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn

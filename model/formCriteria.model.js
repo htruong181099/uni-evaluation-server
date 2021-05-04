@@ -12,8 +12,12 @@ const FormCriteria = mongoose.model(
             ref: "FormStandard"
         },
         criteria_order: {
-            type: Number,
+            type: String,
             required: true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )
