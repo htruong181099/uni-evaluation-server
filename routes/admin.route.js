@@ -114,4 +114,8 @@ module.exports = function(app){
     app.get("/admin/review/:rid/formtype/:ftid/form/",
         formController.getFormfromFormTypeandReview
     )
+
+    app.post("/test",
+        reviewController.test
+    )
 }

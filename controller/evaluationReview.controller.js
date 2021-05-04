@@ -23,8 +23,8 @@ exports.addEvaluationReview = async (req,res,next)=>{
         const evaluationReview = new EvaluationReview({
             code,
             name,
-            start_date: new Date(start[2],start[1],start[0]),
-            end_date: new Date(end[2],end[1],end[0]),
+            start_date: new Date(start[2],start[1],start[0],0),
+            end_date: new Date(end[2],end[1],end[0],23),
             description
         });
         await evaluationReview.save((err)=>{
@@ -57,4 +57,9 @@ exports.getEvaluationReview = async (req,res,next)=>{
     catch(err){
         next(err);
     }
+}
+
+exports.test = async (req,res,next)=>{
+    console.log(req.body)
+
 }

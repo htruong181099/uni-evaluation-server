@@ -5,8 +5,9 @@ const Standard = db.standard;
 
 exports.validate = (method)=>{
     switch(method){
-        case 'add': {
+        case 'addCriteria': {
             return [
+                param('id', 'Invalid Standard ID').exists().isMongoId(),
                 body('code','Invalid Code').exists().isString(),
                 body('name','Invalid Name').exists().isString(),
                 body('description', "Invalid description format").optional().isString()
@@ -31,11 +32,19 @@ exports.addCriteria = async (req,res,next)=>{
         const {id} = req.params;
         const {code, name, description} = req.body;
     
+        const standard = await Standard.findById(id).select("_id");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+
         const criteria = new Criteria({
             code,
             name,
             description,
-            standard: id
+            standard: standard._id
         });
         await criteria.save((err)=>{
             if(err){
