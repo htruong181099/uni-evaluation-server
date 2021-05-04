@@ -45,7 +45,10 @@ const UserSchema = new mongoose.Schema({
             ref: "Department"
         }
     ],
-    
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 })
 
 //hash password before save to db

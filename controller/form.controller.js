@@ -9,8 +9,8 @@ exports.validate = (method)=>{
     switch(method){
         case 'addForm': {
             return [
-                param("rid","Invalid Review ID").exists().isMongoId(),
-                param("ftid","Invalid Form type ID").exists().isMongoId(),
+                param("rcode","Invalid Review ID").exists().isString(),
+                param("ftcode","Invalid Form type ID").exists().isString(),
                 body("code","Invalid code input").exists().isString(),
                 body("name","Invalid name input").exists().isString()
             ]
@@ -31,11 +31,11 @@ exports.validate = (method)=>{
 
 exports.addForm = async (req,res,next)=>{
     try {
-        const {rid, ftid} = req.params;
+        const {rcode, ftcode} = req.params;
         const {code, name} = req.body;
 
-        const review = await EvaluationReview.findById(rid).select("_id");
-        const type = await FormType.findById(ftid).select("_id");
+        const review = await EvaluationReview.findOne({code: rcode}).select("_id");
+        const type = await FormType.findById({code: ftcode}).select("_id");
         if(!review){
             return res.status(404).json({
                 statusCode: 404,

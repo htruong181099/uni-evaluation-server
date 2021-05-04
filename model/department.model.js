@@ -19,6 +19,10 @@ const Department = mongoose.model(
         parent: {
             type: mongoose.Schema.Types.ObjectId,
             ref : "Department"
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

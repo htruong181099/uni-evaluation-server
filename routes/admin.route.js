@@ -102,7 +102,7 @@ module.exports = function(app){
     )
 
     //form
-    app.post("/admin/review/:rid/formtype/:ftid/form/addForm",
+    app.post("/admin/review/:rcode/formtype/:ftcode/form/addForm",
         formController.validate('addForm'),
         getValidationResult,
         formController.addForm

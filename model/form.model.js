@@ -19,6 +19,10 @@ const Form = mongoose.model(
         review: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "EvaluationReview"
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )
