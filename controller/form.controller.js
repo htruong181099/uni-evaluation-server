@@ -95,9 +95,9 @@ exports.getForm = async (req,res,next)=>{
 
 exports.getFormfromFormTypeandReview = async (req,res,next)=>{
     try {
-        const {rid, ftid} = req.params;
-        const review = await EvaluationReview.findById(rid).select("_id");
-        const type = await FormType.findById(ftid).select("_id");
+        const {rcode, ftcode} = req.params;
+        const review = await EvaluationReview.findOne({code: rcode}).select("_id");
+        const type = await FormType.findOne({code: ftcode}).select("_id");
         if(!review){
             return res.status(404).json({
                 statusCode: 404,
@@ -110,7 +110,7 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
                 message: "Form type not found!"
             })
         }
-        const form = await Form.find({
+        const form = await Form.findOne({
             review: review._id,
             type: type._id
         }).select("-__v");

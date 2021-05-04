@@ -108,10 +108,14 @@ module.exports = function(app){
         formController.addForm
     )
     app.get("/admin/form/:id",
+        formController.validate('getForm'),
+        getValidationResult,
         formController.getForm
     )
 
     app.get("/admin/review/:rid/formtype/:ftid/form/",
+        formController.validate('getFormfromFormTypeandReview'),
+        getValidationResult,
         formController.getFormfromFormTypeandReview
     )
 
