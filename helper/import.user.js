@@ -4,8 +4,8 @@ const workbook = xlsx.readFile(filePath);
 const worksheet = workbook.Sheets[workbook.SheetNames[0]]
 
 const mongoose = require('mongoose');
-// const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
-const MONGODB_URI = "";
+const MONGODB_URI = "mongodb+srv://hoangtruong181099:Mob9oFd7F3VHSqRr@uni-evaluation-db.cvlm7.mongodb.net/uni-evaluation-DB?retryWrites=true&w=majority";
+// const MONGODB_URI = "";
 const dbConfig = require("../config/db.config");
 
 mongoose
@@ -32,7 +32,8 @@ readExcel = () =>{
     for (let cell in worksheet){
         const cellAsString = cell.toString();
         if(cellAsString[1] !== 'r'
-            && cellAsString !== 'm' && cellAsString[1] > 1
+            && cellAsString !== 'm' && (cellAsString[1] > 1 || (cellAsString[1] == 1 && cellAsString[2]))
+
         ){
             if(cellAsString[0] === 'A'){
                 user.staff_id = worksheet[cell].v;
@@ -111,14 +112,21 @@ addToDB = async (users)=>{
                 phone: usr.phone,
                 department: departmentlist
             });
-            await user.save();
-            if(usr.manage){
-                for(i in usr.manage){
-                    const department = await Department.findOne({department_code: usr.manage[i]});
-                    department.manager = user._id;
-                    await department.save();
+            user.save(async (error,saved)=>{
+                if(error && error.code === 11000){
                 }
-            }
+                else{
+                    if(usr.manage){
+                        for(i in usr.manage){
+                            const department = await Department.findOne({department_code: usr.manage[i]});
+                            console.log(saved);
+                            department.manager = saved._id;
+                            await department.save();
+                        }
+                    }
+                }
+            });
+            
         }
         console.log("Add to user");
     }

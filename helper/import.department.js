@@ -69,6 +69,7 @@ addToDB = async (departments)=>{
                 const id = await Department.findOne({
                     department_code: dep.parent
                 }).select("_id");
+                console.log(dep);
                 parent = id._id;
             }
             const department = new Department({

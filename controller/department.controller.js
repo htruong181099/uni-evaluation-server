@@ -66,3 +66,41 @@ exports.getDepartmentUser = async (req,res,next)=>{
     }
 }
 
+exports.getParents = async (req,res,next)=>{
+    try {
+        // const parents = Department.find({p})
+    } catch (error) {
+        
+    }
+}
+
+exports.getChildrenDepartment = async (req,res,next)=>{
+    try {
+        const {code} = req.params;
+        const parent = await Department.findOne({
+            department_code: code,
+            isDeleted: false
+        }).select("-__v -isDeleted");
+
+        if(!parent){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+        
+        const children = await Department.find({
+            parent: parent._id,
+            isDeleted: false
+        }).select("-__v -isDeleted")
+
+        res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            parent,
+            children
+        })
+    } catch (error) {
+        next(error);
+    }
+}

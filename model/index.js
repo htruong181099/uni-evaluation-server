@@ -19,7 +19,7 @@ db.evaluationReview = require("./evaluationReview.model");
 db.form = require("./form.model");
 db.formType = require("./formtype.model");
 //don vi, nguoi tham gia
-db.formDepartment = require("./formDepartment");
+db.formDepartment = require("./formDepartment.model");
 db.formUser = require("./formUser.model");
 //danh gia, tieu chuan, tieu chi Form
 db.formEvaluation = require("./formEvaluation.model");
