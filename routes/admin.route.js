@@ -37,6 +37,9 @@ module.exports = function(app){
     app.get("/admin/department",
         departmentController.getDepartments
     )
+    app.get("/admin/department/parent",
+        departmentController.getParentDepartments
+    )
     app.get("/admin/department/:id",
         departmentController.getDepartment
     )
@@ -44,8 +47,9 @@ module.exports = function(app){
         departmentController.getDepartmentUser
     )
     app.get("/admin/department/:code/children",
-        departmentController.getChildrenDepartment
+        departmentController.getChildDepartments
     )
+    
 
     //standard
     app.get("/admin/standard/",

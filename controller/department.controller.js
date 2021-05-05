@@ -66,15 +66,24 @@ exports.getDepartmentUser = async (req,res,next)=>{
     }
 }
 
-exports.getParents = async (req,res,next)=>{
+exports.getParentDepartments = async (req,res,next)=>{
     try {
-        // const parents = Department.find({p})
-    } catch (error) {
+        const parents = await Department.find({
+            parent: null,
+            isDeleted: false
+        }).select("-__v -isDeleted")
         
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            parents
+        })
+    } catch (error) {
+        next(error);
     }
 }
 
-exports.getChildrenDepartment = async (req,res,next)=>{
+exports.getChildDepartments = async (req,res,next)=>{
     try {
         const {code} = req.params;
         const parent = await Department.findOne({
