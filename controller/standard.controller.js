@@ -1,5 +1,6 @@
 const db = require("../model/");
 const {body, param, query, validationResult} = require("express-validator");
+const Criteria = require("../model/criteria.model");
 const Standard = db.standard;
 
 exports.validate = (method)=>{
@@ -115,6 +116,30 @@ exports.deleteStandard = async (req,res,next)=>{
         });
         
         
+    } catch (error) {
+        next(error);
+    }        
+}
+
+exports.getStandardsWithCriteria = async (req,res,next)=>{
+    try {
+        const standards = await Standard.find()
+                        .sort({"code": 1})
+                        .select("-__v -create_date -isDeleted")
+                        .lean();
+        for(let i in standards){
+            const criteria = await Criteria.find({
+                standard: standards[i]._id
+            })
+            .sort({"code": 1})
+            .select("-__v -isDeleted -create_date");
+            standards[i].criteria = criteria;
+        }
+        return res.status(200).json({
+            statusCode: 200,
+            message: "OK",
+            standards
+        })
     } catch (error) {
         next(error);
     }        

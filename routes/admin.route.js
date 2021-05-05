@@ -55,6 +55,9 @@ module.exports = function(app){
     app.get("/admin/standard/",
         standardController.getStandards
     )
+    app.get("/admin/standard/criteria",
+        standardController.getStandardsWithCriteria
+    )
     app.get("/admin/standard/:id",
         standardController.validate('getStandard'),
         getValidationResult,
@@ -132,7 +135,8 @@ module.exports = function(app){
         formDepartmentController.getFormDepartments
     )
     app.post("/admin/form/:fcode/addFormDepartments",
-        formDepartmentController.addFormDepartments
+        formDepartmentController.addFormDepartments,
+
     )
 
     app.post("/test",
