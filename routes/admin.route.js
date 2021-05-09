@@ -143,4 +143,13 @@ module.exports = function(app){
     app.post("/admin/:fcode/test",
         formUserController.addFormUser
     )
+
+    app.post("/testt",
+        (req,res,next)=>{
+            console.log(req.body);
+            res.status(200).send({
+                body: req.body
+            })
+        }
+    )
 }

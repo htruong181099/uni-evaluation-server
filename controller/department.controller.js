@@ -2,6 +2,45 @@ const db = require("../model/");
 const Department = db.department;
 const User = db.user;
 
+exports.addDepartment = async (req,res,next)=>{
+    try{
+        const {department_code, name, manager, parent} = req.body;
+        const user = await User.findOne({
+            staff_code: manager
+        }).select("_id");
+        if(!user){
+            return res.statuc(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+        const department = new Department({
+            department_code,
+            name,
+            manager: user._id,
+            parent
+        })
+        await department.save((err)=>{
+            if(err){
+                if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                    return res.status(409).send({
+                        statusCode: 409,
+                        message: 'Department already exists!'
+                    });
+                }
+                return next(err);
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Add Department successfully"
+            })
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
 exports.getDepartments = async (req,res,next)=>{
     try{
         const departments = await Department.find()

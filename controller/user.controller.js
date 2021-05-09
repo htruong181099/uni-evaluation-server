@@ -21,3 +21,11 @@ exports.getUser = async (req,res,next)=>{
         next(error);
     }
 }
+
+exports.addUser = async (req,res,next)=>{
+    try {
+        const {} = req.body
+    } catch (error) {
+        next(error);
+    }
+}
