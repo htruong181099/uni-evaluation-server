@@ -107,10 +107,12 @@ exports.addFormDepartments = async (req,res,next)=>{
                     // return res.status(200).json({
                     //     message: "Add Form Department successfully"
                     // })
+                    console.log("ok");
                     next();
                 });
             }
         }
+        next();
     } catch (error) {
         next(error);
     }

@@ -140,7 +140,7 @@ module.exports = function(app){
         formUserController.addFormUser
     )
 
-    app.post("/test",
-        reviewController.test
+    app.post("/admin/:fcode/test",
+        formUserController.addFormUser
     )
 }

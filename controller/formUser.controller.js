@@ -8,21 +8,37 @@ exports.addFormUser = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const form = await Form.findOne({code: fcode}).select("_id");
-        const formdepartments = FormDepartment.find({
+        const formdepartments = await FormDepartment.find({
             form_id: form._id,
         })
         .populate("department_id")
         .select("_id department_id");
         for(i in formdepartments){
-            if(formdepartments[i].department_id.parent == null){
-                const users = User.find({
-                    department: formdepartments[i]._id
+            console.log(formdepartments[i]);
+            if(!formdepartments[i].department_id.parent && formdepartments[i].department_id.parent == null){
+                const users = await User.find({
+                    department: formdepartments[i].department_id._id
                 })
-                return res.status(200).json({
-                    users
-                })
+                for(let x in users){
+                    if(!await FormUser.findOne({
+                        form_id: form._id,
+                        user_id: users[x]._id
+                    })){
+                        console.log(users[x]);
+                        const formUser = new FormUser({
+                            user_id: users[x]._id,
+                            department_form_id: formdepartments[i]._id,
+                            form_id: form._id
+                        })
+                        await formUser.save()
+                    }
+                }
             }
         }
+        return res.status(200).json({
+            statusCOde: 200,
+            message: 'Add form department and users successfully'
+        })
     } catch (error) {
         next(error);
     }
