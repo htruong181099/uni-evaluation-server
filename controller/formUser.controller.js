@@ -36,10 +36,18 @@ exports.addFormUser = async (req,res,next)=>{
             }
         }
         return res.status(200).json({
-            statusCOde: 200,
+            statusCode: 200,
             message: 'Add form department and users successfully'
         })
     } catch (error) {
         next(error);
     }
 }
+
+// exports.getFormUser = async (req,res,next)=>{
+//     try {
+//         const {f} = req.params;
+//     } catch (error) {
+//         next(error);
+//     }
+// } 
