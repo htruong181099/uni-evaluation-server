@@ -69,51 +69,47 @@ exports.addFormDepartments = async (req,res,next)=>{
                 form_id : form._id,
                 department_id: department._id,
             }).select("_id");
-            if(exist){
-                return res.status(409).send({
-                    message: "Dup"
+            if(!exist){
+                const formDepartment = new FormDepartment({
+                    form_id : form._id,
+                    department_id: department._id,
+                    level: 1
                 })
+                await formDepartment.save(async (err)=>{
+                    if(err){
+                        return next(err);
+                    }
+                    const children = await Department.find({parent: department._id}).select("_id");
+                    for(let index in children){
+                        // console.log(children[index]._id);
+    
+                        const childDepartment = await Department.findById(children[index]._id).select("_id");
+                        if(!childDepartment){
+                            return res.status(404).json({
+                                statusCode: 404,
+                                message: "Department not found"
+                            });
+                        }
+                        const existChild = await FormDepartment.findOne({
+                            form_id : form._id,
+                            department_id: childDepartment._id,
+                        }).select("_id");
+                        if(!existChild){
+                            const childFormDepartment = new FormDepartment({
+                                form_id : form._id,
+                                department_id: childDepartment._id,
+                                level: 2
+                            })
+                            await childFormDepartment.save();
+                        }
+                    }
+                    // req.formdepartment = 
+                    // return res.status(200).json({
+                    //     message: "Add Form Department successfully"
+                    // })
+                    next();
+                });
             }
-            const formDepartment = new FormDepartment({
-                form_id : form._id,
-                department_id: department._id,
-                level: 1
-            })
-            await formDepartment.save(async (err)=>{
-                if(err){
-                    return next(err);
-                }
-                const children = await Department.find({parent: department._id}).select("_id");
-                for(let index in children){
-                    // console.log(children[index]._id);
-
-                    const childDepartment = await Department.findById(children[index]._id).select("_id");
-                    if(!childDepartment){
-                        return res.status(404).json({
-                            statusCode: 404,
-                            message: "Department not found"
-                        });
-                    }
-                    const existChild = await FormDepartment.findOne({
-                        form_id : form._id,
-                        department_id: childDepartment._id,
-                    }).select("_id");
-                    if(existChild){
-                        return res.status(409).send({
-                            message: "Dup"
-                        })
-                    }
-                    const childFormDepartment = new FormDepartment({
-                        form_id : form._id,
-                        department_id: childDepartment._id,
-                        level: 2
-                    })
-                    await childFormDepartment.save();
-                }
-                return res.status(200).json({
-                    message: "Add Form Department successfully"
-                })
-            });
         }
     } catch (error) {
         next(error);

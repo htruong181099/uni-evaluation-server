@@ -1,5 +1,6 @@
 const db = require("../model/");
 const {body, param, query, validationResult} = require("express-validator");
+const { standard } = require("../model/");
 const Criteria = db.criteria;
 const Standard = db.standard;
 
@@ -86,13 +87,20 @@ exports.getAllCriterions = async (req,res,next)=>{
 exports.getCriterions = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const standard = id;
-        const criterions = await Criteria.find({standard})
-                            .populate("standard","code name")
+        const standard = await Standard.findById(id).select("_id code name");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+        const criterions = await Criteria.find({standard: standard._id})
+                            // .populate("standard","code name")
                             .sort({"code": -1})
-                            .select("-__v -create_date");
+                            .select("-__v -create_date -standard");
         return res.status(200).json({
             statusCode: 200,
+            standard,
             criterions,
             count: criterions.length
         })

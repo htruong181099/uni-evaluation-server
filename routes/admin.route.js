@@ -7,6 +7,7 @@ const reviewController = require("../controller/evaluationReview.controller");
 const formTypeController = require("../controller/formType.controller");
 const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
+const formUserController = require("../controller/formUser.controller");
 
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
@@ -136,7 +137,7 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/addFormDepartments",
         formDepartmentController.addFormDepartments,
-
+        formUserController.addFormUser
     )
 
     app.post("/test",
