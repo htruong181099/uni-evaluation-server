@@ -14,11 +14,20 @@ exports.addDepartment = async (req,res,next)=>{
                 message: "User not found"
             })
         }
+        const dep = await Department.findOne({
+            department_code: parent
+        }).select("_id");
+        if(!dep){
+            return res.statuc(404).json({
+                statusCode: 404,
+                message: "Dep not found"
+            })
+        }
         const department = new Department({
             department_code,
             name,
             manager: user._id,
-            parent
+            parent: dep._id
         })
         await department.save((err)=>{
             if(err){
