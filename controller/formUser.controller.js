@@ -13,30 +13,27 @@ exports.addFormUser = async (req,res,next)=>{
         })
         .populate("department_id")
         .select("_id department_id");
-
-
-        const d = formdepartments.filter(e => !e.department_id.parent)
-        console.log(d);
-        for(let i in d){
-            const users = await User.find({
-                department: formdepartments[i].department_id._id
-            })
-            for(let x in users){
-                if(!await FormUser.findOne({
-                    form_id: form._id,
-                    user_id: users[x]._id
-                })){
-                    const formUser = new FormUser({
-                        user_id: users[x]._id,
-                        department_form_id: formdepartments[i]._id,
-                        form_id: form._id
-                    })
-                    await formUser.save()
+        for(let i in formdepartments){
+            if(!formdepartments[i].department_id.parent && formdepartments[i].department_id.parent == null){
+                const users = await User.find({
+                    department: formdepartments[i].department_id._id
+                })
+                for(let x in users){
+                    if(!await FormUser.findOne({
+                        form_id: form._id,
+                        user_id: users[x]._id
+                    })){
+                        const formUser = new FormUser({
+                            user_id: users[x]._id,
+                            department_form_id: formdepartments[i]._id,
+                            form_id: form._id
+                        })
+                        await formUser.save()
+                    }
                 }
             }
-            
         }
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: 'Add form departments and users successfully'
         })
@@ -46,6 +43,12 @@ exports.addFormUser = async (req,res,next)=>{
     }
 }
 
+exports.message = (req,res,next)=>{
+    if(req.status == 200){
+        
+    }
+    
+}
 
 // exports.getFormUser = async (req,res,next)=>{
 //     try {
