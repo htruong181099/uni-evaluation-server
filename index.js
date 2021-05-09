@@ -52,7 +52,7 @@ app.use((err,req,res,next)=>{
 
 //404 handler
 app.use((req,res,next)=>{
-    res.json({
+    res.status(404).json({
         statusCode: 404,
         message: "404 error. File not Found!"
     })

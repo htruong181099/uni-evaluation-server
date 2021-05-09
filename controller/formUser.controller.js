@@ -13,36 +13,39 @@ exports.addFormUser = async (req,res,next)=>{
         })
         .populate("department_id")
         .select("_id department_id");
-        for(i in formdepartments){
-            console.log(formdepartments[i]);
-            if(!formdepartments[i].department_id.parent && formdepartments[i].department_id.parent == null){
-                const users = await User.find({
-                    department: formdepartments[i].department_id._id
-                })
-                for(let x in users){
-                    if(!await FormUser.findOne({
-                        form_id: form._id,
-                        user_id: users[x]._id
-                    })){
-                        console.log(users[x]);
-                        const formUser = new FormUser({
-                            user_id: users[x]._id,
-                            department_form_id: formdepartments[i]._id,
-                            form_id: form._id
-                        })
-                        await formUser.save()
-                    }
+
+
+        const d = formdepartments.filter(e => !e.department_id.parent)
+        console.log(d);
+        for(let i in d){
+            const users = await User.find({
+                department: formdepartments[i].department_id._id
+            })
+            for(let x in users){
+                if(!await FormUser.findOne({
+                    form_id: form._id,
+                    user_id: users[x]._id
+                })){
+                    const formUser = new FormUser({
+                        user_id: users[x]._id,
+                        department_form_id: formdepartments[i]._id,
+                        form_id: form._id
+                    })
+                    await formUser.save()
                 }
             }
+            
         }
-        return res.status(200).json({
+        res.status(200).json({
             statusCode: 200,
-            message: 'Add form department and users successfully'
+            message: 'Add form departments and users successfully'
         })
+        
     } catch (error) {
         next(error);
     }
 }
+
 
 // exports.getFormUser = async (req,res,next)=>{
 //     try {

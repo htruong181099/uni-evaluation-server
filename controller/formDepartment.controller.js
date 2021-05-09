@@ -76,9 +76,6 @@ exports.addFormDepartments = async (req,res,next)=>{
                     level: 1
                 })
                 await formDepartment.save(async (err)=>{
-                    if(err){
-                        return next(err);
-                    }
                     const children = await Department.find({parent: department._id}).select("_id");
                     for(let index in children){
                         // console.log(children[index]._id);
@@ -103,12 +100,6 @@ exports.addFormDepartments = async (req,res,next)=>{
                             await childFormDepartment.save();
                         }
                     }
-                    // req.formdepartment = 
-                    // return res.status(200).json({
-                    //     message: "Add Form Department successfully"
-                    // })
-                    console.log("ok");
-                    next();
                 });
             }
         }
