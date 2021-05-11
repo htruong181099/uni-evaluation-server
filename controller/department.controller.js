@@ -15,7 +15,7 @@ exports.addDepartment = async (req,res,next)=>{
             }).select("_id");
             
             if(!user){
-                return res.statuc(404).json({
+                return res.status(404).json({
                     statusCode: 404,
                     message: "User not found"
                 })
