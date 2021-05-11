@@ -11,9 +11,8 @@ exports.addDepartment = async (req,res,next)=>{
         })
         if(manager){
             const user = await User.findOne({
-                staff_code: manager
+                staff_id: manager
             }).select("_id");
-            
             if(!user){
                 return res.status(404).json({
                     statusCode: 404,
