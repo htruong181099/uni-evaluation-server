@@ -105,11 +105,18 @@ module.exports = function(app){
     )
 
     //criteria option
+    app.get("/admin/criteria/:ccode/option",
+        // criteriaOptionController.validate('addCriteriaOption'),
+        // getValidationResult,
+        criteriaOptionController.getCriteriaOption
+    )
+    
     app.post("/admin/criteria/:ccode/addCriteriaOption",
         // criteriaOptionController.validate('addCriteriaOption'),
         // getValidationResult,
         criteriaOptionController.addCriteriaOption
     )
+
 
     //evaluation review
     app.get("/admin/review",

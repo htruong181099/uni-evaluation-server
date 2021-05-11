@@ -12,6 +12,30 @@ exports.validate = (method)=>{
     }
 }
 
+exports.getCriteriaOption = async (req,res,next)=>{
+    const {ccode} = req.params;
+    const criteria = await Criteria.findOne({
+        code: ccode
+    }).select("_id");
+    if(!criteria){
+        return res.status(404).json({
+            statusCode: 404,
+            message: "Criteria not found"
+        })
+    }
+    console.log(criteria);
+    const criteriaOptions = await CriteriaOption.find({
+        criteria_id: criteria._id,
+        isDeleted: false
+    }).select("-__v").sort({"max_point": -1});
+    
+    return res.status(200).json({
+        statusCode: 200,
+        message: "Success",
+        criteriaOptions
+    })
+}
+
 exports.addCriteriaOption = async (req,res,next)=>{
     const {ccode} = req.params;
     const {code, name, max_point, description } = req.body;
