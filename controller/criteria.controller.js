@@ -31,7 +31,7 @@ exports.validate = (method)=>{
 exports.addCriteria = async (req,res,next)=>{
     try{
         const {id} = req.params;
-        const {code, name, description} = req.body;
+        const {code, name, description, type} = req.body;
     
         const standard = await Standard.findById(id).select("_id");
         if(!standard){
@@ -41,10 +41,18 @@ exports.addCriteria = async (req,res,next)=>{
             })
         }
 
+        if (!['radio','checkbox','input'].includes(type)){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Invalid Criteria type"
+            })
+        }
+
         const criteria = new Criteria({
             code,
             name,
             description,
+            type,
             standard: standard._id
         });
 

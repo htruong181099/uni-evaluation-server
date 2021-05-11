@@ -9,7 +9,7 @@ const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
 const formUserController = require("../controller/formUser.controller");
 const formStandardController = require("../controller/formStandard.controller");
-const FormCriteriaController = require("../controller/formCriteria.model");
+const formCriteriaController = require("../controller/formCriteria.controller");
 
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
@@ -136,7 +136,7 @@ module.exports = function(app){
         formController.getFormfromFormTypeandReview
     )
 
-
+    //FormDepartment
     app.get("/admin/form/:fcode/getFormDepartments",
         formDepartmentController.getFormDepartments
     )
@@ -145,12 +145,9 @@ module.exports = function(app){
         formUserController.addFormUser
     )
 
-    app.post("/admin/:fcode/test",
-        formUserController.addFormUser
-    )
-
-    app.post("/admin/:fcode/testt",
-        formStandardController.addFormStandard
+    //Form User
+    app.get("/admin/form/:fcode/:dcode/getFormUser",
+        formUserController.getFormUser
     )
 
     //formStandard
@@ -160,6 +157,6 @@ module.exports = function(app){
     )
 
     app.post("/admin/form/:fcode/standard/:standard/addFormCriteria",
-        FormCriteriaController.addFormCriteria
+        formCriteriaController.addFormCriteria
     )
 }
