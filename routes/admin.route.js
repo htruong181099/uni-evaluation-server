@@ -105,7 +105,7 @@ module.exports = function(app){
     )
 
     //criteria option
-    app.post("/admin/criteria/:code/addCriteriaOption",
+    app.post("/admin/criteria/:ccode/addCriteriaOption",
         // criteriaOptionController.validate('addCriteriaOption'),
         // getValidationResult,
         criteriaOptionController.addCriteriaOption

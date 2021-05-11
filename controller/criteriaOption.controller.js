@@ -13,7 +13,7 @@ exports.validate = (method)=>{
 }
 
 exports.addCriteriaOption = async (req,res,next)=>{
-    const {code} = req.params;
+    const {ccode} = req.params;
     const {code, name, max_point: point, description } = req.body;
 
     const criteria = await Criteria.findOne({
