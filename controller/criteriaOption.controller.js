@@ -17,7 +17,7 @@ exports.addCriteriaOption = async (req,res,next)=>{
     const {code, name, max_point, description } = req.body;
 
     const criteria = await Criteria.findOne({
-        ccode
+        code: ccode
     }).select("_id");
     if(!criteria){
         return res.status(404).json({

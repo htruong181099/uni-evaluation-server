@@ -14,7 +14,7 @@ const CriteriaOption = mongoose.model(
             unique: true
         },
         max_point: {
-            type: String,
+            type: Number,
             required: true
         },
         description: {
