@@ -18,9 +18,9 @@ exports.addDepartment = async (req,res,next)=>{
             department_code: parent
         }).select("_id");
         if(!dep){
-            return res.statuc(404).json({
+            return res.status(404).json({
                 statusCode: 404,
-                message: "Dep not found"
+                message: "Department not found"
             })
         }
         const department = new Department({
