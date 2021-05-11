@@ -13,6 +13,10 @@ const CriteriaOption = mongoose.model(
             required: true,
             unique: true
         },
+        name: {
+            type: String,
+            required: true,
+        },
         max_point: {
             type: Number,
             required: true
