@@ -17,6 +17,10 @@ const FormStandard = mongoose.model(
         },
         standard_point: {
             type: Number
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     })
 )

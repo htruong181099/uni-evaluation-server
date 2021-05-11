@@ -15,6 +15,9 @@ const FormCriteria = mongoose.model(
             type: String,
             required: true
         },
+        point:{
+            type: Number
+        },
         isDeleted: {
             type: Boolean,
             default: false
