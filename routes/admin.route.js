@@ -3,6 +3,7 @@ const adminController = require('../controller/admin.controller');
 const departmentController = require("../controller/department.controller");
 const standardController = require("../controller/standard.controller");
 const criteriaController = require("../controller/criteria.controller");
+const criteriaOptionController = require("../controller/criteriaOption.controller");
 const reviewController = require("../controller/evaluationReview.controller");
 const formTypeController = require("../controller/formType.controller");
 const formController = require("../controller/form.controller");
@@ -101,6 +102,13 @@ module.exports = function(app){
         criteriaController.validate('deleteCriteria'),
         getValidationResult,
         criteriaController.deleteCriteria
+    )
+
+    //criteria option
+    app.post("/admin/criteria/:code/addCriteriaOption",
+        // criteriaOptionController.validate('addCriteriaOption'),
+        // getValidationResult,
+        criteriaOptionController.addCriteriaOption
     )
 
     //evaluation review

@@ -1,6 +1,5 @@
 const db = require("../model/");
 const {body, param, query, validationResult} = require("express-validator");
-const { standard } = require("../model/");
 const Criteria = db.criteria;
 const Standard = db.standard;
 

@@ -3,16 +3,19 @@ const mongoose = require('mongoose');
 const CriteriaOption = mongoose.model(
     "CriteriaOption",
     new mongoose.Schema({
-        formCriteria_id: {
+        criteria_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Criteria",
             required: true
         },
-        max_point: {
-            type: String
+        code: {
+            type: String,
+            required: true,
+            unique: true
         },
-        min_point: {
-            type: String
+        max_point: {
+            type: String,
+            required: true
         },
         description: {
             type: String
