@@ -34,7 +34,7 @@ exports.addDepartment = async (req,res,next)=>{
                     message: "Department not found"
                 })
             }
-            dep.parent = dep._id;
+            department.parent = dep._id;
         }
         await department.save((err)=>{
             if(err){
