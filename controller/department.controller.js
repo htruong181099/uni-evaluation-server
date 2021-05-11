@@ -35,7 +35,7 @@ exports.addDepartment = async (req,res,next)=>{
             }
             department.parent = dep._id;
         }
-        await department.save((err)=>{
+        await department.save(async (err, dep)=>{
             if(err){
                 if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
                     return res.status(409).send({
@@ -44,6 +44,16 @@ exports.addDepartment = async (req,res,next)=>{
                     });
                 }
                 return next(err);
+            }
+            if(dep.manager){
+                const user = await User.findById(dep.manager).select("_id department");
+                let depList= user.department;
+                depList.push(dep._id);
+                if(dep.parent){
+                    depList.push(dep.parent);
+                }
+                user.department = depList;
+                await user.save();
             }
             return res.status(200).json({
                 statusCode: 200,
