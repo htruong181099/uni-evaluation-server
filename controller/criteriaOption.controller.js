@@ -14,10 +14,10 @@ exports.validate = (method)=>{
 
 exports.addCriteriaOption = async (req,res,next)=>{
     const {ccode} = req.params;
-    const {code, name, max_point: point, description } = req.body;
+    const {code, name, max_point, description } = req.body;
 
     const criteria = await Criteria.findOne({
-        code
+        ccode
     }).select("_id");
     if(!criteria){
         return res.status(404).json({
