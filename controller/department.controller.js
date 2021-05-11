@@ -5,30 +5,37 @@ const User = db.user;
 exports.addDepartment = async (req,res,next)=>{
     try{
         const {department_code, name, manager, parent} = req.body;
-        const user = await User.findOne({
-            staff_code: manager
-        }).select("_id");
-        if(!user){
-            return res.statuc(404).json({
-                statusCode: 404,
-                message: "User not found"
-            })
-        }
-        const dep = await Department.findOne({
-            department_code: parent
-        }).select("_id");
-        if(!dep){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Department not found"
-            })
-        }
         const department = new Department({
             department_code,
-            name,
-            manager: user._id,
-            parent: dep._id
+            name
         })
+        if(manager){
+            const user = await User.findOne({
+                staff_code: manager
+            }).select("_id");
+            
+            if(!user){
+                return res.statuc(404).json({
+                    statusCode: 404,
+                    message: "User not found"
+                })
+            }
+            department.manager = user._id;
+        }
+        
+        
+        if(parent){
+            const dep = await Department.findOne({
+                department_code: parent
+            }).select("_id");
+            if(!dep){
+                return res.status(404).json({
+                    statusCode: 404,
+                    message: "Department not found"
+                })
+            }
+            dep.parent = dep._id;
+        }
         await department.save((err)=>{
             if(err){
                 if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
