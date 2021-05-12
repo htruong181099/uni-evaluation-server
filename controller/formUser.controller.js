@@ -91,7 +91,7 @@ exports.getFormUser = async (req,res,next)=>{
                 path: 'department',
                 select: 'department_code name'
             }
-        });
+        })
 
         res.status(200).json({
             statusCode: 200,

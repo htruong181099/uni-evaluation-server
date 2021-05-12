@@ -59,9 +59,11 @@ exports.addStandard = async (req,res,next)=>{
 //get all the standards
 exports.getStandards = async (req,res,next)=>{
     try {
-        const standards = await Standard.find()
-                        .sort({"code": 1})
-                        .select("-__v -create_date");
+        const standards = await Standard.find({
+                isDeleted: false
+        }).sort({"code": 1})
+        .select("-__v -create_date -isDeleted");
+
         res.status(200).json({
             statusCode: 200,
             message: "OK",
@@ -105,7 +107,7 @@ exports.deleteStandard = async (req,res,next)=>{
         }
         Standard.deleteOne({_id: id}, (err)=>{
             if(err){
-                res.status(500).json({
+                return res.status(500).json({
                     error: err
                 })
             }
@@ -129,7 +131,8 @@ exports.getStandardsWithCriteria = async (req,res,next)=>{
                         .lean();
         for(let i in standards){
             const criteria = await Criteria.find({
-                standard: standards[i]._id
+                standard: standards[i]._id,
+                isDeleted: false
             })
             .sort({"code": 1})
             .select("-__v -isDeleted -create_date");

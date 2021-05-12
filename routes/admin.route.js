@@ -166,10 +166,16 @@ module.exports = function(app){
     )
 
     //formStandard
+    app.get("/admin/form/:fcode/getFormStandard",
+        formStandardController.getFormStandards
+    )
+
     app.post("/admin/form/:fcode/addFormStandard",
         formStandardController.addFormStandard
 
     )
+
+    
 
     app.post("/admin/form/:fcode/standard/:standard/addFormCriteria",
         formCriteriaController.addFormCriteria
