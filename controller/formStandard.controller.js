@@ -154,6 +154,7 @@ exports.getFormStandards = async (req,res,next)=>{
             form_id: form._id,
             isDeleted: false
         })
+        .sort({"standard_order": 1})
         .populate("standard_id","code name")
         .select("standard_id standard_order standard_point")
 
