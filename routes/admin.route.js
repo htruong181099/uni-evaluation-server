@@ -175,9 +175,11 @@ module.exports = function(app){
 
     )
 
-    
-
-    app.post("/admin/form/:fcode/standard/:standard/addFormCriteria",
+    //formCriteria
+    app.get("/admin/form/:fcode/standard/:scode/getFormCriteria",
+        formCriteriaController.getFormCriteria
+    )
+    app.post("/admin/form/:fcode/standard/:scode/addFormCriteria",
         formCriteriaController.addFormCriteria
     )
 }

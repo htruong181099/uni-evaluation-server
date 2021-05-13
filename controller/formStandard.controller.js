@@ -88,11 +88,11 @@ exports.addFormStandard = async (req,res,next)=>{
         .select("_id standard_id isDeleted")
         
         const upStandards = standards_code.map(e=>e.code);
-        const deleteStandard = formStandards.map(e => e.standard_id.code).filter(e=>!upStandards.includes(e));
+        const deleteStandards = formStandards.map(e => e.standard_id.code).filter(e=>!upStandards.includes(e));
         
-        for(let i in deleteStandard){
+        for(let i in deleteStandards){
             const del_standard = await Standard.findOne({
-                code: deleteStandard[i]
+                code: deleteStandards[i]
             }).select("_id")
             const formStandard = await FormStandard.findOne({
                 form_id: form._id,
