@@ -155,6 +155,7 @@ exports.getFormCriteria = async (req,res,next)=>{
             isDeleted: false
         })
         .sort({"criteria_order": -1})
+        .populate("criteria_id")
         .select("-isDeleted -__v -form_standard");
 
         return res.status(200).json({
