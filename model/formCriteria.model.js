@@ -5,11 +5,13 @@ const FormCriteria = mongoose.model(
     new mongoose.Schema({
         criteria_id: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Criteria"
+            ref: "Criteria",
+            required: true
         },
         form_standard: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "FormStandard"
+            ref: "FormStandard",
+            required: true
         },
         criteria_order: {
             type: String,

@@ -35,7 +35,7 @@ exports.addFormCriteria = async (req,res,next)=>{
 
         const formStandard = await FormStandard.findOne({
             form_id: form._id,
-            standard_id: standard_id._id
+            standard_id: standard._id
         })
         if(!formStandard){
             return res.status(404).json({
@@ -70,11 +70,12 @@ exports.addFormCriteria = async (req,res,next)=>{
                 code: criterions[i].code
             }).select("_id")
             let formCriteria = await FormCriteria.findOne({
-                form_id: form._id,
-                standard_id: standard._id
+                criteria_id: criteria._id,
+                form_standard: formStandard._id
             });
             if(!formCriteria){
                 formCriteria = new FormCriteria({
+                    form_standard: formStandard._id,
                     criteria_id: criteria._id,
                     criteria_order: criterions[i].order,
                     point: criterions[i].point
@@ -91,7 +92,6 @@ exports.addFormCriteria = async (req,res,next)=>{
         }
         return res.status(200).json({
             statusCode: 200,
-            formStandards,
             message: "Add FormCriteria successfully"
         })
 
