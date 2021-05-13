@@ -121,7 +121,7 @@ exports.addFormCriteria = async (req,res,next)=>{
     }
 }
 
-exports.getFormStandards = async (req,res,next)=>{
+exports.getFormCriteria = async (req,res,next)=>{
     try {
         const {fcode, scode} = req.params;
         const form = await Form.findOne({
