@@ -153,7 +153,9 @@ exports.getFormCriteria = async (req,res,next)=>{
         const formCriteria = await FormCriteria.find({
             form_standard: formStandard._id,
             isDeleted: false
-        }).select("-isDeleted -__v -form_standard");
+        })
+        .sort({"criteria_order": -1})
+        .select("-isDeleted -__v -form_standard");
 
         return res.status(200).json({
             statusCode: 200,

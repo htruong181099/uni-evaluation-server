@@ -60,7 +60,7 @@ exports.addStandard = async (req,res,next)=>{
 exports.getStandards = async (req,res,next)=>{
     try {
         const standards = await Standard.find({
-                isDeleted: false
+            
         }).sort({"code": 1})
         .select("-__v -create_date -isDeleted");
 
@@ -132,7 +132,7 @@ exports.getStandardsWithCriteria = async (req,res,next)=>{
         for(let i in standards){
             const criteria = await Criteria.find({
                 standard: standards[i]._id,
-                isDeleted: false
+                // isDeleted: false
             })
             .sort({"code": 1})
             .select("-__v -isDeleted -create_date");
