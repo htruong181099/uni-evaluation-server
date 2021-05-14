@@ -89,7 +89,10 @@ exports.getFormUser = async (req,res,next)=>{
             select: 'staff_id firstname lastname department',
             populate: {
                 path: 'department',
-                select: 'department_code name'
+                select: 'department_code name parent',
+                match: {
+                    parent: {$ne : null}
+                }
             }
         })
 
