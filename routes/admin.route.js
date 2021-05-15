@@ -162,7 +162,10 @@ module.exports = function(app){
 
     //Form User
     app.get("/admin/form/:fcode/:dcode/getFormUser",
-        formUserController.getFormUser
+        formUserController.getFormUsers
+    )
+    app.post("/admin/form/:fcode/:dcode/removeFormUser",
+        formUserController.removeFormUser
     )
 
     //formStandard

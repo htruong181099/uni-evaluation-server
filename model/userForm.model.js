@@ -1,17 +1,12 @@
 const mongoose = require('mongoose');
 
-//form users (users belong to form department)
-const FormUser = mongoose.model(
-    "FormUser",
+//user's form model
+const UserForm = mongoose.model(
+    "UserForm",
     new mongoose.Schema({
-        user_id: {
+        form_user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
-        department_form_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "FormDepartment",
+            ref: "FormUser",
             required: true
         },
         form_id:{
@@ -26,4 +21,4 @@ const FormUser = mongoose.model(
     })
 )
 
-module.exports = FormUser;
+module.exports = UserForm;

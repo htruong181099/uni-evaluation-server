@@ -12,7 +12,16 @@ const FormDepartment = mongoose.model(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Department",
             required: true
+        },/*
+        formDepartment_parent: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "FormDepartment"
         },
+        head: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "FormUser",
+            required: true
+        },*/
         level: {
             type: Number
         },
