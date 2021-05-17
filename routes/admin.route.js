@@ -151,6 +151,10 @@ module.exports = function(app){
         formController.getFormfromFormTypeandReview
     )
 
+    app.get("/admin/form/:fcode/getEvaForm",
+        formController.getEvaForm
+    )
+
     //FormDepartment
     app.get("/admin/form/:fcode/getFormDepartments",
         formDepartmentController.getFormDepartments

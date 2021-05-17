@@ -31,7 +31,7 @@ const User = db.user;
 const FormType = db.formType;
 
 //connect database
-console.log(process.env.MONGODB_URI);
+// console.log(process.env.MONGODB_URI);
 db.mongoose
     .connect(process.env.MONGODB_URI // mongoAtlas
         || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}` //mongoDB
@@ -46,7 +46,6 @@ db.mongoose
     .catch(err=>{
         console.log(`URI: ${process.env.MONGODB_URI}`);
         console.error("Connection error: ", err);
-        next(err);
         process.exit();
     })
 

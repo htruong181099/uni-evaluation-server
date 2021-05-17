@@ -16,7 +16,8 @@ const Criteria = mongoose.model(
         },
         standard: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Standard"
+            ref: "Standard",
+            required: true
         },
         type: {
             type: String,

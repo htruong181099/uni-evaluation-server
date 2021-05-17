@@ -1,9 +1,12 @@
 const db = require("../model");
 const Form = db.form;
+const FormStandard = db.formStandard;
+const FormCriteria = db.formCriteria;
 const EvaluationReview = db.evaluationReview;
 const FormType = db.formType;
 
 const {body, param, query, validationResult} = require("express-validator");
+const CriteriaOption = require("../model/criteriaOption.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -127,5 +130,45 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
 
 
 exports.getEvaForm = async (req,res,next)=>{
-    
+    try {
+        const {fcode} = req.params;
+
+        const form = await Form.findOne({
+            code: fcode
+        }).select("_id");
+        if(!form){
+
+        }
+
+        const formStandards = await FormStandard.find({
+            form_id: form._id,
+            isDeleted: false
+        }).populate("standard_id", "code name description")
+        .select("standard_id standard_order standard_point").lean();
+
+        for(let i in formStandards){
+            const formCriteria = await FormCriteria.find({
+                form_standard: formStandards[i]._id,
+                isDeleted: false
+            }).populate("criteria_id","code name type description")
+            .sort({"criteria_order": 1})
+            .select("criteria_id criteria_order point").lean();
+            for(let j in formCriteria){
+                const options = await CriteriaOption.find({
+                    criteria_id: formCriteria[j].criteria_id._id,
+                    isDeleted: false
+                }).select("name max_point description")
+                formCriteria[j].options = options;
+            }
+            
+            formStandards[i].formCriteria = formCriteria;
+        }
+
+        res.status(200).json({
+            formStandards
+        })
+
+    } catch (error) {
+        next(error);
+    }
 }
