@@ -1,5 +1,7 @@
 const AuthRouter = require("./auth.route");
 const AdminRouter = require("./admin.route");
+const FormRouter = require("./form.route")
+const UserRouter = require("./user.route")
 
 module.exports = (app)=>{
     app.use((req,res,next)=>{
@@ -12,10 +14,12 @@ module.exports = (app)=>{
 
     app.get("/",(req,res,next)=>{
         res.json({
-            message: "Hello, world!"
+            message: "Server is still working!"
         })
     })
 
     AuthRouter(app);
     AdminRouter(app);
+    FormRouter(app);
+    UserRouter(app);
 }
