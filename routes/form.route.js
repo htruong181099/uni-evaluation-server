@@ -10,7 +10,14 @@ module.exports = function(app){
     app.get("/form/review", 
         reviewController.getUserReviews
     );
+
+    //get forms from reviews
     app.get("/form/review/:rcode/form", 
         formController.getUserForms
     );
+
+    app.get("/form/:fcode/", 
+        formController.getEvaForm
+    );
+
 }

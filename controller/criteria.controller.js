@@ -13,12 +13,18 @@ exports.validate = (method)=>{
                 body('description', "Invalid description format").optional().isString()
             ]
         };
-        case 'deleteCriteria':
+        case 'deleteCriteriaFromDB':
         case 'getCriteria': {
             return [
                 param('id','Invalid Criteria ID').exists().isMongoId()
             ]
         };
+        case 'deleteCriteria':
+        case 'restoreCriteria': {
+            return [
+                param('ccode','Invalid Criteria Code').exists().isString
+            ]
+        }
         case 'getCriterions': {
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
@@ -27,6 +33,7 @@ exports.validate = (method)=>{
     }
 }
 
+//add new criteria
 exports.addCriteria = async (req,res,next)=>{
     try{
         const {id} = req.params;
@@ -83,6 +90,8 @@ exports.getAllCriterions = async (req,res,next)=>{
                             .sort({"create_date": -1})
                             .select("-__v -create_date");
         res.status(200).json({
+            statusCode: 200,
+            message: "Success",
             criterions
         })
     } catch (error) {
@@ -116,18 +125,23 @@ exports.getCriterions = async (req,res,next)=>{
     }        
 }
 
+//get Criteria detail
 exports.getCriteria = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const criteria = await Criteria.findById(id)
-                            .select("-__v -create_date");
+        const criteria = await Criteria.find({
+            _id: id,
+            isDeleted: false
+        })
+        .select("-__v -create_date");
+
         if(!criteria){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Criteria not found"
             })
         }
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "OK",
             criteria
@@ -137,7 +151,8 @@ exports.getCriteria = async (req,res,next)=>{
     }        
 }
 
-exports.deleteCriteria = async (req,res,next)=>{
+//delete Criteria from DB
+exports.deleteCriteriaFromDB = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const criteria = await Criteria.findById(id).select("_id");
@@ -152,11 +167,63 @@ exports.deleteCriteria = async (req,res,next)=>{
             if(err){
                 next(err);
             }
-            res.status(200).json({
+            return res.status(200).json({
                 statusCode: 200,
                 message: "Delete successfully"
             })
         });
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//set Criteria isDeleted to true
+exports.deleteCriteria = async (req,res,next)=>{
+    try {
+        const {ccode} = req.params;
+        const criteria = await Criteria.findOne({
+            code: ccode,
+            isDeleted: false
+        }).select("_id isDeleted");
+        
+        if(!criteria){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Criteria not found or had been deleted"
+            });
+        }
+        criteria.isDeleted = true;
+        await criteria.save();
+        return res.status(200).send({
+            statusCode: 200,
+            message: "Delete Criteria successfully"
+        })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//set Criteria isDeleted to false
+exports.restoreCriteria = async (req,res,next)=>{
+    try {
+        const {ccode} = req.params;
+        const criteria = await Criteria.findOne({
+            code: ccode,
+            isDeleted: true
+        }).select("_id isDeleted");
+        
+        if(!criteria){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Criteria not found or had been deleted"
+            });
+        }
+        criteria.isDeleted = false;
+        await criteria.save();
+        return res.status(200).send({
+            statusCode: 200,
+            message: "Restore Criteria successfully"
+        })
     } catch (error) {
         next(error);
     }        

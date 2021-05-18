@@ -1,13 +1,24 @@
 const db = require("../model/");
 const {body, param, query, validationResult} = require("express-validator");
-const { criteria } = require("../model/");
 const Criteria = db.criteria;
 const CriteriaOption = db.criteriaOption;
 
 exports.validate = (method)=>{
     switch(method){
+        case 'getCriteriaOption':{
+            return [
+                param("ccode", "invalid Criteria Code").exists().isString()
+            ]
+        }
         case 'addCriteriaOption':{
-
+            return [
+                param("ccode", "invalid Criteria Code").exists().isString(),
+                body("code", "Invalid Option code").exists().isString(),
+                body("name", "Invalid Name").exists().isString(),
+                body("max_point", "Max point required").exists(),
+                body("max_point", "Invalid max point").exists().isNumeric(),
+                body("description", "Invalid description").optional().isString(),
+            ]
         }
     }
 }

@@ -1,8 +1,10 @@
+//router
+const CriteriaRouter = require("./admin/criteria.route");
+const StandardRouter = require("./admin/standard.route");
+const DepartmentRouter = require("./admin/department.route");
+
 //controller
 const adminController = require('../controller/admin.controller');
-const departmentController = require("../controller/department.controller");
-const standardController = require("../controller/standard.controller");
-const criteriaController = require("../controller/criteria.controller");
 const criteriaOptionController = require("../controller/criteriaOption.controller");
 const reviewController = require("../controller/evaluationReview.controller");
 const formTypeController = require("../controller/formType.controller");
@@ -37,85 +39,10 @@ module.exports = function(app){
         adminController.getUser
     )
 
-    //department
-    app.get("/admin/department",
-        departmentController.getDepartments
-    )
-    app.post("/admin/department/addDepartment",
-        departmentController.addDepartment
-    )
-    app.get("/admin/department/parent",
-        departmentController.getParentDepartments
-    )
-    app.get("/admin/department/:id",
-        departmentController.getDepartment
-    )
-    app.get("/admin/department/:id/user",
-        departmentController.getDepartmentUser
-    )
-    app.get("/admin/department/:code/children",
-        departmentController.getChildDepartments
-    )
-    
-
-    //standard
-    app.get("/admin/standard/",
-        standardController.getStandards
-    )
-    app.get("/admin/standard/criteria",
-        standardController.getStandardsWithCriteria
-    )
-    app.get("/admin/standard/:id",
-        standardController.validate('getStandard'),
-        getValidationResult,
-        standardController.getStandard
-    )
-    app.post("/admin/standard/:id/delete",
-        standardController.validate('deleteStandard'),
-        getValidationResult,
-        standardController.deleteStandard
-    )
-    app.post("/admin/standard/add",
-        standardController.validate('addStandard'),
-        getValidationResult,
-        standardController.addStandard
-    )
-    app.post("/admin/standard/:id/criteria/add",
-        criteriaController.addCriteria
-    )
-    app.get("/admin/standard/:id/criteria",
-        criteriaController.validate('getCriterions'),
-        getValidationResult,
-        criteriaController.getCriterions
-    )
-
-    //criteria
-    app.get("/admin/criteria",
-        criteriaController.getAllCriterions
-    )
-    app.get("/admin/criteria/:id/",
-        criteriaController.validate('getCriteria'),
-        getValidationResult,
-        criteriaController.getCriteria
-    )
-    app.post("/admin/criteria/:id/delete",
-        criteriaController.validate('deleteCriteria'),
-        getValidationResult,
-        criteriaController.deleteCriteria
-    )
-
-    //criteria option
-    app.get("/admin/criteria/:ccode/option",
-        // criteriaOptionController.validate('addCriteriaOption'),
-        // getValidationResult,
-        criteriaOptionController.getCriteriaOption
-    )
-    
-    app.post("/admin/criteria/:ccode/addCriteriaOption",
-        // criteriaOptionController.validate('addCriteriaOption'),
-        // getValidationResult,
-        criteriaOptionController.addCriteriaOption
-    )
+    //router
+    DepartmentRouter(app);
+    StandardRouter(app);
+    CriteriaRouter(app)
 
 
     //evaluation review

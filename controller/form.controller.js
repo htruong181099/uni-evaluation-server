@@ -98,6 +98,7 @@ exports.getForm = async (req,res,next)=>{
     }
 }
 
+
 exports.getFormfromFormTypeandReview = async (req,res,next)=>{
     try {
         const {rcode, ftcode} = req.params;
@@ -130,6 +131,7 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
     }
 }
 
+// get forms belong to a review
 exports.getUserForms = async (req,res,next)=>{
     try {
         const {rcode} = req.params;
@@ -162,7 +164,7 @@ exports.getUserForms = async (req,res,next)=>{
             }
         })
         .select("form_id department_form_id -_id");
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             formUser
@@ -173,15 +175,20 @@ exports.getUserForms = async (req,res,next)=>{
     }
 }
 
+//get evaluation form using form code
 exports.getEvaForm = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
 
         const form = await Form.findOne({
-            code: fcode
+            code: fcode,
+            isDeleted: false
         }).select("_id");
         if(!form){
-
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
         }
 
         const formStandards = await FormStandard.find({
@@ -208,7 +215,9 @@ exports.getEvaForm = async (req,res,next)=>{
             formStandards[i].formCriteria = formCriteria;
         }
 
-        res.status(200).json({
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
             formStandards
         })
 
