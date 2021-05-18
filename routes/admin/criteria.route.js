@@ -22,7 +22,7 @@ module.exports = (app) => {
         getValidationResult,
         criteriaController.deleteCriteria
     )
-    app.post("/admin/criteria/:id/delete",
+    app.post("/admin/criteria/:id/restore",
         criteriaController.validate('restoreCriteria'),
         getValidationResult,
         criteriaController.restoreCriteria
