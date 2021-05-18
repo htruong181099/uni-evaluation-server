@@ -4,9 +4,11 @@ const FormStandard = db.formStandard;
 const FormCriteria = db.formCriteria;
 const EvaluationReview = db.evaluationReview;
 const FormType = db.formType;
+const CriteriaOption = db.CriteriaOption;
 
 const {body, param, query, validationResult} = require("express-validator");
-const CriteriaOption = require("../model/criteriaOption.model");
+const FormUser = require("../model/formUser.model");
+
 
 exports.validate = (method)=>{
     switch(method){
@@ -128,6 +130,48 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
     }
 }
 
+exports.getUserForms = async (req,res,next)=>{
+    try {
+        const {rcode} = req.params;
+        const review = await EvaluationReview.findOne({
+            code: rcode
+        }).select("_id");
+        const forms = await Form.find({
+            review: review._id,
+            isDeleted: false
+        }).select("_id");
+
+        const formUser = await FormUser.find({
+            form_id: forms.map(form=>form._id),
+            user_id: req.userId,
+            isDeleted: false
+        }).populate({
+            path: "form_id",
+            select: "code name type",
+            populate: {
+                path: "type",
+                select: "-__v -isDeleted -_id"
+            }
+        })
+        .populate({
+            path: "department_form_id",
+            select: "department_id level -_id",
+            populate: {
+                path: "department_id",
+                select: "department_code name -_id"
+            }
+        })
+        .select("form_id department_form_id -_id");
+        res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            formUser
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
 
 exports.getEvaForm = async (req,res,next)=>{
     try {

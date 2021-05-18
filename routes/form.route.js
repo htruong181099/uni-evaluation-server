@@ -1,6 +1,7 @@
-const jwtMiddleware = require("../middleware/jwt.middleware")
+const jwtMiddleware = require("../middleware/jwt.middleware");
 
-const reviewController = require("../controller/evaluationReview.controller")
+const reviewController = require("../controller/evaluationReview.controller");
+const formController = require("../controller/form.controller");
 
 module.exports = function(app){
     app.use("/form/", 
@@ -10,5 +11,6 @@ module.exports = function(app){
         reviewController.getUserReviews
     );
     app.get("/form/review/:rcode/form", 
+        formController.getUserForms
     );
 }
