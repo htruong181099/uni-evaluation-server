@@ -20,4 +20,8 @@ module.exports = function(app){
         formController.getEvaForm
     );
 
+    app.get("/form/v2/:fid/", 
+        formController.getEvaFormbyID
+    );
+
 }

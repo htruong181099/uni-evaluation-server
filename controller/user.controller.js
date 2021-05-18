@@ -1,20 +1,44 @@
 const db = require("../model/");
 const User = db.user;
 
+const {body, param} = require("express-validator");
+const bcrypt = require("bcrypt");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'editUser': {
+            return [
+                body("fname", "Invalid firstname").exists().isString(),
+                body("lname", "Invalid lastname").exists().isString(),
+                body("birthday", "Invalid birthday").optional().isString(),
+                body("phone", "Invalid phone number").optional().isString(),
+                body("address", "Invalid address input").optional().isString(),
+                body("gender", "Invalid gender").optional().isString()
+            ]
+        }
+        case 'changePassword': {
+            return [
+                body("old_password", "Invalid old password").exists().isString(),
+                body("new_password", "Invalid new password").exists().isString(),
+            ]
+        }
+    }
+}
+
 exports.getUser = async (req,res,next)=>{
-    const {id} = req.params;
+    const id = req.userId;
     try{
-        const user = await User.findById(id).select("-__v -password");
+        const user = await User.findById(id).select("-__v -password -isDeleted");
         if(!user){
             return res.status(404).json({
                 statusCode: 404,
                 message: "User not found"
             })
         }
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
-            message: "OK",
-            user: user
+            message: "Success",
+            user
         })
     }
     catch(error){
@@ -22,9 +46,58 @@ exports.getUser = async (req,res,next)=>{
     }
 }
 
-exports.addUser = async (req,res,next)=>{
+exports.editUser = async (req, res, next)=>{
     try {
-        const {} = req.body
+        const id = req.userId;
+        const {fname, lname, birthday, phone, address, gender} = req.body;
+
+        let user = await User.findById(id).select("-password -isDeleted -__v");
+        //required
+        user.firstname = fname;
+        user.lastname = lname;
+        //optional
+        user.birthday = birthday;
+        user.phone = phone;
+        user.address = address;
+        user.gender = gender==="Nam"?"Male":"Female";
+
+        await user.save();
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Edit user successfully"
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.changePassword = async (req,res,next)=>{
+    try {
+        const id = req.userId;
+        const {old_password, new_password} = req.body;
+        if(old_password === new_password){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Please enter new password"
+            })
+        }
+
+        let user = await User.findById(id).select("password");
+        const isMatch = bcrypt.compareSync(old_password, user.password);
+        if(!isMatch){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Wrong password"
+            })
+        }
+        user.password = new_password;
+        await user.save();
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Change password successfully"
+        })
+
     } catch (error) {
         next(error);
     }
