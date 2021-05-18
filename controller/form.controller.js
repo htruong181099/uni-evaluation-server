@@ -210,6 +210,7 @@ exports.getEvaForm = async (req,res,next)=>{
             form_id: form._id,
             isDeleted: false
         }).populate("standard_id", "code name description")
+        .sort({"standard_order" : 1})
         .select("standard_id standard_order standard_point").lean();
 
         for(let i in formStandards){
@@ -223,7 +224,9 @@ exports.getEvaForm = async (req,res,next)=>{
                 const options = await CriteriaOption.find({
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
-                }).select("name max_point description")
+                })
+                .sort({"max_point" : -1})
+                .select("name max_point description")
                 formCriteria[j].options = options;
             }
             
@@ -261,6 +264,7 @@ exports.getEvaFormbyID= async (req,res,next)=>{
             form_id: form._id,
             isDeleted: false
         }).populate("standard_id", "code name description")
+        .sort({"standard_order" : 1})
         .select("standard_id standard_order standard_point").lean();
 
         for(let i in formStandards){
@@ -275,6 +279,7 @@ exports.getEvaFormbyID= async (req,res,next)=>{
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
                 }).select("name max_point description")
+                .sort({"max_point" : -1})
                 formCriteria[j].options = options;
             }
             
