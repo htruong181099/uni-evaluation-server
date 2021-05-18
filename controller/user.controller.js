@@ -28,7 +28,9 @@ exports.validate = (method)=>{
 exports.getUser = async (req,res,next)=>{
     const id = req.userId;
     try{
-        const user = await User.findById(id).select("-__v -password -isDeleted");
+        const user = await User.findById(id)
+        .populate("department", "department_code name")
+        .select("-__v -password -isDeleted");
         if(!user){
             return res.status(404).json({
                 statusCode: 404,

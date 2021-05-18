@@ -61,15 +61,6 @@ exports.getEvaluationReview = async (req,res,next)=>{
     }
 }
 
-exports.test = async (req,res,next)=>{
-    console.log(req.body);
-    res.status(200).json({
-        message: "ok",
-        test: new Date(req.body.start_date)
-    })
-
-}
-
 exports.getUserReviews = async (req,res,next)=>{
     try{
         const user = await User.findById(req.userId).select("_id");

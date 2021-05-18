@@ -4,7 +4,7 @@ const FormStandard = db.formStandard;
 const FormCriteria = db.formCriteria;
 const EvaluationReview = db.evaluationReview;
 const FormType = db.formType;
-const CriteriaOption = db.CriteriaOption;
+const CriteriaOption = db.criteriaOption;
 
 const {body, param, query, validationResult} = require("express-validator");
 const FormUser = require("../model/formUser.model");
@@ -29,6 +29,21 @@ exports.validate = (method)=>{
             return [
                 param("rcode","Invalid Review ID").exists().isString(),
                 param("ftcode","Invalid Form type ID").exists().isString(),
+            ]
+        }
+        case 'getUserForms': {
+            return [
+                param("rcode","Invalid Review Code").exists().isString()
+            ]
+        }
+        case 'getEvaForm': {
+            return [
+                param("fcode","Invalid FormCode").exists().isString()
+            ]
+        }
+        case 'getEvaFormbyID': {
+            return [
+                param("fid","Invalid FormID").exists().isMongoId()
             ]
         }
     }
