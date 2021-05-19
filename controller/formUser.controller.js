@@ -179,6 +179,16 @@ exports.addFormUserV2 = async (req,res,next)=>{
         const {fcode} = req.params;
         const form = await Form.findOne({code: fcode}).select("_id");
 
+        //set formuser isDeleted to false
+        const recoverFDepartments = req.recoverDepartments;
+        console.log(recoverFDepartments);
+        await FormUser.updateMany({
+            department_form_id: recoverFDepartments
+        },
+        {
+            isDeleted: false
+        })
+
         //set formuser isDeleted to true
         const deleteDepartmentsCode = req.deleteDepartments;
         const deleteDepartments = await Department.find({

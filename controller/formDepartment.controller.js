@@ -172,7 +172,7 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
             formDepartment.isDeleted = true;
             await formDepartment.save();
         }
-        
+        let recoverDepartments = [];
         for (let i in dcodes){
             const department = await Department.findOne({
                 department_code: dcodes[i]
@@ -191,13 +191,18 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
                 await formDepartment.save();
             }
             else{
-                formDepartment.isDeleted = formDepartment.isDeleted === true? false : formDepartment.isDeleted;
-                await formDepartment.save();
+                if(formDepartment.isDeleted){
+                    formDepartment.isDeleted = false;
+                    recoverDepartments.push(formDepartment._id)
+                    await formDepartment.save();
+                }
             }
             
         }
         req.deleteDepartments = deleteDepartments;
+        req.recoverDepartments = recoverDepartments;
         next();
+        
     } catch (error) {
         next(error);
     }
