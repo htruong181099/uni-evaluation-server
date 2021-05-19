@@ -87,8 +87,8 @@ module.exports = function(app){
         formDepartmentController.getFormDepartments
     )
     app.post("/admin/form/:fcode/addFormDepartments",
-        formDepartmentController.addFormDepartments,
-        formUserController.addFormUser
+        formDepartmentController.addFormDepartmentsV2,
+        formUserController.addFormUserV2
     )
 
     //Form User

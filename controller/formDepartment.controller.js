@@ -7,9 +7,16 @@ const Department = require("../model/department.model");
 
 exports.validate = (method)=>{
     switch(method){
-        case '': {
+        case 'addFormDepartment': {
             return [
-                
+                param("fcode","").exists().isString(),
+                body("dcode").exists().isString(),
+            ]
+        }
+        case 'addFormDepartments': {
+            return [
+                param("fcode","").exists().isString(),
+                body("dcodes").exists().isArray(),
             ]
         }
     }
@@ -78,8 +85,6 @@ exports.addFormDepartments = async (req,res,next)=>{
                 await formDepartment.save(async (err)=>{
                     const children = await Department.find({parent: department._id}).select("_id");
                     for(let index in children){
-                        // console.log(children[index]._id);
-    
                         const childDepartment = await Department.findById(children[index]._id).select("_id");
                         if(!childDepartment){
                             return res.status(404).json({
@@ -126,6 +131,69 @@ exports.getFormDepartments = async (req,res,next)=>{
             message: "Success",
             formDepartments
         })
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.addFormDepartmentsV2 = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const {dcodes} = req.body;
+        const form = await Form.findOne({code: fcode}).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+        
+        const existedDepartment = await FormDepartment.find({
+            form_id: form._id,
+            isDeleted: false
+        })
+        .populate("department_id", "department_code")
+        .select("_id");
+
+        const deleteDepartments = existedDepartment.map(e => e.department_id.department_code).filter(e=>!dcodes.includes(e));
+
+        for(let i in deleteDepartments){
+            const dep = await Department.findOne({
+                department_code: deleteDepartments[i]
+            }).select("_id")
+            const formDepartment = await FormDepartment.findOne({
+                form_id: form._id,
+                department_id: dep._id
+            });
+            formDepartment.isDeleted = true;
+            await formDepartment.save();
+        }
+        
+        for (let i in dcodes){
+            const department = await Department.findOne({
+                code: dcodes[i]
+            }).select("_id manager")
+            let formDepartment = await FormDepartment.findOne({
+                form_id: form._id,
+                department_id: department._id
+            });
+            if(!formDepartment){
+                formDepartment = new FormStandard({
+                    form_id: form._id,
+                    department_id: department._id,
+                    head: department.manager,
+                    level: 2
+                })
+                await formStandard.save();
+            }
+            else{
+                formDepartment.isDeleted = formDepartment.isDeleted === true? false : formStandard.isDeleted;
+                await formStandard.save();
+            }
+            
+        }
+        req.deleteDepartments = deleteDepartments;
+        next();
     } catch (error) {
         next(error);
     }

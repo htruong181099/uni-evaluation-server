@@ -273,12 +273,12 @@ exports.getEvaFormbyID= async (req,res,next)=>{
                 isDeleted: false
             }).populate("criteria_id","code name type description")
             .sort({"criteria_order": 1})
-            .select("criteria_id criteria_order point").lean();
+            .select("criteria_id criteria_order point -_id").lean();
             for(let j in formCriteria){
                 const options = await CriteriaOption.find({
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
-                }).select("name max_point description")
+                }).select("name max_point description -_id")
                 .sort({"max_point" : -1})
                 formCriteria[j].options = options;
             }
