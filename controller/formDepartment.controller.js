@@ -124,9 +124,13 @@ exports.getFormDepartments = async (req,res,next)=>{
                 message: "Form not found"
             });
         }
-        const formDepartments = await FormDepartment.find({form_id: form._id})
-            .populate("department_id","department_code name").select("-__v -isDeleted");
-        res.status(200).json({
+        const formDepartments = await FormDepartment.find({
+            form_id: form._id,
+            isDeleted: false
+        }).populate("department_id","department_code name")
+        .select("-__v -isDeleted");
+        
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             formDepartments
@@ -171,24 +175,24 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
         
         for (let i in dcodes){
             const department = await Department.findOne({
-                code: dcodes[i]
+                department_code: dcodes[i]
             }).select("_id manager")
             let formDepartment = await FormDepartment.findOne({
                 form_id: form._id,
                 department_id: department._id
             });
             if(!formDepartment){
-                formDepartment = new FormStandard({
+                formDepartment = new FormDepartment({
                     form_id: form._id,
                     department_id: department._id,
                     head: department.manager,
                     level: 2
                 })
-                await formStandard.save();
+                await formDepartment.save();
             }
             else{
-                formDepartment.isDeleted = formDepartment.isDeleted === true? false : formStandard.isDeleted;
-                await formStandard.save();
+                formDepartment.isDeleted = formDepartment.isDeleted === true? false : formDepartment.isDeleted;
+                await formDepartment.save();
             }
             
         }

@@ -213,7 +213,7 @@ exports.addFormUserV2 = async (req,res,next)=>{
                     if(!await FormUser.findOne({
                         form_id: form._id,
                         user_id: users[x]._id
-                    }.select("_id"))){
+                    }).select("_id")){
                         const formUser = new FormUser({
                             user_id: users[x]._id,
                             department_form_id: formdepartments[i]._id,
