@@ -31,4 +31,13 @@ module.exports = function(app){
     app.get("/user/review/:rcode/head",
         userController.checkHead
     )
+
+    app.post("/user/submitForm",
+        (req,res,next)=>{
+            console.log(req.body);
+            return res.status(200).json({
+                body: req.body
+            })
+        }
+    )
 }
