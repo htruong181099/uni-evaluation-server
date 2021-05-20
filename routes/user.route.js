@@ -27,4 +27,8 @@ module.exports = function(app){
         getValidationResult,
         userController.changePassword
     )
+
+    app.get("/user/review/:rcode/head",
+        userController.checkHead
+    )
 }

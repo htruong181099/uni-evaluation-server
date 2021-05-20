@@ -3,6 +3,9 @@ const User = db.user;
 
 const {body, param} = require("express-validator");
 const bcrypt = require("bcrypt");
+const FormDepartment = require("../model/formDepartment.model");
+const EvaluationReview = require("../model/evaluationReview.model");
+const Form = require("../model/form.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -99,6 +102,49 @@ exports.changePassword = async (req,res,next)=>{
             statusCode: 200,
             message: "Change password successfully"
         })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.checkHead = async (req,res,next)=>{
+    try {
+        const id = req.userId;
+        const {rcode} = req.params;
+
+        const review = await EvaluationReview.findOne({
+            code: rcode,
+            isDeleted: false
+        }).select("_id");
+
+        const forms = await Form.find({
+            review: review._id,
+            isDeleted: false
+        }).select("_id");
+
+        const formDepartment = await FormDepartment.find({
+            form_id: forms.map(e=>e._id),
+            head: id,
+            isDeleted: false
+        }).select("-__v -isDeleted -head")
+        .populate({
+            path: "form_id",
+            select: "code name type",
+            populate: {
+                path: "type",
+                select: "name -_id"
+            }
+        })
+        .populate("department_id", "department_code name")
+        ;
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            formDepartment
+        })
+
 
     } catch (error) {
         next(error);

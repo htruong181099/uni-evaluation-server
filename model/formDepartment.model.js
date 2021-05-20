@@ -15,7 +15,7 @@ const FormDepartment = mongoose.model(
         },
         head: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "FormUser",
+            ref: "User",
             required: true
         },
         level: {

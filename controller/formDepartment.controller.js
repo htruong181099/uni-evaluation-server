@@ -1,9 +1,9 @@
 const db = require("../model");
 const Form = db.form;
 const FormDepartment = db.formDepartment;
+const Department = db.department;
 
 const {body, param, query, validationResult} = require("express-validator");
-const Department = require("../model/department.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -185,7 +185,7 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
                 formDepartment = new FormDepartment({
                     form_id: form._id,
                     department_id: department._id,
-                    head: department.manager,
+                    head: department.manager,                    
                     level: 2
                 })
                 await formDepartment.save();
