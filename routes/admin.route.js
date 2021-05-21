@@ -5,7 +5,6 @@ const DepartmentRouter = require("./admin/department.route");
 
 //controller
 const adminController = require('../controller/admin.controller');
-const criteriaOptionController = require("../controller/criteriaOption.controller");
 const reviewController = require("../controller/evaluationReview.controller");
 const formTypeController = require("../controller/formType.controller");
 const formController = require("../controller/form.controller");
@@ -36,7 +35,15 @@ module.exports = function(app){
         adminController.getUsers
     )
     app.get("/admin/user/:id",
+        adminController.validate('getUser'),
+        getValidationResult,
         adminController.getUser
+    )
+
+    app.post("/admin/user/add",
+        adminController.validate('addUser'),
+        getValidationResult,
+        adminController.addUser
     )
 
     //router
