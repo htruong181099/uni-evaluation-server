@@ -110,9 +110,11 @@ exports.getDepartment = async (req,res,next)=>{
 
 exports.getDepartmentUser = async (req,res,next)=>{
     try{
-        const {id} = req.params;
-        const department = await Department.findById(id)
-                    .select("_id");
+        const {code} = req.params;
+        const department = await Department.findOne({
+            department_code: code
+        })
+        .select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,

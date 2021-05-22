@@ -15,7 +15,7 @@ module.exports = (app) =>{
     app.get("/admin/department/:id",
         departmentController.getDepartment
     )
-    app.get("/admin/department/:id/user",
+    app.get("/admin/department/:code/user",
         departmentController.getDepartmentUser
     )
     app.get("/admin/department/:code/children",
