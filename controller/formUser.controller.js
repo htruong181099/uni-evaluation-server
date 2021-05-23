@@ -311,11 +311,14 @@ exports.getFormUserIfHead = async (req,res,next)=>{
                 form_user: formUser._id,
                 form_id: form._id
             }).select("_id")
-            const evaluateForm = await EvaluateForm.findOne({
-                userForm: userForm._id
-            }).select("_id status")
+            
             formUser.userForm = userForm;
-            formUser.userForm.evaluateForm = evaluateForm;
+            if(userForm){
+                const evaluateForm = await EvaluateForm.findOne({
+                    userForm: userForm._id
+                }).select("_id status");
+                formUser.userForm.evaluateForm = evaluateForm;
+            }
             result.push(formUser)
         }
 
