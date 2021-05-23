@@ -77,6 +77,17 @@ exports.getUserFormV2 = async (req,res,next)=>{
                 message: "UserForm not found"
             })
         }
+        
+        const user = await FormUser.findOne({
+            user_id
+        }).select("_id")
+
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormUser not found"
+            })
+        }
 
         let evaluateForm = await EvaluateForm.findOne({
             userForm: userForm._id,
@@ -85,7 +96,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
         if(!evaluateForm){
             evaluateForm = new EvaluateForm({
                 userForm: userForm._id,
-                user: user_id,
+                user: user._id,
                 status: 0
             })
             evaluateForm.save()

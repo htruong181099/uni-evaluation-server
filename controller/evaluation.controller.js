@@ -100,7 +100,7 @@ exports.saveEvaluation = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
         const {body, level} = req.body;
-
+        console.log(level);
         const user_id = req.userId;
         const user = await FormUser.findOne({
             user_id
@@ -126,7 +126,6 @@ exports.saveEvaluation = async (req,res,next)=>{
             user: user._id,
             userForm: userForm._id
         }).select("_id status");
-        
         if(!evaluateForm){
             return res.status(404).json({
                 statusCode: 404,
