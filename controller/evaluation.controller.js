@@ -123,7 +123,7 @@ exports.saveEvaluation = async (req,res,next)=>{
         }
 
         const evaluateForm = await EvaluateForm.findOne({
-            user: user,
+            user: user._id,
             userForm: userForm._id
         }).select("_id status");
         
