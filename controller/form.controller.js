@@ -44,7 +44,7 @@ exports.validate = (method)=>{
         }
         case 'getEvaFormv2': {
             return [
-                param("ufcode","Invalid FormCode").exists().isMongoId()
+                param("ufid","Invalid FormCode").exists().isMongoId()
             ]
         }
         case 'getEvaFormbyID': {
