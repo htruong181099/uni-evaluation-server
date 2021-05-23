@@ -9,7 +9,7 @@ const EvaluateCriteria = mongoose.model(
             ref: "EvaluateForm",
             required: true
         },
-        form_crtieria: {
+        form_criteria: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "FormCriteria",
             required: true

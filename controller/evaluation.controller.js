@@ -5,6 +5,7 @@ const FormCriteria = require("../model/formCriteria.model");
 const UserForm = require("../model/userForm.model");
 const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
+const Criteria = db.criteria;
 
 //complete
 exports.submitEvaluation = async (req,res,next)=>{
@@ -99,8 +100,7 @@ exports.submitEvaluation = async (req,res,next)=>{
 exports.saveEvaluation = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
-        const {body, level} = req.body;
-        console.log(level);
+        const {sent, level} = req.body;
         const user_id = req.userId;
         const user = await FormUser.findOne({
             user_id
@@ -139,33 +139,35 @@ exports.saveEvaluation = async (req,res,next)=>{
                 message: "Form is completed. Cannot submit"
             })
         }
-
+        const body = sent;
         for(let i in body){
             const standard = body[i];
             const criterion = standard.list;
             for(let j in criterion){
                 const criteria = await Criteria.findOne({
-                    code: crtierion[j].name,
+                    code: criterion[j].name,
                     isDeleted: false
                 }).select("_id")
                 const formCriteria = await FormCriteria.findOne({
                     criteria_id: criteria._id,
                     isDeleted: false
                 })
-                const evaluateCriteria = await EvaluateCriteria.findOne({
+                let evaluateCriteria = await EvaluateCriteria.findOne({
                     evaluateForm: evaluateForm._id,
                     form_criteria: formCriteria._id,
                     level
                 })
+        
                 if(!evaluateCriteria){
                     evaluateCriteria = new EvaluateCriteria({
                         evaluateForm: evaluateForm._id,
                         form_criteria: formCriteria._id,
-                        point: crtierion[j].point,
+                        point: criterion[j].value?criterion[j].value:0,
                         level
                     })
                 }
-                evaluation.point = crtierion[j].point;
+                evaluateCriteria.point = criterion[j].value?criterion[j].value:0;
+                console.log(evaluateCriteria);
                 await evaluateCriteria.save();
             }
         }
