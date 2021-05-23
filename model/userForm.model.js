@@ -14,16 +14,6 @@ const UserForm = mongoose.model(
             ref: "Form",
             required: true
         },
-        status: {
-            type: Number,
-            required: true,
-            enum: [
-                -1, // not start yet
-                0, // ongoing
-                1 // completed
-            ],
-            default: -1
-        },
         isDeleted: {
             type: Boolean,
             default: false

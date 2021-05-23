@@ -1,4 +1,5 @@
 const db = require("../model");
+const EvaluateForm = require("../model/evaluateForm.model");
 const UserForm = require("../model/userForm.model");
 const Department = db.department;
 const Form = db.form;
@@ -309,8 +310,12 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             const userForm = await UserForm.findOne({
                 form_user: formUser._id,
                 form_id: form._id
+            }).select("_id")
+            const evaluateForm = await EvaluateForm.findOne({
+                userForm: userForm._id
             }).select("_id status")
-            formUser.userForm =  userForm;
+            formUser.userForm = userForm;
+            formUser.userForm.evaluateForm = evaluateForm;
             result.push(formUser)
         }
 

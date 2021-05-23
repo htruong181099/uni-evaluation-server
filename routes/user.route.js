@@ -1,5 +1,5 @@
 //controller
-const {userController, formUserController} = require("../controller/");
+const {userController, formUserController, evaluationController} = require("../controller/");
 
 //middleware
 const jwtMiddleware = require("../middleware/jwt.middleware");
@@ -38,12 +38,7 @@ module.exports = function(app){
     )
 
 
-    app.post("/user/:fuser/:fcode/submitForm",
-        (req,res,next)=>{
-            console.log(req.body);
-            return res.status(200).json({
-                body: req.body
-            })
-        }
+    app.post("/user/:ufid/submitForm",
+        evaluationController.submitEvaluation
     )
 }

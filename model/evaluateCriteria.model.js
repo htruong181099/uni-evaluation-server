@@ -1,16 +1,12 @@
 const mongoose = require('mongoose');
 
 //user evaluate criteria
-const Evaluation = mongoose.model(
-    "Evaluation",
+const EvaluateCriteria = mongoose.model(
+    "EvaluateCriteria",
     new mongoose.Schema({
-        user: {
+        evaluateForm: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "FormUser"
-        },
-        userForm:{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "UserForm",
+            ref: "EvaluateForm",
             required: true
         },
         form_crtieria: {
@@ -34,4 +30,4 @@ const Evaluation = mongoose.model(
     })
 )
 
-module.exports = Evaluation;
+module.exports = EvaluateCriteria;

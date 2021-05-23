@@ -26,7 +26,8 @@ db.formEvaluation = require("./formEvaluation.model");
 db.formStandard = require("./formStandard.model");
 db.formCriteria = require("./formCriteria.model");
 db.criteriaOption = require("./criteriaOption.model");
-db.evaluation = require("./evaluation.model");
+db.evaluateCriteria = require("./evaluateCriteria.model");
+db.evaluateForm = require("./evaluateForm.model");
 db.userForm = require("./userForm.model");
 
 
