@@ -2,6 +2,7 @@ const jwtMiddleware = require("../middleware/jwt.middleware");
 
 const reviewController = require("../controller/evaluationReview.controller");
 const formController = require("../controller/form.controller");
+const {userFormController} = require("../controller/");
 
 const {getValidationResult} = require("../middleware/validate.middleware");
 
@@ -23,6 +24,7 @@ module.exports = function(app){
     app.get("/form/:fcode/", 
         formController.validate("getEvaForm"),
         getValidationResult,
+        userFormController.getUserForm,
         formController.getEvaForm
     );
 

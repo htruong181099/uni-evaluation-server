@@ -14,5 +14,7 @@ controller.formTypeController = require("./formType.controller");
 controller.formUserController = require("./formUser.controller");
 controller.standardController = require("./standard.controller");
 controller.userController = require("./user.controller");
+controller.userFormController = require("./userForm.controller");
+controller.evaluationController = require("./evaluation.controller");
 
 module.exports = controller;

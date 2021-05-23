@@ -193,21 +193,21 @@ exports.getUserForms = async (req,res,next)=>{
 //get evaluation form using form code
 exports.getEvaForm = async (req,res,next)=>{
     try {
-        const {fcode} = req.params;
+        // const {fcode} = req.params;
 
-        const form = await Form.findOne({
-            code: fcode,
-            isDeleted: false
-        }).select("_id");
-        if(!form){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Form not found"
-            })
-        }
-
+        // const form = await Form.findOne({
+        //     code: fcode,
+        //     isDeleted: false
+        // }).select("_id");
+        // if(!form){
+        //     return res.status(404).json({
+        //         statusCode: 404,
+        //         message: "Form not found"
+        //     })
+        // }
+        const form_id = req.form_id;
         const formStandards = await FormStandard.find({
-            form_id: form._id,
+            form_id: form_id,
             isDeleted: false
         }).populate("standard_id", "code name description")
         .sort({"standard_order" : 1})

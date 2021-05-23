@@ -1,28 +1,27 @@
 const mongoose = require('mongoose');
 
-//user's form model
-const UserForm = mongoose.model(
-    "UserForm",
+//user evaluate criteria
+const Evaluation = mongoose.model(
+    "Evaluation",
     new mongoose.Schema({
-        form_user: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "FormUser",
+            ref: "FormUser"
+        },
+        userForm:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "UserForm",
             required: true
         },
-        form_id:{
+        form_crtieria: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Form",
+            ref: "FormCriteria",
             required: true
         },
-        status: {
+        point: {
             type: Number,
             required: true,
-            enum: [
-                -1, // not start yet
-                0, // ongoing
-                1 // completed
-            ],
-            default: -1
+            default: 0
         },
         isDeleted: {
             type: Boolean,
@@ -31,4 +30,4 @@ const UserForm = mongoose.model(
     })
 )
 
-module.exports = UserForm;
+module.exports = Evaluation;
