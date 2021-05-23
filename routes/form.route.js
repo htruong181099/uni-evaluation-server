@@ -28,6 +28,13 @@ module.exports = function(app){
         formController.getEvaForm
     );
 
+    app.get("/form/:ufid/v2", 
+        formController.validate("getEvaFormv2"),
+        getValidationResult,
+        userFormController.getUserFormV2,
+        formController.getEvaFormV2
+    );
+
     app.get("/form/v2/:fid/", 
         formController.validate("getEvaFormbyID"),
         getValidationResult,

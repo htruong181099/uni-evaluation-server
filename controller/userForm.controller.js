@@ -60,3 +60,32 @@ exports.getUserForm = async (req,res,next)=>{
         next(error);
     }
 }
+
+//V2
+exports.getUserFormV2 = async (req,res,next)=>{
+    try {
+        const {ufid} = req.params;
+        const user_id = req.userId;
+
+        const userForm = await UserForm.findOne({
+            _id: ufid
+        });
+        if(!userForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
+
+
+
+        req.form_id = userForm.form_id;
+        req.form_user = userForm.form_user;
+        req.user_form = userForm._id;
+
+        return next();
+
+    } catch (error) {
+        next(error);
+    }
+}
