@@ -77,8 +77,6 @@ exports.getUserFormV2 = async (req,res,next)=>{
             })
         }
 
-
-
         req.form_id = userForm.form_id;
         req.form_user = userForm.form_user;
         req.user_form = userForm._id;
