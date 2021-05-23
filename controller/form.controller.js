@@ -5,6 +5,7 @@ const FormCriteria = db.formCriteria;
 const EvaluationReview = db.evaluationReview;
 const FormType = db.formType;
 const CriteriaOption = db.criteriaOption;
+const UserForm = db.userForm;
 
 const {body, param, query, validationResult} = require("express-validator");
 const FormUser = require("../model/formUser.model");
@@ -158,7 +159,7 @@ exports.getUserForms = async (req,res,next)=>{
             isDeleted: false
         }).select("_id");
 
-        const formUser = await FormUser.find({
+        const formUsers = await FormUser.find({
             form_id: forms.map(form=>form._id),
             user_id: req.userId,
             isDeleted: false
@@ -178,11 +179,31 @@ exports.getUserForms = async (req,res,next)=>{
                 select: "department_code name -_id"
             }
         })
-        .select("form_id department_form_id -_id");
+        .select("form_id department_form_id -_id")
+        .lean();
+
+        for(let i in formUsers){
+            const formUser = formUsers[i];
+            let userForm = await UserForm.findOne({
+                form_user: formUser._id,
+                form_id: form._id
+            });
+            if(!userForm){
+                userForm = new UserForm({
+                    form_user: formUser._id,
+                    form_id: formUser.form_id._id
+                })
+                await userForm.save();
+            }
+            formUser.userForm = userForm;
+        }
+
+        
+
         return res.status(200).json({
             statusCode: 200,
             message: "Success",
-            formUser
+            formUsers
         })
 
     } catch (error) {

@@ -38,7 +38,7 @@ module.exports = function(app){
     )
 
 
-    app.post("/user/submitForm",
+    app.post("/user/:fuser/:fcode/submitForm",
         (req,res,next)=>{
             console.log(req.body);
             return res.status(200).json({

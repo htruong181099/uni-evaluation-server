@@ -23,6 +23,10 @@ const Evaluation = mongoose.model(
             required: true,
             default: 0
         },
+        level: {
+            type: Number,
+            required: true,
+        },
         isDeleted: {
             type: Boolean,
             default: false
