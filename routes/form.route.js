@@ -2,7 +2,7 @@ const jwtMiddleware = require("../middleware/jwt.middleware");
 
 const reviewController = require("../controller/evaluationReview.controller");
 const formController = require("../controller/form.controller");
-const {userFormController} = require("../controller/");
+const {userFormController, evaluationController} = require("../controller/");
 
 const {getValidationResult} = require("../middleware/validate.middleware");
 
@@ -28,6 +28,12 @@ module.exports = function(app){
         formController.getEvaForm
     );
 
+    app.get("/form/v2/:fid/", 
+        formController.validate("getEvaFormbyID"),
+        getValidationResult,
+        formController.getEvaFormbyID
+    );
+
     app.get("/form/:ufid/v2", 
         formController.validate("getEvaFormv2"),
         getValidationResult,
@@ -35,10 +41,12 @@ module.exports = function(app){
         formController.getEvaFormV2
     );
 
-    app.get("/form/v2/:fid/", 
-        formController.validate("getEvaFormbyID"),
-        getValidationResult,
-        formController.getEvaFormbyID
-    );
+    app.post("/form/:ufid/submitForm",
+        evaluationController.submitEvaluation
+    )
+
+    app.post("/form/:ufid/saveForm",
+        evaluationController.saveEvaluation
+    )
 
 }

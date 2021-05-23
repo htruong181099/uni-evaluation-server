@@ -1,4 +1,5 @@
 const db = require("../model");
+const EvaluateForm = require("../model/evaluateForm.model");
 const Form = require("../model/form.model");
 const FormCriteria = require("../model/formCriteria.model");
 const UserForm = require("../model/userForm.model");
@@ -10,7 +11,17 @@ exports.submitEvaluation = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
         const {body, level} = req.body;
+
         const user_id = req.userId;
+        const user = await FormUser.findOne({
+            user_id
+        }).select("_id");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
 
         const userForm = await UserForm.findById(ufid)
             .select("_id");
@@ -18,12 +29,28 @@ exports.submitEvaluation = async (req,res,next)=>{
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
-                message: "User Form not found"
+                message: "UserForm not found"
             })
         }
-        const user = await FormUser.findOne({
-            user_id
-        }).select("_id");
+
+        const evaluateForm = await EvaluateForm.findOne({
+            user: user,
+            userForm: userForm._id
+        }).select("_id status");
+        
+        if(!evaluateForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Evaluate Form not found"
+            })
+        }
+
+        if(evaluateForm.status === 1){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Form is completed. Cannot submit"
+            })
+        }
 
         for(let i in body){
             const standard = body[i];
@@ -38,24 +65,29 @@ exports.submitEvaluation = async (req,res,next)=>{
                     isDeleted: false
                 })
                 const evaluateCriteria = await EvaluateCriteria.findOne({
-                    userForm: userForm._id,
-                    user: user._id,
-                    form_crtieria: formCriteria._id,
+                    evaluateForm: evaluateForm._id,
+                    form_criteria: formCriteria._id,
                     level
                 })
                 if(!evaluateCriteria){
                     evaluateCriteria = new EvaluateCriteria({
-                        userForm: userForm._id,
-                        user: user._id,
-                        form_crtieria: formCriteria._id,
+                        evaluateForm: evaluateForm._id,
+                        form_criteria: formCriteria._id,
                         point: crtierion[j].point,
                         level
                     })
                 }
-                evaluateCriteria.point = crtierion[j].point;
+                evaluation.point = crtierion[j].point;
                 await evaluateCriteria.save();
             }
         }
+        evaluateForm.status = 1;
+        await evaluateForm.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Save evaluation successfully"
+        })
     } catch (error) {
         next(error);
     }
@@ -64,25 +96,50 @@ exports.submitEvaluation = async (req,res,next)=>{
 
 
 //save Evaluation
-exports.submitEvaluation = async (req,res,next)=>{
+exports.saveEvaluation = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
         const {body, level} = req.body;
+
         const user_id = req.userId;
+        const user = await FormUser.findOne({
+            user_id
+        }).select("_id");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
 
         const userForm = await UserForm.findById(ufid)
-            .select("_id status");
+            .select("_id");
         
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
-                message: "User Form not found"
+                message: "UserForm not found"
             })
         }
 
-        const user = await FormUser.findOne({
-            user_id
-        }).select("_id");
+        const evaluateForm = await EvaluateForm.findOne({
+            user: user,
+            userForm: userForm._id
+        }).select("_id status");
+        
+        if(!evaluateForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Evaluate Form not found"
+            })
+        }
+
+        if(evaluateForm.status === 1){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Form is completed. Cannot submit"
+            })
+        }
 
         for(let i in body){
             const standard = body[i];
@@ -96,25 +153,26 @@ exports.submitEvaluation = async (req,res,next)=>{
                     criteria_id: criteria._id,
                     isDeleted: false
                 })
-                const evaluateCriteria = await Evaluation.findOne({
-                    userForm: userForm._id,
-                    user: user._id,
-                    form_crtieria: formCriteria._id,
+                const evaluateCriteria = await EvaluateCriteria.findOne({
+                    evaluateForm: evaluateForm._id,
+                    form_criteria: formCriteria._id,
                     level
                 })
                 if(!evaluateCriteria){
-                    evaluateCriteria = new Evaluation({
-                        userForm: userForm._id,
-                        user: user._id,
-                        form_crtieria: formCriteria._id,
+                    evaluateCriteria = new EvaluateCriteria({
+                        evaluateForm: evaluateForm._id,
+                        form_criteria: formCriteria._id,
                         point: crtierion[j].point,
                         level
                     })
                 }
                 evaluation.point = crtierion[j].point;
-                await evaluation.save();
+                await evaluateCriteria.save();
             }
         }
+        evaluateForm.status = 0;
+        await evaluateForm.save();
+
         return res.status(200).json({
             statusCode: 200,
             message: "Save evaluation successfully"
@@ -122,5 +180,4 @@ exports.submitEvaluation = async (req,res,next)=>{
     } catch (error) {
         next(error);
     }
-
 }
