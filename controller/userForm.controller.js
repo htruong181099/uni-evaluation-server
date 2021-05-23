@@ -1,6 +1,7 @@
 const db = require("../model");
 const FormUser = db.formUser;
-const Evaluation = db.evaluation;
+// const Evaluation = db.evaluation;
+const EvaluateForm = db.evaluateForm;
 const UserForm = db.userForm;
 const Form = db.form;
 
@@ -76,6 +77,20 @@ exports.getUserFormV2 = async (req,res,next)=>{
                 message: "UserForm not found"
             })
         }
+
+        let evaluateForm = await EvaluateForm.findOne({
+            userForm: userForm._id,
+            user: user_id
+        })
+        if(!evaluateForm){
+            evaluateForm = new EvaluateForm({
+                userForm: userForm._id,
+                user: user_id,
+                status: 0
+            })
+            evaluateForm.save()
+        }
+        
 
         req.form_id = userForm.form_id;
         req.form_user = userForm.form_user;
