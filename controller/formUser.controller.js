@@ -300,7 +300,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
                 match: {
                     parent: {$ne: null}
                 },
-                select: "department_code name -_id"
+                select: "department_code name _id"
             }
         })
         .lean();
