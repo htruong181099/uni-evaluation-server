@@ -2,6 +2,7 @@ const db = require("../model");
 const FormUser = db.formUser;
 const Evaluation = db.evaluation;
 const UserForm = db.userForm;
+const Form = db.form;
 
 exports.getUserForm = async (req,res,next)=>{
     try {
