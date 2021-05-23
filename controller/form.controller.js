@@ -186,7 +186,7 @@ exports.getUserForms = async (req,res,next)=>{
             const formUser = formUsers[i];
             let userForm = await UserForm.findOne({
                 form_user: formUser._id,
-                form_id: form._id
+                form_id: formUser.form_id._id
             });
             if(!userForm){
                 userForm = new UserForm({
