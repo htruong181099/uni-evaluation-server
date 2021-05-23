@@ -42,9 +42,11 @@ exports.getUserForm = async (req,res,next)=>{
             })
 
             userForm.save((err,doc)=>{
-                req.userForm = doc;
-                return next();
+                req.userForm = doc._id;
             })
+        }
+        else{
+            req.userForm = userForm._id;
         }
         // return res.status(200).json({
         //     statusCode: 200,
@@ -52,7 +54,6 @@ exports.getUserForm = async (req,res,next)=>{
         //     userForm: userForm._id
         // })
         req.form_id = form._id;
-        req.userForm = userForm._id;
         return next();
 
     } catch (error) {
