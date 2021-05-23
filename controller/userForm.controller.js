@@ -31,7 +31,7 @@ exports.getUserForm = async (req,res,next)=>{
             })
         }
 
-        const userForm = await UserForm.findOne({
+        let userForm = await UserForm.findOne({
             form_user: formUser._id,
             form_id: form._id
         });
