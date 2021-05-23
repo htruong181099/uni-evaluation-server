@@ -66,7 +66,6 @@ UserSchema.methods.comparePassword = function(candidatePassword, cb){
     if(!candidatePassword){
         cb(null, false);
     }
-    console.log(this);
     bcrypt.compare(candidatePassword, this.password, (err,isMatch)=>{
         if(err){
             return cb(err);
