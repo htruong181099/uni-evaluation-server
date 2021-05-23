@@ -1,5 +1,5 @@
 //controller
-const {userController} = require("../controller/");
+const {userController, formUserController} = require("../controller/");
 
 //middleware
 const jwtMiddleware = require("../middleware/jwt.middleware");
@@ -28,9 +28,15 @@ module.exports = function(app){
         userController.changePassword
     )
 
+    //get Head
     app.get("/user/review/:rcode/head",
         userController.checkHead
     )
+    //get formuser if head
+    app.get("/user/head/:fcode/:dcode/get",
+        formUserController.getFormUserIfHead
+    )
+
 
     app.post("/user/submitForm",
         (req,res,next)=>{

@@ -1,4 +1,5 @@
 const db = require("../model");
+const UserForm = require("../model/userForm.model");
 const Department = db.department;
 const Form = db.form;
 const FormDepartment = db.formDepartment;
@@ -240,6 +241,86 @@ exports.addFormUserV2 = async (req,res,next)=>{
             message: 'Add form departments and users successfully'
         })
         
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+//get FormUser if head
+exports.getFormUserIfHead = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const user_id = req.userId;
+
+        const form = await Form.findOne({
+            code: fcode
+        }).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const department = await Department.findOne({
+            department_code: dcode
+        }).select("_id");
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        const formDepartment = await FormDepartment.findOne({
+            form_id: form._id,
+            department_id: department._id,
+            head: user_id,
+            isDeleted: false
+        }).select("_id");
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form Department not found"
+            })
+        }
+
+        const formUsers = await FormUser.find({
+            department_form_id: formDepartment._id,
+            isDeleted: false
+        }).select("user_id")
+        
+        .populate({
+            path: "user_id",
+            select: "staff_id lastname firstname department",
+            populate: {
+                path: "department",
+                match: {
+                    parent: {$ne: null}
+                },
+                select: "department_code name -_id"
+            }
+        })
+        .lean();
+        let result = []
+        for(let i in formUsers){
+            const formUser = formUsers[i];
+            const userForm = await UserForm.findOne({
+                form_user: formUser._id,
+                form_id: form._id
+            }).select("_id status")
+            formUser.userForm =  userForm;
+            result.push(formUser)
+        }
+
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            formUsers: result
+        })
+
     } catch (error) {
         next(error);
     }
