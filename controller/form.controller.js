@@ -179,7 +179,7 @@ exports.getUserForms = async (req,res,next)=>{
                 select: "department_code name -_id"
             }
         })
-        .select("form_id department_form_id -_id")
+        .select("form_id department_form_id")
         .lean();
 
         for(let i in formUsers){
