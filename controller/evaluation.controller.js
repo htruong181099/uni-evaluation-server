@@ -180,3 +180,66 @@ exports.saveEvaluation = async (req,res,next)=>{
         next(error);
     }
 }
+
+
+exports.getEvaluation = async (req,res,next)=>{
+    try {
+        const {ufid} = req.params;
+        const user_id = req.userId;
+
+        const userForm = await UserForm.findById(ufid)
+            .select("_id form_id");
+        
+        if(!userForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
+
+        const formUser = await FormUser.findOne({
+            user_id,
+            form_id: userForm.form_id
+        }).select("_id");
+
+        if(!formUser){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormUser not found"
+            })
+        }
+
+        const evaluateForms = await EvaluateForm.find({
+            // user: formUser._id,
+            userForm: userForm._id,
+            status: [0,1]
+        }).select("_id status").lean();
+
+        for(let i in evaluateForms){
+            const evaluateForm = evaluateForms[i];
+            const evaluateCriteria = await EvaluateCriteria.find({
+                evaluateForm: evaluateForm._id
+            }).select("form_criteria point level -_id")
+            .populate({
+                path: "form_criteria",
+                select: "criteria_id criteria_order -_id",
+                sort: {"criteria_order": 1},
+                populate: {
+                    path: "criteria_id",
+                    select: "code -_id"
+                }
+            })
+            evaluateForm.evaluateCriteria = evaluateCriteria;
+        }
+        
+
+        return res.status(200).json({
+            statusCode: 200,
+            evaluateForms
+        })
+
+
+    } catch (error) {
+        next(error);
+    }
+}

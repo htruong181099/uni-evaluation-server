@@ -48,5 +48,8 @@ module.exports = function(app){
     app.post("/form/:ufid/saveForm",
         evaluationController.saveEvaluation
     )
+    app.get("/form/:ufid/evaluation/get",
+        evaluationController.getEvaluation
+    )
 
 }
