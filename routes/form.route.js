@@ -21,17 +21,11 @@ module.exports = function(app){
         formController.getUserForms
     );
 
-    app.get("/form/:fcode/", 
+    app.get("/form/:fcode/v1", 
         formController.validate("getEvaForm"),
         getValidationResult,
         userFormController.getUserForm,
         formController.getEvaForm
-    );
-
-    app.get("/form/v2/:fid/", 
-        formController.validate("getEvaFormbyID"),
-        getValidationResult,
-        formController.getEvaFormbyID
     );
 
     app.get("/form/:ufid/v2", 
@@ -49,6 +43,8 @@ module.exports = function(app){
         evaluationController.saveEvaluation
     )
     app.get("/form/:ufid/evaluation/get",
+        formController.validate("getEvaluation"),
+        getValidationResult,
         evaluationController.getEvaluation
     )
 

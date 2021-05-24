@@ -42,7 +42,8 @@ exports.validate = (method)=>{
                 param("fcode","Invalid FormCode").exists().isString()
             ]
         }
-        case 'getEvaFormv2': {
+        case 'getEvaFormv2':
+        case 'getEvaluation': {
             return [
                 param("ufid","Invalid FormCode").exists().isMongoId()
             ]
@@ -118,7 +119,6 @@ exports.getForm = async (req,res,next)=>{
         next(error);
     }
 }
-
 
 exports.getFormfromFormTypeandReview = async (req,res,next)=>{
     try {
@@ -270,24 +270,12 @@ exports.getEvaForm = async (req,res,next)=>{
     }
 }
 
-//get evaluation form using form id
-exports.getEvaFormbyID= async (req,res,next)=>{
+//get evaluation form using form userformID
+exports.getEvaFormV2 = async (req,res,next)=>{
     try {
-        const {fid} = req.params;
-
-        const form = await Form.findOne({
-            _id: fid,
-            isDeleted: false
-        }).select("_id");
-        if(!form){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Form not found"
-            })
-        }
-
+        const form_id = req.form_id;
         const formStandards = await FormStandard.find({
-            form_id: form._id,
+            form_id: form_id,
             isDeleted: false
         }).populate("standard_id", "code name description")
         .sort({"standard_order" : 1})
@@ -299,13 +287,14 @@ exports.getEvaFormbyID= async (req,res,next)=>{
                 isDeleted: false
             }).populate("criteria_id","code name type description")
             .sort({"criteria_order": 1})
-            .select("criteria_id criteria_order point -_id").lean();
+            .select("criteria_id criteria_order point").lean();
             for(let j in formCriteria){
                 const options = await CriteriaOption.find({
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
-                }).select("name max_point description -_id")
+                })
                 .sort({"max_point" : -1})
+                .select("name max_point description")
                 formCriteria[j].options = options;
             }
             
@@ -323,10 +312,21 @@ exports.getEvaFormbyID= async (req,res,next)=>{
     }
 }
 
-//get evaluation form using form code
-exports.getEvaFormV2 = async (req,res,next)=>{
+//get evaluation form using form userformID via Admin
+exports.getEvaFormAdmin = async (req,res,next)=>{
     try {
-        const form_id = req.form_id;
+        const {ufid} = req.params;
+        
+        const userForm = await UserForm.findById(ufid);
+        if(!userForm){
+            return res.status.json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
+
+        const form_id = userForm.form_id;
+
         const formStandards = await FormStandard.find({
             form_id: form_id,
             isDeleted: false

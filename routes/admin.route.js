@@ -2,6 +2,7 @@
 const CriteriaRouter = require("./admin/criteria.route");
 const StandardRouter = require("./admin/standard.route");
 const DepartmentRouter = require("./admin/department.route");
+const UserFormRouter = require("./admin/userForm.route")
 
 //controller
 const adminController = require('../controller/admin.controller');
@@ -49,8 +50,8 @@ module.exports = function(app){
     //router
     DepartmentRouter(app);
     StandardRouter(app);
-    CriteriaRouter(app)
-
+    CriteriaRouter(app);
+    UserFormRouter(app);
 
     //evaluation review
     app.get("/admin/review",
@@ -109,6 +110,9 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/:dcode/removeFormUser",
         formUserController.removeFormUser
+    )
+    app.get("/admin/form/:fcode/:dcode/formUser/get",
+        formUserController.getFormUserAdmin
     )
 
     //formStandard
