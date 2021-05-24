@@ -97,7 +97,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
             evaluateForm = new EvaluateForm({
                 userForm: userForm._id,
                 user: user._id,
-                status: 0
+                status: -1
             })
             await evaluateForm.save()
         }
