@@ -48,4 +48,13 @@ module.exports = function(app){
         evaluationController.getEvaluation
     )
 
+    app.post("/form/:ufid/evaluation/test",
+        (req,res,next) => {
+            console.log(req.body)
+            return res.status(200).send({
+                body: req.body
+            })
+        }
+    )
+
 }
