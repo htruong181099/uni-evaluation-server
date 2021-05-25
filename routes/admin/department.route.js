@@ -21,4 +21,8 @@ module.exports = (app) =>{
     app.get("/admin/department/:code/children",
         departmentController.getChildDepartments
     )
+
+    app.get("/admin/department/parent/children/get",
+        departmentController.getParentsWithChildren
+    )
 }

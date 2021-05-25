@@ -181,3 +181,31 @@ exports.getChildDepartments = async (req,res,next)=>{
         next(error);
     }
 }
+
+exports.getParentsWithChildren = async (req,res,next)=>{
+    try {
+        const parents = await Department.find({
+            parent: null,
+            isDeleted: false
+        }).select("-__v -isDeleted").lean()
+        .populate("manager", "staff_id firstname lastname")
+        
+        for(let i in parents){
+            const parent = parents[i];
+            const children = await Department.find({
+                parent: parent._id,
+                isDeleted: false
+            }).select("-__v -isDeleted -parent -_id")
+            .populate("manager", "staff_id firstname lastname")
+            parent.children = children;
+        }
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            parents
+        })
+    } catch (error) {
+        next(error);
+    }
+}
