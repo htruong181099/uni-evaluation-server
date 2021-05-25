@@ -155,6 +155,7 @@ exports.getParentDepartments = async (req,res,next)=>{
             parent: null,
             isDeleted: false
         }).select("-__v -isDeleted")
+        .populate("manager", "staff_id firstname lastname")
         
         return res.status(200).json({
             statusCode: 200,
@@ -172,7 +173,9 @@ exports.getChildDepartments = async (req,res,next)=>{
         const parent = await Department.findOne({
             department_code: code,
             isDeleted: false
-        }).select("-__v -isDeleted");
+        })
+        .populate("manager", "staff_id firstname lastname")
+        .select("-__v -isDeleted");
 
         if(!parent){
             return res.status(404).json({
