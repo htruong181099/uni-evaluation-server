@@ -112,8 +112,10 @@ exports.getDepartmentUser = async (req,res,next)=>{
     try{
         const {code} = req.params;
         const department = await Department.findOne({
-            department_code: code
+            department_code: code,
+            // isDeleted: false
         })
+        .populate("manager", "firstname lastname staff_id")
         .select("_id");
         if(!department){
             return res.status(404).json({
@@ -121,8 +123,21 @@ exports.getDepartmentUser = async (req,res,next)=>{
                 message: "Department not found"
             })
         }
-        const user = await User.find({department: department._id})
-                    .select("-__v -password")
+        const user = await User.find({
+            department: department._id,
+            isDeleted: false
+        })
+        .sort({
+            firstname: 1
+        })
+        .select("staff_id firstname lastname email roles")
+        .populate({
+            path: "department",
+            match: {
+                parent : {$ne : null} 
+            },
+            select: "department_code name"
+        })
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
