@@ -211,3 +211,45 @@ exports.addUsertoDepartment = async (req,res,next)=>{
         next(error);
     }
 }
+
+// create new user to department
+exports.createNewUsertoDepartment = async (req,res,next)=>{
+    try {
+        const {dcode} = req.params;
+
+        const department = await Department.findOne({
+            department_code: dcode,
+            isDeleted: false
+        }).select("_id parent");
+
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        const {id, fname, lname, email} = req.body;
+
+        const user = new User({
+            staff_id: id,
+            firstname : fname,
+            lastname : lname,
+            email,
+            password: "password"
+        })
+
+    
+        user.department = user.department.parent ? [department.parent, department._id] : [department._id];
+
+        await user.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Successful"
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}

@@ -34,13 +34,21 @@ module.exports = function(app){
         userFormController.getUserFormV2,
         formController.getEvaFormV2
     );
-
+    //v1
     app.post("/form/:ufid/submitForm",
         evaluationController.submitEvaluation
     )
 
     app.post("/form/:ufid/saveForm",
         evaluationController.saveEvaluation
+    )
+    //v2
+    app.post("/form/:ufid/submitForm/v2",
+        evaluationController.submitEvaluationV2
+    )
+
+    app.post("/form/:ufid/saveForm/v2",
+        evaluationController.saveEvaluationV2
     )
     app.get("/form/:ufid/evaluation/get",
         formController.validate("getEvaluation"),

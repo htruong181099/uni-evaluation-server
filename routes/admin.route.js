@@ -54,6 +54,12 @@ module.exports = function(app){
         // getValidationResult,
         userController.addUsertoDepartment
     )
+    //create new user to department
+    app.post("/admin/department/:dcode/user/create",
+        // adminController.validate('addUser'),
+        // getValidationResult,
+        userController.createNewUsertoDepartment
+    )
 
     //router
     DepartmentRouter(app);
