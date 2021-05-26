@@ -291,7 +291,6 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             department_form_id: formDepartment._id,
             isDeleted: false
         }).select("user_id")
-        
         .populate({
             path: "user_id",
             select: "staff_id lastname firstname department",
@@ -311,16 +310,15 @@ exports.getFormUserIfHead = async (req,res,next)=>{
                 form_user: formUser._id,
                 form_id: form._id
             }).select("_id")
-            
-            formUser.evaluateForm = null;
             if(userForm){
                 const evaluateForm = await EvaluateForm.findOne({
                     userForm: userForm._id
                 }).select("_id status").lean();
                 formUser.evaluateForm = evaluateForm;
-                formUser.evaluateForm.userForm = userForm;
+                if(evaluateForm){
+                    formUser.evaluateForm.userForm = userForm;
+                }
             }
-            
             result.push(formUser)
         }
 
