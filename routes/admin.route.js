@@ -17,6 +17,7 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
+const { userController } = require("../controller");
 
 module.exports = function(app){
 
@@ -45,6 +46,13 @@ module.exports = function(app){
         adminController.validate('addUser'),
         getValidationResult,
         adminController.addUser
+    )
+
+    //add existed user to department
+    app.post("/admin/department/:dcode/user/add",
+        // adminController.validate('addUser'),
+        // getValidationResult,
+        userController.addUsertoDepartment
     )
 
     //router

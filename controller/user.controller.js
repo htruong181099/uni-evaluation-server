@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const FormDepartment = require("../model/formDepartment.model");
 const EvaluationReview = require("../model/evaluationReview.model");
 const Form = require("../model/form.model");
+const Department = require("../model/department.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -145,6 +146,66 @@ exports.checkHead = async (req,res,next)=>{
             formDepartment
         })
 
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+// add existed user to department
+exports.addUsertoDepartment = async (req,res,next)=>{
+    try {
+        const {dcode} = req.params;
+        const user_id = req.body;
+        const user = await User.findOne({
+            staff_id: user_id,
+            isDeleted: false
+        }).select("_id department");
+
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        const department = await Department.findOne({
+            department_code: dcode,
+            isDeleted: false
+        }).select("_id parent");
+
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        if(user.department.includes(department._id)){
+            return res.status(409).json({
+                statusCode: 409,
+                message: "User is already in Department"
+            })
+        }
+
+        if(department.parent){
+            if(user.department.includes(department.parent)){
+                user.department = [...user.department, department._id];
+            }
+            else{
+                user.department = [...user.department, department.parent, department._id];
+            }
+        }
+        else{
+            user.department = [...user.department, department._id];
+        }
+
+        await user.save();
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Successful"
+        })
 
     } catch (error) {
         next(error);
