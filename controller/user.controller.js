@@ -157,7 +157,7 @@ exports.checkHead = async (req,res,next)=>{
 exports.addUsertoDepartment = async (req,res,next)=>{
     try {
         const {dcode} = req.params;
-        const user_id = req.body;
+        const {user_id} = req.body;
         const user = await User.findOne({
             staff_id: user_id,
             isDeleted: false
