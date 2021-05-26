@@ -21,7 +21,6 @@ const EvaluateCriteria = mongoose.model(
         },
         level: {
             type: Number,
-            required: true,
         },
         isDeleted: {
             type: Boolean,

@@ -50,6 +50,12 @@ module.exports = function(app){
     app.post("/form/:ufid/saveForm/v2",
         evaluationController.saveEvaluationV2
     )
+    //v3
+    app.post("/form/:ufid/submitForm/v3",
+        evaluationController.submitEvaluationV3,
+        evaluationController.cloneEvaluateCriteria
+    )
+
     app.get("/form/:ufid/evaluation/get",
         formController.validate("getEvaluation"),
         getValidationResult,

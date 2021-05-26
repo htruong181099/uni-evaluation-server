@@ -2,6 +2,7 @@ const db = require("../model");
 const EvaluateForm = require("../model/evaluateForm.model");
 const Form = require("../model/form.model");
 const FormCriteria = require("../model/formCriteria.model");
+const FormDepartment = require("../model/formDepartment.model");
 const UserForm = require("../model/userForm.model");
 const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
@@ -460,6 +461,157 @@ exports.submitEvaluationV2 = async (req,res,next)=>{
     }
 }
 
+//version 3
+exports.submitEvaluationV3 = async (req,res,next)=>{
+    try {
+        
+        const {ufid} = req.params;
+        const {dataToSend, level} = req.body;
+        const user_id = req.userId;
+        const user = await FormUser.findOne({
+            user_id
+        }).select("_id");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
 
+        const userForm = await UserForm.findById(ufid)
+            .select("_id form_id");
+        
+        if(!userForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
 
+        const evaluateForm = await EvaluateForm.findOne({
+            user: user._id,
+            userForm: userForm._id
+        }).select("_id status");
+        if(!evaluateForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Evaluate Form not found"
+            })
+        }
 
+        if(evaluateForm.status === 1){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Form is completed. Cannot submit"
+            })
+        }
+        
+        const body = dataToSend;
+        for(let i in body){
+            const criteria = await Criteria.findOne({
+                code: body[i].name,
+                isDeleted: false
+            }).select("_id")
+            const formCriteria = await FormCriteria.findOne({
+                criteria_id: criteria._id,
+                isDeleted: false
+            })
+            let evaluateCriteria = await EvaluateCriteria.findOne({
+                evaluateForm: evaluateForm._id,
+                form_criteria: formCriteria._id,
+                level
+            })
+    
+            if(!evaluateCriteria){
+                evaluateCriteria = new EvaluateCriteria({
+                    evaluateForm: evaluateForm._id,
+                    form_criteria: formCriteria._id,
+                    point: body[i].value?body[i].value:0,
+                    level
+                })
+            }
+            evaluateCriteria.point = body[i].value?body[i].value:0;
+            await evaluateCriteria.save();
+        }
+        evaluateForm.status = 1;
+        await evaluateForm.save();
+        
+        res.status(200).json({
+            statusCode: 200,
+            message: "Save evaluation successfully"
+        })
+        
+        req.form_id = userForm.form_id;
+        req.level = level;
+        req.userForm_id = userForm._id;
+        req.fbody = body;
+        next();
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.cloneEvaluateCriteria = async (req,res,next)=>{
+    try {
+        const {form_id, level, userForm_id, fbody} = req;
+        const body = fbody;
+        //get formdepartment level + 1
+        const formDepartment = await FormDepartment.findOne({
+            form_id: form_id,
+            level: level + 1,
+            isDeleted: false
+        }).select("_id head")
+
+        if(!formDepartment){
+            return;
+        }
+
+        //head formuser
+        const upperLevelHead = await FormUser.findOne({
+            isDeleted: false,
+            department_form_id: formDepartment._id,
+            user_id: formDepartment.head
+        }).select("_id")
+
+        //clone head evaluate form
+        const evaluateForm = new EvaluateForm({
+            user: upperLevelHead._id,
+            userForm: userForm_id,
+            status: 0,
+            level: level + 1
+        })
+
+        const doc = await evaluateForm.save();
+        console.log(doc._id);
+        for(let i in body){
+            const criteria = await Criteria.findOne({
+                code: body[i].name,
+                isDeleted: false
+            }).select("_id")
+            const formCriteria = await FormCriteria.findOne({
+                criteria_id: criteria._id,
+                isDeleted: false
+            })
+            let evaluateCriteria = await EvaluateCriteria.findOne({
+                evaluateForm: doc._id,
+                form_criteria: formCriteria._id,
+                level
+            })
+    
+            if(!evaluateCriteria){
+                evaluateCriteria = new EvaluateCriteria({
+                    evaluateForm: doc._id,
+                    form_criteria: formCriteria._id,
+                    point: body[i].value?body[i].value:0,
+                    level
+                })
+            }
+            evaluateCriteria.point = body[i].value?body[i].value:0;
+            await evaluateCriteria.save();
+        }
+
+    } catch (error) {
+        next(error);
+    }
+}

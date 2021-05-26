@@ -14,6 +14,9 @@ const EvaluateForm = mongoose.model(
             ref: "UserForm",
             required: true
         },
+        level: {
+            type: Number,
+        },
         status: {
             type: Number,
             required: true,
