@@ -407,7 +407,9 @@ exports.getFormUserAdmin = async (req,res,next)=>{
                     userForm: userForm._id
                 }).select("_id status").lean();
                 formUser.evaluateForm = evaluateForm;
-                formUser.evaluateForm.userForm = userForm;
+                if(evaluateForm){
+                    formUser.evaluateForm.userForm = userForm;
+                }
             }
             
             result.push(formUser)
