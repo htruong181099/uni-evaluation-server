@@ -278,7 +278,6 @@ exports.addUsertoDepartment = async (req,res,next)=>{
 exports.createNewUsertoDepartment = async (req,res,next)=>{
     try {
         const {dcode} = req.params;
-
         const department = await Department.findOne({
             department_code: dcode,
             isDeleted: false
@@ -302,8 +301,8 @@ exports.createNewUsertoDepartment = async (req,res,next)=>{
         })
 
     
-        user.department = user.department.parent ? [department.parent, department._id] : [department._id];
-
+        user.department = department.parent ? [department.parent, department._id] : [department._id];
+        console.log(user.department);
         await user.save();
 
         return res.status(200).json({
@@ -347,17 +346,23 @@ exports.removeUserDepartment = async (req,res,next)=>{
             const children = await Department.find({
                 parent: department._id
             }).select("_id")
-            const userDep = user.department.filter(e => ![...children, department._id].includes(e));
-
-            user.department = userDep;
-            user.save();
+            
+            User.updateOne({
+                staff_id: ucode,
+                isDeleted: false
+            },
+                {"$pull": {"department": {$in: [...children, department._id]}}},
+                {},
+                (err,res)=>{
+                }
+            )
+            
             return res.status(200).json({
                 statusCode: 200,
                 message: "Success"
             })
         }
-
-        user.department = user.department.filter(e => ![department.parent, department._id].includes(e));;
+        user.department = user.department.filter(e => e != department.id);
         user.save();
         return res.status(200).json({
             statusCode: 200,
