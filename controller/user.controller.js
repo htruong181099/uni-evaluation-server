@@ -87,9 +87,9 @@ exports.editUser = async (req, res, next)=>{
 //set Delete
 exports.deleteUser = async (req,res,next)=>{
     try{
-        const {id} = req.params;
+        const {ucode} = req.params;
         const user = await User.findOne({
-            staff_id: uid,
+            staff_id: ucode,
             isDeleted: false
         }).select("isDeleted");
         if(!user){
@@ -115,9 +115,9 @@ exports.deleteUser = async (req,res,next)=>{
 //set Delete
 exports.recoverUser = async (req,res,next)=>{
     try{
-        const {id} = req.params;
+        const {ucode} = req.params;
         const user = await User.findOne({
-            staff_id: uid,
+            staff_id: ucode,
             isDeleted: true
         }).select("isDeleted");
         if(!user){
