@@ -26,6 +26,12 @@ exports.validate = (method)=>{
                 body("new_password", "Invalid new password").exists().isString(),
             ]
         }
+        case 'deleteUser':
+        case 'recoverUser': {
+            return [
+                param('ucode', 'Invalid Id').exists().isString()
+            ]
+        }
     }
 }
 
@@ -74,6 +80,62 @@ exports.editUser = async (req, res, next)=>{
         })
 
     } catch (error) {
+        next(error);
+    }
+}
+
+//set Delete
+exports.deleteUser = async (req,res,next)=>{
+    try{
+        const {id} = req.params;
+        const user = await User.findOne({
+            staff_id: uid,
+            isDeleted: false
+        }).select("isDeleted");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        user.isDeleted = true;
+        user.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+//set Delete
+exports.recoverUser = async (req,res,next)=>{
+    try{
+        const {id} = req.params;
+        const user = await User.findOne({
+            staff_id: uid,
+            isDeleted: true
+        }).select("isDeleted");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        user.isDeleted = false;
+        user.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+    }
+    catch(error){
         next(error);
     }
 }
@@ -250,6 +312,60 @@ exports.createNewUsertoDepartment = async (req,res,next)=>{
         })
 
     } catch (error) {
+        next(error);
+    }
+}
+
+exports.removeUserDepartment = async (req,res,next)=>{
+    try{
+        const {ucode, dcode} = req.params;
+        const user = await User.findOne({
+            staff_id: ucode,
+            isDeleted: false
+        }).select("department")
+    
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        const department = await Department.findOne({
+            department_code: dcode
+        }).select("_id parent")
+
+        if(!user.department.includes(department._id)){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "User is not in department"
+            })
+        }
+
+        //department is parent
+        if(!department.parent){
+            const children = await Department.find({
+                parent: department._id
+            }).select("_id")
+            const userDep = user.department.filter(e => ![...children, department._id].includes(e));
+
+            user.department = userDep;
+            user.save();
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success"
+            })
+        }
+
+        user.department = user.department.filter(e => ![department.parent, department._id].includes(e));;
+        user.save();
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
+    }
+    catch(error){
         next(error);
     }
 }

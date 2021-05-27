@@ -48,6 +48,17 @@ module.exports = function(app){
         adminController.addUser
     )
 
+    app.post("/admin/user/:ucode/delete",
+        userController.validate('deleteUser'),
+        getValidationResult,
+        userController.deleteUser
+    )
+    app.post("/admin/user/:ucode/recover",
+        userController.validate('recoverUser'),
+        getValidationResult,
+        userController.recoverUser
+    )
+
     //add existed user to department
     app.post("/admin/department/:dcode/user/add",
         // adminController.validate('addUser'),
@@ -59,6 +70,12 @@ module.exports = function(app){
         // adminController.validate('addUser'),
         // getValidationResult,
         userController.createNewUsertoDepartment
+    )
+
+    app.post("/admin/department/:dcode/user/:ucode/delete",
+        // adminController.validate('addUser'),
+        // getValidationResult,
+        userController.removeUserDepartment
     )
 
     //router
