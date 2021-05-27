@@ -70,7 +70,23 @@ exports.getUserFormV2 = async (req,res,next)=>{
 
         const userForm = await UserForm.findOne({
             _id: ufid
-        });
+        }).populate("form_id", "code name")
+        .populate({
+            path: "form_user",
+            populate: [{
+                path: "user_id",
+                select: "staff_id firstname lastname department_code name -_id",
+            },
+            {
+                path: "department_form_id",
+                populate: {
+                    path: "department_id",
+                    select: "department_code name -_id"
+                }
+            }
+            ]
+        })
+        ;
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
@@ -81,7 +97,6 @@ exports.getUserFormV2 = async (req,res,next)=>{
         const user = await FormUser.findOne({
             user_id
         }).select("_id")
-
         if(!user){
             return res.status(404).json({
                 statusCode: 404,
@@ -97,15 +112,17 @@ exports.getUserFormV2 = async (req,res,next)=>{
             evaluateForm = new EvaluateForm({
                 userForm: userForm._id,
                 user: user._id,
-                status: -1
+                status: -1,
+                level: 1
             })
             await evaluateForm.save()
         }
         
-
-        req.form_id = userForm.form_id;
-        req.form_user = userForm.form_user;
+        req.ufform= userForm.form_id;
+        req.form_user = userForm.form_user._id;
         req.user_form = userForm._id;
+        req.ufuser = userForm.form_user.user_id;
+        req.ufdep = userForm.form_user.department_form_id.department_id;
 
         return next();
 

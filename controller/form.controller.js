@@ -273,7 +273,14 @@ exports.getEvaForm = async (req,res,next)=>{
 //get evaluation form using form userformID
 exports.getEvaFormV2 = async (req,res,next)=>{
     try {
-        const form_id = req.form_id;
+        
+        const ufform = req.ufform;
+        const {ufuser, ufdep} = req;
+
+        const form_id = ufform._id;
+
+        console.log(ufuser);
+
         const formStandards = await FormStandard.find({
             form_id: form_id,
             isDeleted: false
@@ -304,7 +311,10 @@ exports.getEvaFormV2 = async (req,res,next)=>{
         return res.status(200).json({
             statusCode: 200,
             message: "Success",
-            formStandards
+            form: ufform,
+            formStandards,
+            user: ufuser,
+            department: ufdep
         })
 
     } catch (error) {
