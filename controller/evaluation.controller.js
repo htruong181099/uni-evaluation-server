@@ -491,7 +491,8 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
 
         const evaluateForm = await EvaluateForm.findOne({
             user: user._id,
-            userForm: userForm._id
+            userForm: userForm._id,
+            level
         }).select("_id status");
         if(!evaluateForm){
             return res.status(404).json({
