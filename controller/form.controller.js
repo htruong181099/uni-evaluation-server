@@ -327,7 +327,24 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
         
-        const userForm = await UserForm.findById(ufid);
+        const userForm = await UserForm.findOne({
+            _id: ufid
+        }).populate("form_id", "code name")
+        .populate({
+            path: "form_user",
+            populate: [{
+                path: "user_id",
+                select: "staff_id firstname lastname department_code name -_id",
+            },
+            {
+                path: "department_form_id",
+                populate: {
+                    path: "department_id",
+                    select: "department_code name -_id"
+                }
+            }
+            ]
+        });
         if(!userForm){
             return res.status.json({
                 statusCode: 404,
@@ -335,7 +352,7 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
             })
         }
 
-        const form_id = userForm.form_id;
+        const form_id = userForm.form_id._id;
 
         const formStandards = await FormStandard.find({
             form_id: form_id,
@@ -367,7 +384,10 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
         return res.status(200).json({
             statusCode: 200,
             message: "Success",
-            formStandards
+            form: userForm.form_id,
+            formStandards,
+            user: userForm.form_user.user_id,
+            department: userForm.form_user.department_form_id.department_id
         })
 
     } catch (error) {

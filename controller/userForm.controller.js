@@ -85,8 +85,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
                 }
             }
             ]
-        })
-        ;
+        });
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
