@@ -139,6 +139,10 @@ module.exports = function(app){
         formDepartmentController.addFormDepartmentCouncil
     )
 
+    app.get("/admin/form/:fcode/:dcode/checkCouncil",
+        formDepartmentController.checkCouncil
+    )
+
     //Form User
     app.get("/admin/form/:fcode/:dcode/getFormUser",
         formUserController.getFormUsers
