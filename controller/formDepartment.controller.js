@@ -238,7 +238,7 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             })
         }
 
-        if(!manager){
+        if(!department.manager){
             return res.status(400).json({
                 statusCode: 400,
                 message: "Head department not found"
