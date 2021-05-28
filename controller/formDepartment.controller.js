@@ -285,16 +285,7 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
 
 exports.checkCouncil = async (req,res,next)=>{
     try {
-        const {dcode, fcode} = req.params;
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id");
-        if(!department){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Form not found"
-            })
-        }
+        const {fcode} = req.params;
 
         const form = await Form.findOne({
             code: fcode
@@ -308,7 +299,6 @@ exports.checkCouncil = async (req,res,next)=>{
 
         const formDepartment = await FormDepartment.findOne({
             form_id: form._id,
-            department_id: department._id,
             level: 3,
             isDeleted: false
         }).select("_id department_id head level")

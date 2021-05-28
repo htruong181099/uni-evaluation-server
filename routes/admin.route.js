@@ -147,7 +147,7 @@ module.exports = function(app){
         formDepartmentController.addFormDepartmentCouncil
     )
 
-    app.get("/admin/form/:fcode/:dcode/checkCouncil",
+    app.get("/admin/form/:fcode/checkCouncil",
         formDepartmentController.validate('checkCouncil'),
         getValidationResult,
         formDepartmentController.checkCouncil
