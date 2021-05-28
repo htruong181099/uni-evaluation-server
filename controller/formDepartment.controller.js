@@ -266,9 +266,16 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             }
         })
 
-        FormUser.insertMany({
+        console.log(formUsers);
+
+        FormUser.insertMany(
             formUsers
-        },{})
+        ,{})
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
         
     } catch (error) {
         next(error);
