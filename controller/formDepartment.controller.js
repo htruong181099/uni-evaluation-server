@@ -4,6 +4,8 @@ const FormDepartment = db.formDepartment;
 const Department = db.department;
 
 const {body, param, query, validationResult} = require("express-validator");
+const User = require("../model/user.model");
+const FormUser = require("../model/formUser.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -202,6 +204,64 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
         req.deleteDepartments = deleteDepartments;
         req.recoverDepartments = recoverDepartments;
         next();
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.addFormDepartmentCouncil = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const form = await Form.findOne({code: fcode}).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+        
+        const department = await Department.findOne({
+            department_code: dcode
+        }).select("_id manager")
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        if(!manager){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Head department not found"
+            })
+        }
+
+        const formDepartment = new FormDepartment({
+            form_id: form._id,
+            department_id: department._id,
+            head: department.manager,
+            level: 3
+        })
+        const fd = await formDepartment.save();
+
+        const users = await User.find({
+            department: department._id,
+            isDeleted: false
+        }).select("_id")
+
+        const formUsers = users.map(user=>{
+            return {
+                user_id: user._id,
+                form_id: form._id,
+                department_form_id: fd._id
+            }
+        })
+
+        FormUser.insertMany({
+            formUsers
+        },{})
         
     } catch (error) {
         next(error);

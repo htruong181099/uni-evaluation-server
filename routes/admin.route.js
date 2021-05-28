@@ -127,12 +127,16 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/addFormDepartments",
         formDepartmentController.addFormDepartments,
-        formUserController.addFormUser
+        formUserController.addFormUsers
     )
 
     app.post("/admin/form/:fcode/addFormDepartments/v2",
         formDepartmentController.addFormDepartmentsV2,
-        formUserController.addFormUserV2
+        formUserController.addFormUsersV2
+    )
+
+    app.post("/admin/form/:fcode/:dcode/addCouncil",
+        formDepartmentController.addFormDepartmentCouncil
     )
 
     //Form User
@@ -141,6 +145,9 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/:dcode/removeFormUser",
         formUserController.removeFormUser
+    )
+    app.post("/admin/form/:fcode/:dcode/addFormUser",
+        formUserController.addFormUser
     )
     app.get("/admin/form/:fcode/:dcode/formUser/get",
         formUserController.getFormUserAdmin

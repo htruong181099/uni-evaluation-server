@@ -7,7 +7,91 @@ const FormDepartment = db.formDepartment;
 const FormUser = db.formUser;
 const User = db.user;
 
+//add single formuser
 exports.addFormUser = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const {ucode} = req.body;
+
+        const form = await Form.findOne({code: fcode}).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+        const department = await Department.findOne({department_code: dcode}).select("_id");
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+        const formDepartment = await FormDepartment.findOne({
+            department_id: department._id,
+            isDeleted: false
+        }).select("_id");
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormDepartment not found"
+            })
+        }
+
+        const user = await User.findOne({
+            staff_id: ucode,
+            isDeleted: false
+        }).select("_id")
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        let formUser = await FormUser.findOne({
+            department_form_id: formDepartment._id,
+            user_id: user._id,
+            form_id: form._id
+        })
+
+        //if not in db, create new formuser
+        if(!formUser){
+            formUser = new FormUser({
+                department_form_id: formDepartment._id,
+                user_id: user._id,
+                form_id: form._id
+            })
+            formUser.save();
+            return res.status(200).json({
+                statusCode: 200,
+                message: 'Add FormUser successfully'
+            })
+        }
+
+        //if isdeleted, recover formuser
+        if(formUser.isDeleted){
+            formUser.isDeleted = true;
+            formUser.save();
+            return res.status(200).json({
+                statusCode: 200,
+                message: 'Add FormUser successfully'
+            })
+        }
+
+        //if formuser -> existed
+        return res.status(409).json({
+            statusCode: 409,
+            message: 'FormUser already exist'
+        })
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+//add multiple form users
+exports.addFormUsers = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const form = await Form.findOne({code: fcode}).select("_id");
@@ -176,7 +260,7 @@ exports.removeFormUser = async (req,res,next)=>{
 
 
 // version 2
-exports.addFormUserV2 = async (req,res,next)=>{
+exports.addFormUsersV2 = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const form = await Form.findOne({code: fcode}).select("_id");
