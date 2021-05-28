@@ -11,6 +11,11 @@ exports.validate = (method)=>{
                 param('id', 'Invalid Id').exists().isMongoId()
             ]
         }
+        case 'getUserbyCode': {
+            return [
+                param('ucode', 'Invalid Id').exists().isString()
+            ]
+        }
         case 'addUser': {
             return [
                 body('id','Invalid Code').exists().isString(),
@@ -37,6 +42,46 @@ exports.getUser = async (req,res,next)=>{
             statusCode: 200,
             message: "OK",
             user: user
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+exports.getUserbyCode = async (req,res,next)=>{
+    try{
+        const {ucode} = req.params;
+        const {short} = req.query;
+        const user = await User.findOne({
+            staff_id: ucode,
+            isDeleted: false
+        })
+        .populate("department", "department_code name")
+        .select("-__v -password -isDeleted");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+        if(short && short == 1){
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success",
+                user: {
+                    staff_id: user.staff_id,
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    email: user.email
+                }   
+            })
+        }
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            user
         })
     }
     catch(error){

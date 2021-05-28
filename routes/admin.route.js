@@ -42,6 +42,12 @@ module.exports = function(app){
         adminController.getUser
     )
 
+    app.get("/admin/user/:ucode/get",
+        adminController.validate('getUserbyCode'),
+        getValidationResult,
+        adminController.getUserbyCode
+    )
+
     app.post("/admin/user/add",
         adminController.validate('addUser'),
         getValidationResult,
