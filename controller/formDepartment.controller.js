@@ -9,7 +9,10 @@ const FormUser = require("../model/formUser.model");
 
 exports.validate = (method)=>{
     switch(method){
-        case 'addFormDepartment': {
+        case 'addFormDepartment':
+        case 'addCouncil':
+        case 'addHead':
+        case 'checkCouncil' :{
             return [
                 param("fcode","").exists().isString(),
                 body("dcode").exists().isString(),
@@ -266,8 +269,6 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             }
         })
 
-        console.log(formUsers);
-
         FormUser.insertMany(
             formUsers
         ,{})
@@ -325,6 +326,89 @@ exports.checkCouncil = async (req,res,next)=>{
             statusCode: 200,
             formDepartment: formDepartment
         })
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.addHead = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const {ucode} = req.body;
+        const form = await Form.findOne({code: fcode}).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+        
+        const department = await Department.findOne({department_code: dcode}).select("_id");
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        const formDepartment = await FormDepartment.findOne({
+            form_id: form._id,
+            department_id: department._id,
+            isDeleted: false
+        })
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormDepartment not found"
+            })
+        }
+
+        const user = await User.findOne({
+            staff_id: ucode,
+            isDeleted: false
+        }).select("_id");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        //if user is already a head
+        if(formDepartment.head == user._id){
+            return res.status(409).json({
+                statusCode: 409,
+                message: "User is already a head"
+            })
+        }
+
+        //check if user in form
+        let formUser = await FormUser.findOne({
+            department_form_id: formDepartment._id,
+            user_id: user._id
+        })
+
+        if(formUser){
+            formUser.isDeleted = formUser.isDeleted? false: formUser.isDeleted;
+        }
+
+        if(!formUser){
+            formUser = new FormUser({
+                department_form_id: formDepartment._id,
+                user_id: user._id,
+                form_id: form._id
+            })
+            formUser.save();
+        }
+
+        formDepartment.head = user._id;
+        formDepartment.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+
     } catch (error) {
         next(error);
     }

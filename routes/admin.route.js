@@ -136,11 +136,21 @@ module.exports = function(app){
     )
 
     app.post("/admin/form/:fcode/:dcode/addCouncil",
+        formDepartmentController.validate('addCouncil'),
+        getValidationResult,
         formDepartmentController.addFormDepartmentCouncil
     )
 
     app.get("/admin/form/:fcode/:dcode/checkCouncil",
+        formDepartmentController.validate('checkCouncil'),
+        getValidationResult,
         formDepartmentController.checkCouncil
+    )
+
+    app.post("/admin/form/:fcode/:dcode/addHead",
+        formDepartmentController.validate('addHead'),
+        getValidationResult,
+        formDepartmentController.addHead
     )
 
     //Form User
