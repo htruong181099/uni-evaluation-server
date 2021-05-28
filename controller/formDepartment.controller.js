@@ -12,10 +12,15 @@ exports.validate = (method)=>{
         case 'addFormDepartment':
         case 'addCouncil':
         case 'addHead':
+        {
+            return [
+                param("fcode","Invalid Form code").exists().isString(),
+                body("dcode", "Invalid Department code").exists().isString(),
+            ]
+        }
         case 'checkCouncil' :{
             return [
-                param("fcode","").exists().isString(),
-                body("dcode").exists().isString(),
+                param("fcode","Invalid Form code").exists().isString()
             ]
         }
         case 'addFormDepartments': {
