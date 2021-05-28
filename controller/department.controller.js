@@ -113,7 +113,7 @@ exports.getDepartmentUser = async (req,res,next)=>{
         const {code} = req.params;
         const department = await Department.findOne({
             department_code: code,
-            // isDeleted: false
+            isDeleted: false
         })
         .populate("manager", "firstname lastname staff_id")
         .select("_id");

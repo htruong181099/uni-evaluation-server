@@ -2,6 +2,7 @@ const db = require("../model/");
 const User = db.user;
 
 const {body, param, query, validationResult} = require("express-validator");
+const Department = db.department;
 
 exports.validate = (method)=>{
     switch(method){
@@ -15,7 +16,8 @@ exports.validate = (method)=>{
                 body('id','Invalid Code').exists().isString(),
                 body('lname','Invalid Last Name').exists().isString(),
                 body('fname','Invalid First Name').exists().isString(),
-                body('email', "Invalid email").exists().isEmail()
+                body('email', "Invalid email").exists().isEmail(),
+                body('dcode', "Invalid Department code").exists().isString()
             ]
         };
     }
@@ -62,7 +64,7 @@ exports.getUsers = async (req,res,next)=>{
 
 exports.addUser = async (req,res,next)=>{
     try {
-        const {id, lname, fname, email} = req.body;
+        const {id, lname, fname, email, dcode} = req.body;
         const user = new User({
             staff_id: id,
             lastname: lname,
@@ -70,6 +72,15 @@ exports.addUser = async (req,res,next)=>{
             email,
             password: "password"
         })
+        if(dcode){
+            const department = await Department.findOne({
+                department_code: dcode,
+                isDeleted: false
+            })
+            if(department){
+                user.department = department.parent ? [department.parent, department._id] : [department._id];
+            }
+        }
 
         user.save((err)=>{
             if(err){

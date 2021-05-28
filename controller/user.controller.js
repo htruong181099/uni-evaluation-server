@@ -303,13 +303,24 @@ exports.createNewUsertoDepartment = async (req,res,next)=>{
     
         user.department = department.parent ? [department.parent, department._id] : [department._id];
         console.log(user.department);
-        await user.save();
+        user.save((err)=>{
+            if(err){
+                if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate staff_id
+                    return res.status(409).send({
+                        statusCode: 409,
+                        message: 'User already exists!'
+                    });
+                }
+                return next(err);
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Successful"
+            })
+    
+        });
 
-        return res.status(200).json({
-            statusCode: 200,
-            message: "Successful"
-        })
-
+        
     } catch (error) {
         next(error);
     }
