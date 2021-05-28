@@ -163,22 +163,17 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
 
         const deleteDepartments = existedDepartment.map(e => e.department_id.department_code).filter(e=>!dcodes.includes(e));
 
-        for(let i in deleteDepartments){
-            const dep = await Department.findOne({
-                department_code: deleteDepartments[i]
-            }).select("_id")
-            const formDepartment = await FormDepartment.findOne({
-                form_id: form._id,
-                department_id: dep._id
-            });
-            formDepartment.isDeleted = true;
-            await formDepartment.save();
-        }
         let recoverDepartments = [];
         for (let i in dcodes){
             const department = await Department.findOne({
                 department_code: dcodes[i]
             }).select("_id manager")
+            if(!department.manager){
+                return res.status(400).json({
+                    statusCode: 404,
+                    message: "Some of departments dont have manager"
+                })
+            }
             let formDepartment = await FormDepartment.findOne({
                 form_id: form._id,
                 department_id: department._id
@@ -199,8 +194,20 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
                     await formDepartment.save();
                 }
             }
-            
         }
+
+        for(let i in deleteDepartments){
+            const dep = await Department.findOne({
+                department_code: deleteDepartments[i]
+            }).select("_id")
+            const formDepartment = await FormDepartment.findOne({
+                form_id: form._id,
+                department_id: dep._id
+            });
+            formDepartment.isDeleted = true;
+            await formDepartment.save();
+        }
+
         req.deleteDepartments = deleteDepartments;
         req.recoverDepartments = recoverDepartments;
         next();

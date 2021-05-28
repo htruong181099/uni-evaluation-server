@@ -363,7 +363,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             department_id: department._id,
             head: user_id,
             isDeleted: false
-        }).select("_id");
+        }).select("_id level");
         if(!formDepartment){
             return res.status(404).json({
                 statusCode: 404,
