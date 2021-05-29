@@ -416,11 +416,11 @@ exports.getFormDepartments= async (req,res,next)=>{
             })
         }
 
-        const formUser = await FormUser.find({
+        const formUser = await FormUser.findOne({
             form_id: form._id,
             user_id: id,
             isDeleted: false
-        }).select("_id department_form_id")
+        }).select("_id department_form_id user_id")
 
         if(!formUser){
             return res.status(404).json({
@@ -433,10 +433,9 @@ exports.getFormDepartments= async (req,res,next)=>{
             form_id: form._id,
             level: 3,
             isDeleted: false
-        }).select("_id head")
-        console.log(formUser.department_form_id, council._id);
-        console.log(formUser._id, council.head);
-        if(!(formUser.department_form_id == council._id && formUser._id == council.head )){
+        }).select("_id head").populate("head", "_id")
+        
+        if(!(formUser.department_form_id == council.id && id == council.head.id )){
             return res.status(403).json({
                 statusCode: 403,
                 message: "Required council head"
