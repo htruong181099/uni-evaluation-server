@@ -9,14 +9,19 @@ const FormUser = require("../model/formUser.model");
 
 exports.validate = (method)=>{
     switch(method){
-        case 'addFormDepartment':
+        case 'addFormDepartment': {
+            return [
+                param("fcode","Invalid Form code").exists().isString(),
+                body("dcode", "Invalid Department code").exists().isString(),
+            ]
+        }
         case 'getFormDepartment':
         case 'addCouncil':
         case 'addHead':
         {
             return [
                 param("fcode","Invalid Form code").exists().isString(),
-                body("dcode", "Invalid Department code").exists().isString(),
+                param("dcode", "Invalid Department code").exists().isString(),
             ]
         }
         case 'checkCouncil' :{
