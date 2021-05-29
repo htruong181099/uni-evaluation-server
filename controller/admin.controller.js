@@ -113,7 +113,7 @@ exports.editUser = async (req, res, next)=>{
         user.lastname = lname;
         //optional
         if(!['admin', 'user'].includes(roles)){
-            res.status(422).json({
+            return res.status(422).json({
                 statusCode: 400,
                 message: "Invalid Roles"
             })
