@@ -128,7 +128,6 @@ exports.editUser = async (req, res, next)=>{
                     message: 'User already exists!'
                 });
             }
-            next(err);
         });
         return res.status(200).json({
             statusCode: 200,
