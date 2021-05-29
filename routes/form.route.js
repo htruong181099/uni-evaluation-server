@@ -34,6 +34,14 @@ module.exports = function(app){
         userFormController.getUserFormV2,
         formController.getEvaFormV2
     );
+
+    //get formdepartment (as council)
+    app.get("/form/:fcode/formdepartments/get", 
+        formController.validate("getFormDepartments"),
+        getValidationResult,
+        formController.getFormDepartments
+    );
+
     //v1
     app.post("/form/:ufid/submitForm",
         evaluationController.submitEvaluation

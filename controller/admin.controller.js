@@ -122,7 +122,7 @@ exports.editUser = async (req, res, next)=>{
         user.email = email;
 
         await user.save((err)=>{
-            if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate staff_id
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate staff_id
                 return res.status(409).send({
                     statusCode: 409,
                     message: 'User already exists!'

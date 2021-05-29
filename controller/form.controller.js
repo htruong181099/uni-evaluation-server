@@ -9,6 +9,7 @@ const UserForm = db.userForm;
 
 const {body, param, query, validationResult} = require("express-validator");
 const FormUser = require("../model/formUser.model");
+const FormDepartment = require("../model/formDepartment.model");
 
 
 exports.validate = (method)=>{
@@ -37,6 +38,7 @@ exports.validate = (method)=>{
                 param("rcode","Invalid Review Code").exists().isString()
             ]
         }
+        case 'getFormDepartments':
         case 'getEvaForm': {
             return [
                 param("fcode","Invalid FormCode").exists().isString()
@@ -53,6 +55,7 @@ exports.validate = (method)=>{
                 param("fid","Invalid FormID").exists().isMongoId()
             ]
         }
+        
     }
 }
 
@@ -388,6 +391,71 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
             formStandards,
             user: userForm.form_user.user_id,
             department: userForm.form_user.department_form_id.department_id
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+//get Form Departments via Council
+exports.getFormDepartments= async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const id = req.userId;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id");
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const formUser = await FormUser.find({
+            form_id: form._id,
+            user_id: id,
+            isDeleted: false
+        }).select("_id department_form_id")
+
+        if(!formUser){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormUser not found"
+            })
+        }
+
+        const council = await FormDepartment.findOne({
+            form_id: form._id,
+            level: 3,
+            isDeleted: false
+        }).select("_id head")
+        console.log(formUser.department_form_id, council._id);
+        console.log(formUser._id, council.head);
+        if(!(formUser.department_form_id == council._id && formUser._id == council.head )){
+            return res.status(403).json({
+                statusCode: 403,
+                message: "Required council head"
+            })
+        }
+        
+
+        const formDepartments = await FormDepartment.find({
+            form_id: form._id,
+            level: 2,
+            isDeleted: false
+        }).select("department_id head level")
+        .populate("department_id", "department_code name")
+        .populate("head", "firstname lastname staff_id")
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            formDepartments
         })
 
     } catch (error) {
