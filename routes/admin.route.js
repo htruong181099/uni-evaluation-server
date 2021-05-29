@@ -141,6 +141,12 @@ module.exports = function(app){
         formUserController.addFormUsersV2
     )
 
+    app.get("/admin/form/:fcode/:dcode/getFormDepartment",
+        formDepartmentController.validate('getFormDepartment'),
+        getValidationResult,
+        formDepartmentController.getFormDepartment
+    )
+
     app.post("/admin/form/:fcode/:dcode/addCouncil",
         formDepartmentController.validate('addCouncil'),
         getValidationResult,

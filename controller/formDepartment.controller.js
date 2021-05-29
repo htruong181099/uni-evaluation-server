@@ -10,6 +10,7 @@ const FormUser = require("../model/formUser.model");
 exports.validate = (method)=>{
     switch(method){
         case 'addFormDepartment':
+        case 'getFormDepartment':
         case 'addCouncil':
         case 'addHead':
         {
@@ -58,6 +59,46 @@ exports.addFormDepartment = async (req,res,next)=>{
         formDepartment.save((err)=>{
 
         })
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getFormDepartment = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const form = await Form.findOne({code: fcode}).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+        const department = await Department.find({department_code: dcode, isDeleted: false}).select("_id");
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            });
+        }
+        const formDepartment = await FormDepartment.findOne({
+            form_id : form._id,
+            department_id: department._id
+        }).select("department_id")
+        .populate({
+            path: "department_id",
+            select: "department_code name manager",
+            populate: {
+                path: manager,
+                select: "firstname lastname staff_id"
+            }
+        })
+
+        res.status(200).json({
+            statusCode: 200,
+            formDepartment
+        })
+        
     } catch (error) {
         next(error);
     }

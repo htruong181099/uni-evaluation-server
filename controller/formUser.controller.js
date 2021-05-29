@@ -229,7 +229,8 @@ exports.removeFormUser = async (req,res,next)=>{
         }
 
         const users = await User.find({
-            staff_id: delete_users
+            staff_id: delete_users,
+            isDeleted: false
         }).select("_id")
 
         const del_users = users.map(e => e._id);
