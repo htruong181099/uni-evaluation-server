@@ -25,6 +25,15 @@ exports.validate = (method)=>{
                 body('dcode', "Invalid Department code").exists().isString()
             ]
         };
+        case 'editUser': {
+            return [
+                param('ucode', "Invalid User ID").exists().isString(),
+                body("fname", "Invalid firstname").exists().isString(),
+                body("lname", "Invalid lastname").exists().isString(),
+                body("email", "Invalid email").exists().isString(),
+                body("roles", "Invalid roles").exists().isString()
+            ]
+        }
     }
 }
 
@@ -85,6 +94,48 @@ exports.getUserbyCode = async (req,res,next)=>{
         })
     }
     catch(error){
+        next(error);
+    }
+}
+
+exports.editUser = async (req, res, next)=>{
+    try {
+        const {ucode} = req.params;
+        const {fname, lname, email, roles} = req.body;
+
+        const user = await User.findOne({
+            staff_id: ucode,
+            isDeleted: false
+        }).select("-password -isDeleted -__v");
+        //required
+        user.staff_id = ucode;
+        user.firstname = fname;
+        user.lastname = lname;
+        //optional
+        if(!['admin', 'user'].includes(roles)){
+            res.status(422).json({
+                statusCode: 400,
+                message: "Invalid Roles"
+            })
+        }
+        user.roles = roles;
+        user.email = email;
+
+        await user.save((err)=>{
+            if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate staff_id
+                return res.status(409).send({
+                    statusCode: 409,
+                    message: 'User already exists!'
+                });
+            }
+            next(err);
+        });
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Edit user successfully"
+        })
+
+    } catch (error) {
         next(error);
     }
 }
