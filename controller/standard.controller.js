@@ -12,17 +12,25 @@ exports.validate = (method)=>{
                 body('description').optional().isString()
             ]
         };
-        case 'getStandard':{
+        case 'editStandard': {
+            return [
+                param('id','Invalid Standard Id').exists().isMongoId(),
+                body('new_ccode','Invalid Code').exists().isString(),
+                body('name','Invalid Name').exists().isString(),
+                body('description').optional().isString()
+            ]
+        };
+        case 'getStandardbyID':{
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
             ]
         };
-        
         case 'deleteStandardDB':{
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
             ]
         }
+        case 'getStandard':
         case 'deleteStandard':
         case 'restoreStandard':{
             return [
@@ -32,6 +40,7 @@ exports.validate = (method)=>{
     }
 }
 
+//create new standard
 exports.addStandard = async (req,res,next)=>{
     try{
         const {code, name, description} = req.body;
@@ -62,7 +71,6 @@ exports.addStandard = async (req,res,next)=>{
     }
 }
 
-
 //get all the standards
 exports.getStandards = async (req,res,next)=>{
     try {
@@ -81,8 +89,8 @@ exports.getStandards = async (req,res,next)=>{
     }        
 }
 
-//get standard info
-exports.getStandard = async (req,res,next)=>{
+//get standard info by ID
+exports.getStandardbyID = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const standard = await Standard.findOne({
@@ -105,6 +113,31 @@ exports.getStandard = async (req,res,next)=>{
     }        
 }
 
+//get standard info by Code
+exports.getStandard = async (req,res,next)=>{
+    try {
+        const {scode} = req.params;
+        const standard = await Standard.findOne({
+            code: scode,
+            isDeleted: false
+        }).select("-__v -create_date");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            });
+        }
+        res.status(200).json({
+            statusCode: 200,
+            message: "OK",
+            standard
+        })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//delete standard by ID from DB
 exports.deleteStandardDB = async (req,res,next)=>{
     try {
         const {id} = req.params;
@@ -117,11 +150,10 @@ exports.deleteStandardDB = async (req,res,next)=>{
         }
         Standard.deleteOne({_id: id}, (err)=>{
             if(err){
-                return res.status(500).json({
-                    error: err
-                })
+                next(err);
+                return;
             }
-            res.status(200).json({
+            return res.status(200).json({
                 statusCode: 200,
                 message: "Delete successfully"
             })
@@ -214,4 +246,45 @@ exports.restoreStandard = async (req,res,next)=>{
     } catch (error) {
         next(error);
     }        
+}
+
+//edit Standard
+exports.editStandard = async (req,res,next)=>{
+    try{
+        const {ccode} = req.params;
+        const {new_ccode, name, description} = req.body;
+
+        const standard = await Standard.findOne({
+            code: ccode,
+            isDeleted: false
+        });
+
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+
+        standard.code = new_ccode;
+        standard.name = name;
+        standard.description = description;
+
+        standard.save((err)=>{
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                return res.status(409).json({
+                    statusCode: 409,
+                    message: 'Standard already exists!'
+                });
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success"
+            })
+        })
+        
+    }
+    catch(error){
+        next(error);
+    }
 }

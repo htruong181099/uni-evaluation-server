@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const TYPE = ['radio', 'checkbox', 'custom'];
+const TYPE = ['radio', 'checkbox', 'input'];
 
 
 const Criteria = mongoose.model(
@@ -21,7 +21,8 @@ const Criteria = mongoose.model(
         },
         type: {
             type: String,
-            required: true    
+            required: true,
+            enum: TYPE    
         },
         description: {
             type: String

@@ -17,12 +17,20 @@ module.exports = (app) => {
         getValidationResult,
         criteriaController.deleteCriteriaDB
     )
+    //edit
+    app.post("/admin/criteria/:ccode/edit",
+        criteriaController.validate('editCriteria'),
+        getValidationResult,
+        criteriaController.editCriteria
+    )
+    //set isDeleted - true
     app.post("/admin/criteria/:ccode/delete",
         criteriaController.validate('deleteCriteria'),
         getValidationResult,
         criteriaController.deleteCriteria
     )
-    app.post("/admin/criteria/:id/restore",
+    //set isDeleted - false
+    app.post("/admin/criteria/:ccode/restore",
         criteriaController.validate('restoreCriteria'),
         getValidationResult,
         criteriaController.restoreCriteria

@@ -327,7 +327,7 @@ exports.saveEvaluationV2 = async (req,res,next)=>{
         const evaluateForm = await EvaluateForm.findOne({
             user: user._id,
             userForm: userForm._id,
-             level
+            level
         }).select("_id status");
         if(!evaluateForm){
             return res.status(404).json({
@@ -361,11 +361,10 @@ exports.saveEvaluationV2 = async (req,res,next)=>{
                 evaluateCriteria = new EvaluateCriteria({
                     evaluateForm: evaluateForm._id,
                     form_criteria: formCriteria._id,
-                    point: body[i].value?body[i].value:0,
-                    level
+                    point: body[i].value?body[i].value:null
                 })
             }
-            evaluateCriteria.point = body[i].value?body[i].value:0;
+            evaluateCriteria.point = body[i].value?body[i].value:null;
             await evaluateCriteria.save();
         }
         evaluateForm.status = 0;
@@ -435,19 +434,17 @@ exports.submitEvaluationV2 = async (req,res,next)=>{
             })
             let evaluateCriteria = await EvaluateCriteria.findOne({
                 evaluateForm: evaluateForm._id,
-                form_criteria: formCriteria._id,
-                level
+                form_criteria: formCriteria._id
             })
     
             if(!evaluateCriteria){
                 evaluateCriteria = new EvaluateCriteria({
                     evaluateForm: evaluateForm._id,
                     form_criteria: formCriteria._id,
-                    point: body[i].value?body[i].value:0,
-                    level
+                    point: body[i].value?body[i].value:null
                 })
             }
-            evaluateCriteria.point = body[i].value?body[i].value:0;
+            evaluateCriteria.point = body[i].value?body[i].value:null;
             await evaluateCriteria.save();
         }
         evaluateForm.status = 1;

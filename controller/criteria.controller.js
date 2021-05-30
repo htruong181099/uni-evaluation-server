@@ -22,12 +22,24 @@ exports.validate = (method)=>{
         case 'deleteCriteria':
         case 'restoreCriteria': {
             return [
-                param('ccode','Invalid Criteria Code').exists().isString
+                param('ccode','Invalid Criteria Code').exists().isString()
             ]
         }
         case 'getCriterions': {
+            //param {id}
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
+            ]
+        }
+        case 'editCriteria': {
+            //param {ccode}
+            //body {new_ccode, name, description, type}
+            return [
+                param('ccode','Invalid Criteria Code').exists().isString(),
+                body('new_ccode','Invalid Code').exists().isString(),
+                body('name','Invalid Name').exists().isString(),
+                body('description','Invalid Description').exists().isString(),
+                body('type','Invalid Type').exists().isString(),
             ]
         }
     }
@@ -231,6 +243,55 @@ exports.restoreCriteria = async (req,res,next)=>{
             statusCode: 200,
             message: "Restore Criteria successfully"
         })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//edit Criteria
+exports.editCriteria = async (req,res,next)=>{
+    try {
+        const {ccode} = req.params;
+        const {new_ccode, name, description, type} = req.body;
+
+        if(!['radio', 'checkbox', 'input'].includes(type)){
+            return res.status(422).send({
+                statusCode: 422,
+                message: "Invalid type"
+            })
+        }
+
+        const criteria = await Criteria.findOne({
+            code: ccode,
+            isDeleted: false
+        })
+        
+        if(!criteria){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Criteria not found"
+            });
+        }
+
+        criteria.code = new_ccode;
+        criteria.name = name,
+        criteria.description = description;
+        criteria.type = type;
+
+
+        criteria.save((err)=>{
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate
+                return res.status(409).send({
+                    statusCode: 409,
+                    message: 'Criteria already exists!'
+                });
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success"
+            })
+        });
+
     } catch (error) {
         next(error);
     }        

@@ -10,9 +10,20 @@ module.exports = (app) => {
         standardController.getStandardsWithCriteria
     )
     app.get("/admin/standard/:id",
+        standardController.validate('getStandardbyID'),
+        getValidationResult,
+        standardController.getStandardbyID
+    )
+    app.get("/admin/standard/:scode/get",
         standardController.validate('getStandard'),
         getValidationResult,
         standardController.getStandard
+    )
+    //edit criteria
+    app.post("/admin/standard/:id/edit",
+        standardController.validate('editStandard'),
+        getValidationResult,
+        standardController.editStandard
     )
     //delete DB
     app.post("/admin/standard/:id/deleteDB",
@@ -32,7 +43,7 @@ module.exports = (app) => {
         getValidationResult,
         standardController.restoreStandard
     )
-
+    //add standard
     app.post("/admin/standard/add",
         standardController.validate('addStandard'),
         getValidationResult,
