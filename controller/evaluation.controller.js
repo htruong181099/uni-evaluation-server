@@ -612,3 +612,25 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
         next(error);
     }
 }
+
+//delete Evaluate Form DB
+exports.deleteEvaluateFormDB = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+
+        const evaluateForm = await EvaluateForm.findById(id);
+        EvaluateCriteria.deleteMany({
+            evaluateForm: evaluateForm._id
+        },{},()=>{
+            EvaluateForm.deleteOne({_id: id},{},()=>{
+                return res.status(200).json({
+                    statusCode: 200,
+                    message: "Success"
+                })
+            })
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}

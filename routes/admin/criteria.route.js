@@ -36,16 +36,43 @@ module.exports = (app) => {
         criteriaController.restoreCriteria
     )
 
-    //criteria option
+    ////criteria option
+    //get criteria's all options
     app.get("/admin/criteria/:ccode/option",
-        criteriaOptionController.validate('getCriteriaOption'),
+        criteriaOptionController.validate('getCriteriaOptions'),
         getValidationResult,
         criteriaOptionController.getCriteriaOption
     )
     
+    //create new option
     app.post("/admin/criteria/:ccode/addCriteriaOption",
         criteriaOptionController.validate('addCriteriaOption'),
         getValidationResult,
         criteriaOptionController.addCriteriaOption
+    )
+
+    //get single option info using code
+    app.get("/admin/criteria/option/:ocode/get",
+        criteriaOptionController.validate('getCriteriaOption'),
+        getValidationResult,
+        criteriaOptionController.addCriteriaOption
+    )
+    //edit option
+    app.post("/admin/criteria/option/:ocode/edit",
+        criteriaOptionController.validate('editCriteriaOption'),
+        getValidationResult,
+        criteriaOptionController.editCriteriaOption
+    )
+    //set isDeleted - true
+    app.post("/admin/criteria/option/:ocode/delete",
+        criteriaOptionController.validate('deleteCriteriaOption'),
+        getValidationResult,
+        criteriaOptionController.deleteCriteriaOption
+    )
+    //set isDeleted - false
+    app.post("/admin/criteria/option/:ocode/restore",
+        criteriaOptionController.validate('restoreCriteriaOption'),
+        getValidationResult,
+        criteriaOptionController.restoreCriteriaOption
     )
 }

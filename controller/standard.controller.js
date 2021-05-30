@@ -14,6 +14,14 @@ exports.validate = (method)=>{
         };
         case 'editStandard': {
             return [
+                param('scode','Invalid Standard Code').exists().isString(),
+                body('new_ccode','Invalid Code').exists().isString(),
+                body('name','Invalid Name').exists().isString(),
+                body('description').optional().isString()
+            ]
+        };
+        case 'editStandardbyID': {
+            return [
                 param('id','Invalid Standard Id').exists().isMongoId(),
                 body('new_ccode','Invalid Code').exists().isString(),
                 body('name','Invalid Name').exists().isString(),
@@ -251,11 +259,52 @@ exports.restoreStandard = async (req,res,next)=>{
 //edit Standard
 exports.editStandard = async (req,res,next)=>{
     try{
-        const {ccode} = req.params;
+        const {scode} = req.params;
         const {new_ccode, name, description} = req.body;
 
         const standard = await Standard.findOne({
-            code: ccode,
+            code: scode,
+            isDeleted: false
+        });
+
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+
+        standard.code = new_ccode;
+        standard.name = name;
+        standard.description = description;
+
+        standard.save((err)=>{
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                return res.status(409).json({
+                    statusCode: 409,
+                    message: 'Standard already exists!'
+                });
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success"
+            })
+        })
+        
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+//edit Standard by ID
+exports.editStandardbyID = async (req,res,next)=>{
+    try{
+        const {id} = req.params;
+        const {new_ccode, name, description} = req.body;
+
+        const standard = await Standard.findOne({
+            _id: id,
             isDeleted: false
         });
 

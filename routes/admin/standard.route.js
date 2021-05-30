@@ -19,8 +19,15 @@ module.exports = (app) => {
         getValidationResult,
         standardController.getStandard
     )
-    //edit criteria
-    app.post("/admin/standard/:id/edit",
+
+    //edit standard by id
+    app.post("/admin/standard/:id/editbyID",
+        standardController.validate('editStandardbyID'),
+        getValidationResult,
+        standardController.editStandardbyID
+    )
+    //edit standard
+    app.post("/admin/standard/:scode/edit",
         standardController.validate('editStandard'),
         getValidationResult,
         standardController.editStandard

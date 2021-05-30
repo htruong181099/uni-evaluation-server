@@ -17,7 +17,7 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
-const { userController } = require("../controller");
+const { userController, evaluationController } = require("../controller");
 
 module.exports = function(app){
 
@@ -201,5 +201,11 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/standard/:scode/addFormCriteria",
         formCriteriaController.addFormCriteria
+    )
+
+
+    //admin
+    app.post("/admin/evaluateform/:id/deleteDB",
+        evaluationController.deleteEvaluateFormDB
     )
 }
