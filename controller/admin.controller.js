@@ -128,11 +128,12 @@ exports.editUser = async (req, res, next)=>{
                     message: 'User already exists!'
                 });
             }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Edit user successfully"
+            })
         });
-        return res.status(200).json({
-            statusCode: 200,
-            message: "Edit user successfully"
-        })
+        
 
     } catch (error) {
         next(error);
