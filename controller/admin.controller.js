@@ -101,14 +101,14 @@ exports.getUserbyCode = async (req,res,next)=>{
 exports.editUser = async (req, res, next)=>{
     try {
         const {ucode} = req.params;
-        const {fname, lname, email, roles} = req.body;
+        const {new_ucode, fname, lname, email, roles} = req.body;
 
         const user = await User.findOne({
             staff_id: ucode,
             isDeleted: false
         }).select("-password -isDeleted -__v");
         //required
-        user.staff_id = ucode;
+        user.staff_id = new_ucode;
         user.firstname = fname;
         user.lastname = lname;
         //optional
