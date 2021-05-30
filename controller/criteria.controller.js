@@ -1,5 +1,5 @@
 const db = require("../model/");
-const {body, param, query, validationResult} = require("express-validator");
+const {body, param} = require("express-validator");
 const Criteria = db.criteria;
 const Standard = db.standard;
 
@@ -13,7 +13,7 @@ exports.validate = (method)=>{
                 body('description', "Invalid description format").optional().isString()
             ]
         };
-        case 'deleteCriteriaFromDB':
+        case 'deleteCriteriaDB':
         case 'getCriteria': {
             return [
                 param('id','Invalid Criteria ID').exists().isMongoId()
@@ -151,7 +151,7 @@ exports.getCriteria = async (req,res,next)=>{
 }
 
 //delete Criteria from DB
-exports.deleteCriteriaFromDB = async (req,res,next)=>{
+exports.deleteCriteriaDB = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const criteria = await Criteria.findById(id).select("_id");
@@ -192,10 +192,10 @@ exports.deleteCriteria = async (req,res,next)=>{
             });
         }
         criteria.isDeleted = true;
-        await criteria.save();
+        criteria.save();
         return res.status(200).send({
             statusCode: 200,
-            message: "Delete Criteria successfully"
+            message: "Success"
         })
     } catch (error) {
         next(error);

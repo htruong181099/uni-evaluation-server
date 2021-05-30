@@ -13,9 +13,9 @@ module.exports = (app) => {
         criteriaController.getCriteria
     )
     app.post("/admin/criteria/:id/deleteDB",
-        criteriaController.validate('deleteCriteriaFromDB'),
+        criteriaController.validate('deleteCriteriaDB'),
         getValidationResult,
-        criteriaController.deleteCriteriaFromDB
+        criteriaController.deleteCriteriaDB
     )
     app.post("/admin/criteria/:ccode/delete",
         criteriaController.validate('deleteCriteria'),

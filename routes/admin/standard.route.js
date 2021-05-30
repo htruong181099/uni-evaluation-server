@@ -14,11 +14,25 @@ module.exports = (app) => {
         getValidationResult,
         standardController.getStandard
     )
-    app.post("/admin/standard/:id/delete",
+    //delete DB
+    app.post("/admin/standard/:id/deleteDB",
+        standardController.validate('deleteStandardDB'),
+        getValidationResult,
+        standardController.deleteStandardDB
+    )
+    //set isDeleted - true
+    app.post("/admin/standard/:scode/delete",
         standardController.validate('deleteStandard'),
         getValidationResult,
         standardController.deleteStandard
     )
+    //set isDeleted - true
+    app.post("/admin/standard/:scode/restore",
+        standardController.validate('restoreStandard'),
+        getValidationResult,
+        standardController.restoreStandard
+    )
+
     app.post("/admin/standard/add",
         standardController.validate('addStandard'),
         getValidationResult,

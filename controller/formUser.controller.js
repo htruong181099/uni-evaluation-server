@@ -362,14 +362,29 @@ exports.getFormUserIfHead = async (req,res,next)=>{
         const formDepartment = await FormDepartment.findOne({
             form_id: form._id,
             department_id: department._id,
-            head: user_id,
+            // head: user_id,
             isDeleted: false
-        }).select("_id level");
+        }).select("_id level head")
+        .populate("head", "_id")
         if(!formDepartment){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form Department not found"
             })
+        }
+
+        if(formDepartment.head._id != user_id){
+            const council = await FormDepartment.findOne({
+                form_id: form._id,
+                level: 3,
+                isDeleted: false
+            }).select("_id level head")
+            if(!council.head.id == user_id){
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Require head role"
+                })
+            }
         }
 
         const formUsers = await FormUser.find({

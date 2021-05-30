@@ -17,9 +17,16 @@ exports.validate = (method)=>{
                 param('id','Invalid Standard Id').exists().isMongoId()
             ]
         };
-        case 'deleteStandard':{
+        
+        case 'deleteStandardDB':{
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
+            ]
+        }
+        case 'deleteStandard':
+        case 'restoreStandard':{
+            return [
+                param('scode','Invalid Standard Id').exists().isString()
             ]
         }
     }
@@ -60,13 +67,13 @@ exports.addStandard = async (req,res,next)=>{
 exports.getStandards = async (req,res,next)=>{
     try {
         const standards = await Standard.find({
-            
+            isDeleted: false
         }).sort({"code": 1})
         .select("-__v -create_date -isDeleted");
 
         res.status(200).json({
             statusCode: 200,
-            message: "OK",
+            message: "Success",
             standards
         })
     } catch (error) {
@@ -78,7 +85,10 @@ exports.getStandards = async (req,res,next)=>{
 exports.getStandard = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const standard = await Standard.findById(id).select("-__v -create_date");
+        const standard = await Standard.findOne({
+            _id: id,
+            isDeleted: false
+        }).select("-__v -create_date");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
@@ -95,7 +105,7 @@ exports.getStandard = async (req,res,next)=>{
     }        
 }
 
-exports.deleteStandard = async (req,res,next)=>{
+exports.deleteStandardDB = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const standard = await Standard.findById(id).select("_id");
@@ -125,14 +135,16 @@ exports.deleteStandard = async (req,res,next)=>{
 
 exports.getStandardsWithCriteria = async (req,res,next)=>{
     try {
-        const standards = await Standard.find()
-                        .sort({"code": 1})
-                        .select("-__v -create_date -isDeleted")
-                        .lean();
+        const standards = await Standard.find({
+            isDeleted: false
+        })
+        .sort({"code": 1})
+        .select("-__v -create_date -isDeleted")
+        .lean();
         for(let i in standards){
             const criteria = await Criteria.find({
                 standard: standards[i]._id,
-                // isDeleted: false
+                isDeleted: false
             })
             .sort({"code": 1})
             .select("-__v -isDeleted -create_date");
@@ -143,6 +155,62 @@ exports.getStandardsWithCriteria = async (req,res,next)=>{
             message: "OK",
             standards
         })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//set isDeleted - true
+exports.deleteStandard = async (req,res,next)=>{
+    try {
+        const {scode} = req.params;
+        const standard = await Standard.findOne({
+            code: scode,
+            isDeleted: false
+        }).select("_id");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            });
+        }
+        
+        standard.isDeleted = true;
+        standard.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//set isDeleted - false
+exports.restoreStandard = async (req,res,next)=>{
+    try {
+        const {scode} = req.params;
+        const standard = await Standard.findOne({
+            code: scode,
+            isDeleted: true
+        }).select("_id");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            });
+        }
+        
+        standard.isDeleted = false;
+        standard.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
     } catch (error) {
         next(error);
     }        
