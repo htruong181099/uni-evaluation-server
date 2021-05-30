@@ -86,9 +86,11 @@ exports.addCriteria = async (req,res,next)=>{
 //get all the criteria in database
 exports.getAllCriterions = async (req,res,next)=>{
     try {
-        const criterions = await Criteria.find()
-                            .sort({"create_date": -1})
-                            .select("-__v -create_date");
+        const criterions = await Criteria.find({
+            isDeleted: false
+        })
+        .sort({"create_date": -1})
+        .select("-__v -create_date");
         res.status(200).json({
             statusCode: 200,
             message: "Success",
@@ -103,17 +105,23 @@ exports.getAllCriterions = async (req,res,next)=>{
 exports.getCriterions = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const standard = await Standard.findById(id).select("_id code name");
+        const standard = await Standard.findOne({
+            _id: id,
+            isDeleted: false
+        }).select("_id code name");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Standard not found"
             })
         }
-        const criterions = await Criteria.find({standard: standard._id})
-                            // .populate("standard","code name")
-                            .sort({"code": 1})
-                            .select("-__v -create_date -standard");
+        const criterions = await Criteria.find({
+            standard: standard._id,
+            isDeleted: false
+        })
+        .sort({"code": 1})
+        .select("-__v -create_date -standard");
+        
         return res.status(200).json({
             statusCode: 200,
             standard,
@@ -154,7 +162,7 @@ exports.getCriteria = async (req,res,next)=>{
 exports.deleteCriteriaDB = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const criteria = await Criteria.findById(id).select("_id");
+        const criteria = await Criteria.findOne({id}).select("_id");
         
         if(!criteria){
             return res.status(404).json({
