@@ -214,13 +214,13 @@ exports.getEvaluation = async (req,res,next)=>{
             // user: formUser._id,
             userForm: userForm._id,
             status: [0,1]
-        }).select("_id status").lean();
+        }).select("_id status level").lean();
 
         for(let i in evaluateForms){
             const evaluateForm = evaluateForms[i];
             const evaluateCriteria = await EvaluateCriteria.find({
                 evaluateForm: evaluateForm._id
-            }).select("form_criteria point level -_id")
+            }).select("form_criteria point -_id")
             .populate({
                 path: "form_criteria",
                 select: "criteria_id criteria_order -_id",
@@ -520,8 +520,7 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             })
             let evaluateCriteria = await EvaluateCriteria.findOne({
                 evaluateForm: evaluateForm._id,
-                form_criteria: formCriteria._id,
-                level
+                form_criteria: formCriteria._id
             })
     
             if(!evaluateCriteria){
@@ -529,7 +528,6 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                     evaluateForm: evaluateForm._id,
                     form_criteria: formCriteria._id,
                     point: body[i].value?body[i].value:0,
-                    level
                 })
             }
             evaluateCriteria.point = body[i].value?body[i].value:0;
@@ -585,7 +583,7 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
         })
 
         const doc = await evaluateForm.save();
-        console.log(doc._id);
+
         for(let i in body){
             const criteria = await Criteria.findOne({
                 code: body[i].name,
@@ -598,7 +596,7 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
             let evaluateCriteria = await EvaluateCriteria.findOne({
                 evaluateForm: doc._id,
                 form_criteria: formCriteria._id,
-                level
+                level: level+1
             })
     
             if(!evaluateCriteria){
@@ -606,7 +604,7 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
                     evaluateForm: doc._id,
                     form_criteria: formCriteria._id,
                     point: body[i].value?body[i].value:0,
-                    level
+                    level: level+1
                 })
             }
             evaluateCriteria.point = body[i].value?body[i].value:0;

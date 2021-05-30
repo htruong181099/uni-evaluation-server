@@ -19,9 +19,6 @@ const EvaluateCriteria = mongoose.model(
             required: true,
             default: 0
         },
-        level: {
-            type: Number,
-        },
         isDeleted: {
             type: Boolean,
             default: false

@@ -37,6 +37,7 @@ exports.validate = (method)=>{
     }
 }
 
+//get user using id (mongo)
 exports.getUser = async (req,res,next)=>{
     const {id} = req.params;
     try{
@@ -58,6 +59,7 @@ exports.getUser = async (req,res,next)=>{
     }
 }
 
+//get user using staff_id (code)
 exports.getUserbyCode = async (req,res,next)=>{
     try{
         const {ucode} = req.params;
@@ -98,6 +100,7 @@ exports.getUserbyCode = async (req,res,next)=>{
     }
 }
 
+//edit user info
 exports.editUser = async (req, res, next)=>{
     try {
         const {ucode} = req.params;
@@ -140,12 +143,15 @@ exports.editUser = async (req, res, next)=>{
     }
 }
 
+//get all users
 exports.getUsers = async (req,res,next)=>{
     try{
-        const users = await User.find()
-                    .sort({"staff_id": 1})
-                    .populate("department","department_code name")
-                    .select("-__v -password");
+        const users = await User.find({
+            isDeleted: false
+        })
+        .sort({"staff_id": 1})
+        .populate("department","department_code name")
+        .select("-__v -password -isDeleted");
 
         return res.status(200).json({
             statusCode: 200,
@@ -158,6 +164,28 @@ exports.getUsers = async (req,res,next)=>{
     }
 }
 
+//get deleted users
+exports.getDeletedUsers = async (req,res,next)=>{
+    try{
+        const users = await User.find({
+            isDeleted: true
+        })
+        .sort({"staff_id": 1})
+        .populate("department","department_code name")
+        .select("-__v -password -isDeleted");
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "OK",
+            users: users
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+//create new user
 exports.addUser = async (req,res,next)=>{
     try {
         const {id, lname, fname, email, dcode} = req.body;

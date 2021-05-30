@@ -16,6 +16,7 @@ const EvaluateForm = mongoose.model(
         },
         level: {
             type: Number,
+            required: true
         },
         status: {
             type: Number,
