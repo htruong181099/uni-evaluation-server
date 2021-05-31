@@ -35,6 +35,13 @@ module.exports = (app) =>{
         departmentController.getParentsWithChildren
     )
 
+    //edit
+    app.post("/admin/department/:dcode/edit",
+        departmentController.validate('editDepartment'),
+        getValidationResult,
+        departmentController.editDepartment
+    )
+
     //set isDeleted
     app.post("/admin/department/:dcode/delete",
         departmentController.validate('deleteDepartment'),

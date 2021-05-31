@@ -41,7 +41,7 @@ module.exports = (app) => {
     app.get("/admin/criteria/:ccode/option",
         criteriaOptionController.validate('getCriteriaOptions'),
         getValidationResult,
-        criteriaOptionController.getCriteriaOption
+        criteriaOptionController.getCriteriaOptions
     )
     
     //create new option
@@ -55,7 +55,7 @@ module.exports = (app) => {
     app.get("/admin/criteria/option/:ocode/get",
         criteriaOptionController.validate('getCriteriaOption'),
         getValidationResult,
-        criteriaOptionController.addCriteriaOption
+        criteriaOptionController.getCriteriaOption
     )
     //edit option
     app.post("/admin/criteria/option/:ocode/edit",

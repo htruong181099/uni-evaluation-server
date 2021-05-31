@@ -34,6 +34,25 @@ exports.validate = (method)=>{
                 param("dcode", "Invalid Department").exists().isString()
             ]
         };
+        case 'editDepartment': {
+            //param {dcode}
+            //body {new_dcode, name, manager, parent}
+            return [
+                param("dcode", "Invalid Department").exists().isString(),
+                body("new_dcode", "Invalid Department").exists().isString(),
+                body("name", "Invalid name").exists().isString(),
+                // body("manager", "Invalid manager").optional().isString(),
+                // body("parent", "Invalid parent").optional().isString(),
+            ]
+        }
+        case 'editDepartmentHead': {
+            //param {dcode}
+            //body {manager}
+            return [
+                param("dcode", "Invalid Department").exists().isString(),
+                body("manager", "Invalid manager").exists().isString(),
+            ]
+        }
     }
 }
 
@@ -308,6 +327,88 @@ exports.getParentsWithChildren = async (req,res,next)=>{
             message: "Success",
             parents
         })
+    } catch (error) {
+        next(error);
+    }
+}
+
+//edit Department
+exports.editDepartment = async (req,res,next)=>{
+    try {
+        const {dcode} = req.params;
+        const {new_dcode, name, manager, parent} = req.body;
+        const department = await Department.findOne({
+            department_code: dcode,
+            isDeleted: false
+        })
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        department.department_code = new_dcode;
+        department.name = name;
+        
+        department.save((err)=>{
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                return res.status(409).send({
+                    statusCode: 409,
+                    message: 'Department already exists!'
+                });
+            }
+
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Success"
+            })
+        });
+
+        
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.editDepartmentHead = async (req,res,next)=>{
+    try {
+        const {dcode} = req.params;
+        const {manager} = req.body;
+        const department = await Department.findOne({
+            department_code: dcode,
+            isDeleted: false
+        })
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        if(!await User.findOne({staff_id: manager, isDeleted: false}).select("_id")){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+
+        User.updateOne({
+            staff_id: manager,
+            isDeleted: false
+        },{
+            $addToSet: { department: [department._id, department.parent] } 
+        })
+        
+        department.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
+
     } catch (error) {
         next(error);
     }
