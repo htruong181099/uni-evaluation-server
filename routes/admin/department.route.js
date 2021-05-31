@@ -41,6 +41,12 @@ module.exports = (app) =>{
         getValidationResult,
         departmentController.editDepartment
     )
+    //edit Department head (manager)
+    app.post("/admin/department/:dcode/editHead",
+        departmentController.validate('editDepartmentHead'),
+        getValidationResult,
+        departmentController.editDepartmentHead
+    )
 
     //set isDeleted
     app.post("/admin/department/:dcode/delete",
