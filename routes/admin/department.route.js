@@ -7,22 +7,57 @@ module.exports = (app) =>{
         departmentController.getDepartments
     )
     app.post("/admin/department/addDepartment",
-        departmentController.addDepartment
+        departmentController.validate('addDepartment'),
+        getValidationResult,
+        departmentController.addDepartment,
+        departmentController.addUserDepartment
     )
     app.get("/admin/department/parent",
         departmentController.getParentDepartments
     )
     app.get("/admin/department/:id",
+        departmentController.validate('getDepartment'),
+        getValidationResult,
         departmentController.getDepartment
     )
-    app.get("/admin/department/:code/user",
-        departmentController.getDepartmentUser
+    app.get("/admin/department/:dcode/user",
+        departmentController.validate('getDepartmentUser'),
+        getValidationResult,
+        departmentController.getDepartmentUsers
     )
-    app.get("/admin/department/:code/children",
+    app.get("/admin/department/:dcode/children",
+        departmentController.validate('getChildDepartments'),
+        getValidationResult,
         departmentController.getChildDepartments
     )
 
     app.get("/admin/department/parent/children/get",
         departmentController.getParentsWithChildren
     )
+
+    //set isDeleted
+    app.post("/admin/department/:dcode/delete",
+        departmentController.validate('deleteDepartment'),
+        getValidationResult,
+        departmentController.deleteDepartment
+    )
+    app.post("/admin/department/:dcode/restore",
+        departmentController.validate('restoreDepartment'),
+        getValidationResult,
+        departmentController.restoreDepartment
+    )
+
+    //deleted
+    app.get("/admin/department/deleted/",
+        departmentController.getDeletedDepartments
+    )
+    app.get("/admin/department/deleted/parent",
+        departmentController.getDeletedParent
+    )
+    app.get("/admin/department/deleted/:dcode/children",
+        departmentController.validate('getDeletedChildren'),
+        getValidationResult,
+        departmentController.getDeletedChildren
+    )
+
 }
