@@ -28,6 +28,7 @@ exports.validate = (method)=>{
                 body('description').optional().isString()
             ]
         };
+        case 'deleteStandardbyID':
         case 'getStandardbyID':{
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
@@ -65,7 +66,7 @@ exports.addStandard = async (req,res,next)=>{
                         message: 'Standard already exists!'
                     });
                 }
-                next(err);
+                return next(err);
             }
             return res.status(200).json({
                 statusCode: 200,
@@ -84,6 +85,24 @@ exports.getStandards = async (req,res,next)=>{
     try {
         const standards = await Standard.find({
             isDeleted: false
+        }).sort({"code": 1})
+        .select("-__v -create_date -isDeleted");
+
+        res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            standards
+        })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//get all the standards
+exports.getDeletedStandards = async (req,res,next)=>{
+    try {
+        const standards = await Standard.find({
+            isDeleted: true
         }).sort({"code": 1})
         .select("-__v -create_date -isDeleted");
 
@@ -200,7 +219,35 @@ exports.getStandardsWithCriteria = async (req,res,next)=>{
     }        
 }
 
-//set isDeleted - true
+//set isDeleted - true by ID
+exports.deleteStandardbyID = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+        const standard = await Standard.findOne({
+            _id: id,
+            isDeleted: false
+        }).select("_id");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            });
+        }
+        
+        standard.isDeleted = true;
+        standard.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//set isDeleted - true by Code
 exports.deleteStandard = async (req,res,next)=>{
     try {
         const {scode} = req.params;

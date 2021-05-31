@@ -215,3 +215,32 @@ exports.restoreCriteriaOption = async (req,res,next)=>{
         next(error);
     }
 }
+
+//get deleted options
+exports.getDeletedCriteriaOptions = async (req,res,next)=>{
+    try {
+        const {ccode} = req.params;
+    const criteria = await Criteria.findOne({
+        code: ccode,
+        isDeleted: false
+    }).select("_id");
+    if(!criteria){
+        return res.status(404).json({
+            statusCode: 404,
+            message: "Criteria not found"
+        })
+    }
+    const criteriaOptions = await CriteriaOption.find({
+        criteria_id: criteria._id,
+        isDeleted: true
+    }).select("-__v -isDeleted").sort({"max_point": -1});
+    
+    return res.status(200).json({
+        statusCode: 200,
+        message: "Success",
+        criteriaOptions
+    })
+    } catch (error) {
+        next(error);
+    }
+}

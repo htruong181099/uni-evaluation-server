@@ -9,6 +9,14 @@ module.exports = (app) => {
     app.get("/admin/standard/criteria",
         standardController.getStandardsWithCriteria
     )
+
+    //add standard
+    app.post("/admin/standard/add",
+        standardController.validate('addStandard'),
+        getValidationResult,
+        standardController.addStandard
+    )
+
     app.get("/admin/standard/:id",
         standardController.validate('getStandardbyID'),
         getValidationResult,
@@ -19,6 +27,7 @@ module.exports = (app) => {
         getValidationResult,
         standardController.getStandard
     )
+    
 
     //edit standard by id
     app.post("/admin/standard/:id/editbyID",
@@ -44,24 +53,39 @@ module.exports = (app) => {
         getValidationResult,
         standardController.deleteStandard
     )
+    app.post("/admin/standard/:id/deletebyID",
+        standardController.validate('deleteStandardbyID'),
+        getValidationResult,
+        standardController.deleteStandardbyID
+    )
     //set isDeleted - true
     app.post("/admin/standard/:scode/restore",
         standardController.validate('restoreStandard'),
         getValidationResult,
         standardController.restoreStandard
     )
-    //add standard
-    app.post("/admin/standard/add",
-        standardController.validate('addStandard'),
-        getValidationResult,
-        standardController.addStandard
+    //get deleted standards
+    app.get("/admin/standard/deleted",
+        standardController.getDeletedStandards
     )
+
+    ////standard's criterions
+    //create new criteria of a standard
     app.post("/admin/standard/:id/criteria/add",
+        criteriaController.validate('addCriteria'),
+        getValidationResult,
         criteriaController.addCriteria
     )
+    //get criterions of a standard
     app.get("/admin/standard/:id/criteria",
         criteriaController.validate('getCriterions'),
         getValidationResult,
         criteriaController.getCriterions
+    )
+    //get deleted criterions of a standard
+    app.get("/admin/standard/:id/criteria/deleted",
+        criteriaController.validate('getDeletedCriterions'),
+        getValidationResult,
+        criteriaController.getDeletedCriterions
     )
 }

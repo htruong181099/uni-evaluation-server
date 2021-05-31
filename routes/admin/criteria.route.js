@@ -36,6 +36,11 @@ module.exports = (app) => {
         criteriaController.restoreCriteria
     )
 
+    //get deleted criterions of a standard
+    app.get("/admin/criteria/deleted",
+        criteriaController.getAllDeletedCriterions
+    )
+
     ////criteria option
     //get criteria's all options
     app.get("/admin/criteria/:ccode/option",
@@ -74,5 +79,11 @@ module.exports = (app) => {
         criteriaOptionController.validate('restoreCriteriaOption'),
         getValidationResult,
         criteriaOptionController.restoreCriteriaOption
+    )
+    //get deleted options 
+    app.get("/admin/criteria/:ccode/option/deleted",
+        criteriaOptionController.validate('getCriteriaOptions'),
+        getValidationResult,
+        criteriaOptionController.getDeletedCriteriaOptions
     )
 }

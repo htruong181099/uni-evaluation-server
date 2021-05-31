@@ -25,7 +25,9 @@ exports.validate = (method)=>{
                 param('ccode','Invalid Criteria Code').exists().isString()
             ]
         }
-        case 'getCriterions': {
+        case 'getCriterions':
+        case 'getDeletedCriterions':
+        {
             //param {id}
             return [
                 param('id','Invalid Standard Id').exists().isMongoId()
@@ -292,6 +294,55 @@ exports.editCriteria = async (req,res,next)=>{
             })
         });
 
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//get deleted criterions of a standard
+exports.getDeletedCriterions = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+        const standard = await Standard.findOne({
+            _id: id,
+            isDeleted: false
+        }).select("_id code name");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+        const criterions = await Criteria.find({
+            standard: standard._id,
+            isDeleted: true
+        })
+        .sort({"code": 1})
+        .select("-__v -create_date -standard");
+        
+        return res.status(200).json({
+            statusCode: 200,
+            standard,
+            criterions
+        })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//get all deleted the criteria in database
+exports.getAllDeletedCriterions = async (req,res,next)=>{
+    try {
+        const criterions = await Criteria.find({
+            isDeleted: true
+        })
+        .sort({"create_date": -1})
+        .select("-__v -create_date");
+        res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            criterions
+        })
     } catch (error) {
         next(error);
     }        
