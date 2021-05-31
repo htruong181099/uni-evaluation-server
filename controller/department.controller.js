@@ -188,6 +188,7 @@ exports.getChildDepartments = async (req,res,next)=>{
             parent: parent._id,
             isDeleted: false
         }).select("-__v -isDeleted")
+        .populate("manager", "staff_id firstname lastname")
 
         res.status(200).json({
             statusCode: 200,
