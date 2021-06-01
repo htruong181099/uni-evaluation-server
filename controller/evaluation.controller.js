@@ -462,8 +462,7 @@ exports.submitEvaluationV2 = async (req,res,next)=>{
 
 //version 3
 exports.submitEvaluationV3 = async (req,res,next)=>{
-    try {
-        
+    try {        
         const {ufid} = req.params;
         const {dataToSend, level} = req.body;
         const user_id = req.userId;
@@ -528,6 +527,8 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                     point: body[i].value?body[i].value:0,
                 })
             }
+            let point = body[i].value?body[i].value:0;
+            point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
             evaluateCriteria.point = body[i].value?body[i].value:0;
             await evaluateCriteria.save();
         }

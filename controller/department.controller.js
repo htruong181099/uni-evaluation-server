@@ -489,7 +489,7 @@ exports.getDeletedParent = async (req,res,next)=>{
     try {
         const departments = await Department.find({
             isDeleted: true,
-            parent: {$ne: null}
+            parent: null
         })
 
         return res.status(200).json({
