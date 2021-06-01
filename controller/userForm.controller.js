@@ -334,7 +334,8 @@ exports.getPointsDepartment = async (req,res,next)=>{
             isDeleted: false
         })
         const total = await FormUser.count({
-            department_form_id: formDepartment
+            department_form_id: formDepartment,
+            isDeleted: false
         }) 
 
         const userforms = await UserForm.find({
