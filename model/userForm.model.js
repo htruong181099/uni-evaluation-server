@@ -14,6 +14,9 @@ const UserForm = mongoose.model(
             ref: "Form",
             required: true
         },
+        point: {
+            type: Number
+        },
         isDeleted: {
             type: Boolean,
             default: false

@@ -15,6 +15,20 @@ module.exports = (app) =>{
     app.get("/admin/department/parent",
         departmentController.getParentDepartments
     )
+
+    //deleted
+    app.get("/admin/department/deleted/",
+        departmentController.getDeletedDepartments
+    )
+    app.get("/admin/department/deleted/parent",
+        departmentController.getDeletedParent
+    )
+    app.get("/admin/department/deleted/:dcode/children",
+        departmentController.validate('getDeletedChildren'),
+        getValidationResult,
+        departmentController.getDeletedChildren
+    )
+
     app.get("/admin/department/:id",
         departmentController.validate('getDepartment'),
         getValidationResult,
@@ -60,17 +74,6 @@ module.exports = (app) =>{
         departmentController.restoreDepartment
     )
 
-    //deleted
-    app.get("/admin/department/deleted/",
-        departmentController.getDeletedDepartments
-    )
-    app.get("/admin/department/deleted/parent",
-        departmentController.getDeletedParent
-    )
-    app.get("/admin/department/deleted/:dcode/children",
-        departmentController.validate('getDeletedChildren'),
-        getValidationResult,
-        departmentController.getDeletedChildren
-    )
+    
 
 }

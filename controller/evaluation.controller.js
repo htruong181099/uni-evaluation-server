@@ -3,6 +3,7 @@ const EvaluateForm = require("../model/evaluateForm.model");
 const Form = require("../model/form.model");
 const FormCriteria = require("../model/formCriteria.model");
 const FormDepartment = require("../model/formDepartment.model");
+const FormStandard = require("../model/formStandard.model");
 const UserForm = require("../model/userForm.model");
 const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
@@ -561,6 +562,46 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
         }).select("_id head")
 
         if(!formDepartment){
+            const userForm = await UserForm.findOne({
+                _id: userForm_id
+            })
+            const form_id = userForm.form_id;
+            const evaluateForm = await EvaluateForm.findOne({
+                userForm: userForm._id,
+                status: 1
+            }).sort({
+                "level": -1
+            })
+    
+            const formStandards = await FormStandard.find({
+                form_id: form_id,
+                isDeleted: false
+            }).sort({standard_order: 1})
+            .select("standard_id standard_order standard_point")
+            .populate("standard_id", "code name")
+    
+    
+            let final_point = 0;
+            for(let i in formStandards){
+                const formStandard = formStandards[i];
+                const formCriterias = await FormCriteria.find({
+                    form_standard: formStandard._id,
+                    isDeleted: false
+                }).select("_id")
+                const evaluateCriteria = await EvaluateCriteria.find({
+                    evaluateForm: evaluateForm._id,
+                    form_criteria: formCriterias
+                })
+                .select("-__v -isDeleted")
+                
+                let standard_point = evaluateCriteria.reduce((acc,ele) => acc + ele.point, 0)
+                if(formStandard.standard_point){
+                    standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
+                } 
+                final_point += standard_point;
+            }
+            userForm.point = final_point;
+            userForm.save();
             return;
         }
 
@@ -630,6 +671,73 @@ exports.deleteEvaluateFormDB = async (req,res,next)=>{
             })
         })
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.test = async (req,res,next)=>{
+    const userForm_id = req.params.ufid;
+    try {
+        const userForm = await UserForm.findOne({
+            _id: userForm_id
+        })
+        const form_id = userForm.form_id;
+        const evaluateForm = await EvaluateForm.findOne({
+            userForm: userForm._id,
+            status: 1
+        }).sort({
+            "level": -1
+        })
+
+        const formStandards = await FormStandard.find({
+            form_id: form_id,
+            isDeleted: false
+        }).sort({standard_order: 1})
+        .select("standard_id standard_order standard_point")
+        .populate("standard_id", "code name")
+
+
+        let lst = []
+        let final_point = 0;
+        for(let i in formStandards){
+            const formStandard = formStandards[i];
+            const formCriterias = await FormCriteria.find({
+                form_standard: formStandard._id,
+                isDeleted: false
+            }).select("_id")
+            const evaluateCriteria = await EvaluateCriteria.find({
+                evaluateForm: evaluateForm._id,
+                form_criteria: formCriterias
+            }).populate({
+                path: "form_criteria",
+                select: "form_standard criteria_id criteria_order point -_id",
+                sort: {criteria_order: 1},
+                populate: {
+                    path: "criteria_id",
+                    select: "code name type -_id",
+                }
+            })
+            .select("-__v -isDeleted")
+            let standard_point = evaluateCriteria.reduce((acc,ele) => acc + ele.point, 0)
+            
+            lst.push({
+                formStandard,
+                evaluateCriteria,
+                count: evaluateCriteria.length,
+                standard_point
+            })
+            if(formStandard.standard_point){
+                standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
+            } 
+            final_point += standard_point;
+        }
+
+        res.status(200).json({
+            final_point,
+            lst
+        })
+        return;
     } catch (error) {
         next(error);
     }

@@ -7,12 +7,12 @@ exports.validate = (method)=>{
     switch(method){
         case 'getCriteriaOptions':{
             return [
-                param("ccode", "invalid Criteria Code").exists().isString()
+                param("ccode", "Invalid Criteria Code").exists().isString()
             ]
         }
         case 'addCriteriaOption':{
             return [
-                param("ccode", "invalid Criteria Code").exists().isString(),
+                param("ccode", "Invalid Criteria Code").exists().isString(),
                 body("code", "Invalid Option code").exists().isString(),
                 body("name", "Invalid Name").exists().isString(),
                 body("max_point", "Max point required").exists(),

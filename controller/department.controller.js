@@ -474,8 +474,7 @@ exports.getDeletedDepartments = async (req,res,next)=>{
     try {
         const departments = await Department.find({
             isDeleted: true
-        }).select("_id")
-
+        })
 
         return res.status(200).json({
             statusCode: 200,
@@ -491,8 +490,7 @@ exports.getDeletedParent = async (req,res,next)=>{
         const departments = await Department.find({
             isDeleted: true,
             parent: {$ne: null}
-        }).select("_id")
-
+        })
 
         return res.status(200).json({
             statusCode: 200,
