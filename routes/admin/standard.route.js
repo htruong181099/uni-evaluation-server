@@ -17,6 +17,11 @@ module.exports = (app) => {
         standardController.addStandard
     )
 
+    //get deleted standards
+    app.get("/admin/standard/deleted",
+        standardController.getDeletedStandards
+    )
+
     app.get("/admin/standard/:id",
         standardController.validate('getStandardbyID'),
         getValidationResult,
@@ -64,10 +69,7 @@ module.exports = (app) => {
         getValidationResult,
         standardController.restoreStandard
     )
-    //get deleted standards
-    app.get("/admin/standard/deleted",
-        standardController.getDeletedStandards
-    )
+    
 
     ////standard's criterions
     //create new criteria of a standard
