@@ -1,4 +1,6 @@
 const db = require("../model");
+const Department = require("../model/department.model");
+const FormDepartment = require("../model/formDepartment.model");
 const FormUser = db.formUser;
 // const Evaluation = db.evaluation;
 const EvaluateForm = db.evaluateForm;
@@ -124,6 +126,232 @@ exports.getUserFormV2 = async (req,res,next)=>{
         req.ufdep = userForm.form_user.department_form_id.department_id;
         req.final_point = userForm.point;
         return next();
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+exports.getResults = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        
+        let {size, page} = req.query;
+        page = page || 1;
+        size = parseInt(size);
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const userforms = await UserForm.find({
+            form_id: form._id,
+            point: {$ne: null},
+            isDeleted: false
+        }).sort({
+            point: -1
+        })
+        .skip((size*page) - size)
+        .limit(size)
+        .select("-isDeleted -__v -form_id")
+        .populate({
+            path: "form_user",
+            select: "-isDeleted -__v -form_id",
+            populate: [{
+                path: "user_id",
+                select: "firstname lastname staff_id"
+            },
+            {
+                path: "department_form_id",
+                select: "department_id",
+                populate: {
+                    select: "department_code name",
+                    path: "department_id"
+                }
+            }]
+        })
+        
+
+        return res.status(200).json({
+            statusCode: 200,
+            userforms,
+            total: 50
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getResultsDepartment = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const {dcode} = req.params;
+        let {size, page} = req.query;
+        page = page || 1;
+        size = size? parseInt(size) : 10;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const department = await Department.findOne({
+            department_code: dcode
+        }).select("_id")
+
+        const formDepartment = await FormDepartment.findOne({
+            department_id: department._id,
+            form_id: form._id,
+            isDeleted: false
+        }).select("_id")
+
+        const formUsers = await FormUser.find({
+            department_form_id: formDepartment._id
+        }).select("_id")
+
+        const userforms = await UserForm.find({
+            form_user: formUsers.map(e=>e._id),
+            form_id: form._id,
+            point: {$ne: null},
+            isDeleted: false
+        }).sort({
+            point: -1
+        })
+        .skip((size*page) - size)
+        .limit(size)
+        .select("form_user")
+        .populate({
+            path: "form_user",
+            select: "-isDeleted -__v -form_id",
+            populate: {
+                path: "user_id",
+                select: "firstname lastname staff_id"
+            }
+        })
+        return res.status(200).json({
+            statusCode: 200,
+            userforms
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getPoints = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const formDepartments = await FormDepartment.find({
+            form_id: form._id,
+            level: 2,
+            isDeleted: false
+        })
+        const total = await FormUser.count({
+            department_form_id: formDepartments,
+            isDeleted: false
+        }) 
+
+        const userforms = await UserForm.find({
+            form_id: form._id,
+            point: {$ne: null},
+            isDeleted: false
+        }).sort({
+            point: -1
+        })
+        .select("point -_id")
+        
+
+        return res.status(200).json({
+            statusCode: 200,
+            userforms: userforms.map(e=>e.point),
+            total
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getPointsDepartment = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+        const department = await Department.findOne({
+            department_code: dcode
+        }).select("_id")
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
+
+        const formDepartment = await FormDepartment.findOne({
+            form_id: form._id,
+            department_id: department._id,
+            level: 2,
+            isDeleted: false
+        })
+        const total = await FormUser.count({
+            department_form_id: formDepartment
+        }) 
+
+        const userforms = await UserForm.find({
+            form_id: form._id,
+            point: {$ne: null},
+            isDeleted: false
+        }).sort({
+            point: -1
+        })
+        .select("point -_id")
+        
+
+        return res.status(200).json({
+            statusCode: 200,
+            userforms: userforms.map(e=>e.point),
+            total
+        })
 
     } catch (error) {
         next(error);

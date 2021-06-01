@@ -17,7 +17,7 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
-const { userController, evaluationController } = require("../controller");
+const { userController, evaluationController, userFormController } = require("../controller");
 
 module.exports = function(app){
 
@@ -189,7 +189,6 @@ module.exports = function(app){
     app.get("/admin/form/:fcode/getFormStandard",
         formStandardController.getFormStandards
     )
-
     app.post("/admin/form/:fcode/addFormStandard",
         formStandardController.addFormStandard
 
@@ -203,6 +202,30 @@ module.exports = function(app){
         formCriteriaController.addFormCriteria
     )
 
+    //userform
+    app.get("/admin/form/:fcode/getResults",
+        // formController.validate("getResults"),
+        // getValidationResult,
+        userFormController.getResults
+    )
+
+    app.get("/admin/form/:fcode/:dcode/getResults",
+        // formController.validate("getResults"),
+        // getValidationResult,
+        userFormController.getResultsDepartment
+    )
+
+    app.get("/admin/form/:fcode/getPoints",
+        // formController.validate("getResults"),
+        // getValidationResult,
+        userFormController.getPoints
+    )
+
+    app.get("/admin/form/:fcode/:dcode/getPoints",
+        // formController.validate("getResults"),
+        // getValidationResult,
+        userFormController.getPointsDepartment
+    )
 
     //admin
     app.post("/admin/evaluateform/:id/deleteDB",
