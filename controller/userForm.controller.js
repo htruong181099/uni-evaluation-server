@@ -122,7 +122,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
         req.user_form = userForm._id;
         req.ufuser = userForm.form_user.user_id;
         req.ufdep = userForm.form_user.department_form_id.department_id;
-
+        req.final_point = userForm.point;
         return next();
 
     } catch (error) {
