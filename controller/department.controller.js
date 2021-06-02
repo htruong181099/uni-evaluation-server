@@ -218,7 +218,7 @@ exports.getDepartmentUsers = async (req,res,next)=>{
             isDeleted: false
         })
         .populate("manager", "firstname lastname staff_id")
-        .select("_id");
+        .select("-__v -isDeleted");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -244,6 +244,7 @@ exports.getDepartmentUsers = async (req,res,next)=>{
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
+            department,
             user
         })
     }

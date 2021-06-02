@@ -227,6 +227,12 @@ module.exports = function(app){
         userFormController.getPointsDepartment
     )
 
+    app.get("/admin/form/:fcode/getS",
+        // formController.validate("getResults"),
+        // getValidationResult,
+        evaluationController.testS
+    )
+
     //admin
     app.post("/admin/evaluateform/:id/deleteDB",
         evaluationController.deleteEvaluateFormDB

@@ -4,6 +4,7 @@ const Form = require("../model/form.model");
 const FormCriteria = require("../model/formCriteria.model");
 const FormDepartment = require("../model/formDepartment.model");
 const FormStandard = require("../model/formStandard.model");
+const Standard = require("../model/standard.model");
 const UserForm = require("../model/userForm.model");
 const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
@@ -672,6 +673,70 @@ exports.deleteEvaluateFormDB = async (req,res,next)=>{
             })
         })
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.testS = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const {scode} = req.body;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+        const standard = await Standard.findOne({
+            code: scode,
+            isDeleted: false
+        }).select("_id")
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+
+        const formStandard = await FormStandard.findOne({
+            form_id: form._id,
+            standard_id: standard._id,
+            isDeleted: false
+        })
+        if(!formStandard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormStandard not found"
+            })
+        }
+
+        let spoint = 0;
+        const formCriterias = await FormCriteria.find({
+            form_standard: formStandard._id,
+            isDeleted: false
+        }).select("_id")
+
+        const evaluateCriteria = await EvaluateCriteria.find({
+            form_criteria: formCriterias
+        })
+        if(formStandard.standard_point){
+            standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
+        } 
+        spoint += standard_point;
+        
+
+        res.status(200).json({
+            evaluateCriteria,
+            spoint,
+            lst
+        })
+        return;
     } catch (error) {
         next(error);
     }
