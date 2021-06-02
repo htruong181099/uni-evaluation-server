@@ -44,8 +44,9 @@ exports.validate = (method)=>{
 exports.getCriteriaOptions = async (req,res,next)=>{
     const {ccode} = req.params;
     const criteria = await Criteria.findOne({
-        code: ccode
-    }).select("_id");
+        code: ccode,
+        isDeleted: false
+    }).select("_id name code");
     if(!criteria){
         return res.status(404).json({
             statusCode: 404,
@@ -60,6 +61,7 @@ exports.getCriteriaOptions = async (req,res,next)=>{
     return res.status(200).json({
         statusCode: 200,
         message: "Success",
+        criteria,
         criteriaOptions
     })
 }

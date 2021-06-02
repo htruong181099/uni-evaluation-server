@@ -716,27 +716,39 @@ exports.testS = async (req,res,next)=>{
             })
         }
 
-        let spoint = 0;
+        // let spoint = 0;
         const formCriterias = await FormCriteria.find({
             form_standard: formStandard._id,
             isDeleted: false
         }).select("_id")
 
-        const evaluateCriteria = await EvaluateCriteria.find({
-            form_criteria: formCriterias
-        })
-        if(formStandard.standard_point){
-            standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
-        } 
-        spoint += standard_point;
-        
+        // const evaluateCriteria = await EvaluateCriteria.find({
+        //     form_criteria: formCriterias
+        // })
+        // if(formStandard.standard_point){
+        //     standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
+        // } 
+        // spoint += standard_point;
 
-        res.status(200).json({
-            evaluateCriteria,
-            spoint,
-            lst
+        const evaluateCriteria = EvaluateCriteria.aggregate([{
+            $match: {
+                form_criteria: {$in: formCriterias.map(e=>e._id)}
+            },
+        },{
+            $group: {
+                _id: "$evaluateForm",
+                point: {$sum: "$point"}
+            }
+        }],(err,doc)=>{
+            console.log(doc);
+            res.status(200).json({
+                doc: doc
+            })
+            return;
         })
-        return;
+        
+        // console.log(evaluateCriteria);
+
     } catch (error) {
         next(error);
     }
