@@ -17,7 +17,7 @@ exports.validate = (method)=>{
         case 'classifyStandard': {
             return [
                 param("fcode", "Invalid form").exists().isString(),
-                body("dcode", "Invalid department").exists().isString()
+                body("scode", "Invalid standard").exists().isString()
             ]
         }
     }
