@@ -395,6 +395,8 @@ exports.editDepartmentHead = async (req,res,next)=>{
             })
         }
 
+        department.manager = user._id;
+
         User.updateOne({
             staff_id: manager,
             isDeleted: false
