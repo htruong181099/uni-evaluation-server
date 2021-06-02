@@ -387,8 +387,8 @@ exports.editDepartmentHead = async (req,res,next)=>{
                 message: "Department not found"
             })
         }
-
-        if(!await User.findOne({staff_id: manager, isDeleted: false}).select("_id")){
+        const user = await User.findOne({staff_id: manager, isDeleted: false}).select("_id");
+        if(!user){
             return res.status(404).json({
                 statusCode: 404,
                 message: "User not found"
