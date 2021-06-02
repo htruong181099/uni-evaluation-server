@@ -232,10 +232,10 @@ module.exports = function(app){
         userFormController.getPointsDepartment
     )
 
-    app.get("/admin/form/:fcode/getS",
-        // formController.validate("getResults"),
-        // getValidationResult,
-        evaluationController.testS
+    app.post("/admin/form/:fcode/classifyStandard",
+        evaluationController.validate("classifyStandard"),
+        getValidationResult,
+        evaluationController.classifyStandard
     )
 
     //admin

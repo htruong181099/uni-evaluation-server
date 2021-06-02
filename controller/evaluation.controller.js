@@ -10,6 +10,19 @@ const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
 const Criteria = db.criteria;
 
+const {body, param} = require("express-validator");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'classifyStandard': {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                body("dcode", "Invalid department").exists().isString()
+            ]
+        }
+    }
+}
+
 //complete
 exports.submitEvaluation = async (req,res,next)=>{
     try {
@@ -678,7 +691,8 @@ exports.deleteEvaluateFormDB = async (req,res,next)=>{
     }
 }
 
-exports.testS = async (req,res,next)=>{
+//phân loại theo tiêu chuẩn
+exports.classifyStandard = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const {scode} = req.body;
@@ -716,33 +730,85 @@ exports.testS = async (req,res,next)=>{
             })
         }
 
-        // let spoint = 0;
         const formCriterias = await FormCriteria.find({
             form_standard: formStandard._id,
             isDeleted: false
         }).select("_id")
 
-        // const evaluateCriteria = await EvaluateCriteria.find({
-        //     form_criteria: formCriterias
-        // })
-        // if(formStandard.standard_point){
-        //     standard_point = standard_point > formStandard.standard_point? formStandard.standard_point: standard_point
-        // } 
-        // spoint += standard_point;
-
-        const evaluateCriteria = EvaluateCriteria.aggregate([{
-            $match: {
+        EvaluateCriteria.aggregate([{
+            $match: { // find all evaluate criteria of a standard
                 form_criteria: {$in: formCriterias.map(e=>e._id)}
             },
-        },{
+        },{ //group same evaluateForm -> sum point
             $group: {
                 _id: "$evaluateForm",
+                evalform: {$first: "$evaluateForm"},
                 point: {$sum: "$point"}
+            },
+        },{ //populate evaluateForm
+            $lookup: {
+                from: "evaluateforms",
+                localField: "evalform",
+                foreignField: "_id",
+                as: "evaluateForm"
             }
-        }],(err,doc)=>{
-            console.log(doc);
+        },{ //select point & filter evaluateForm which level == 3
+            $project: {
+                point: 1,
+                evaluateForm: {
+                    $filter: {
+                        input: "$evaluateForm", 
+                        as: "evaluateForm", 
+                        cond: { $eq: [ "$$evaluateForm.level", 3 ] } 
+                    }
+                }
+            }
+        },{ //convert array -> obj
+            $unwind: "$evaluateForm"
+        },{ //populate userForm
+            $lookup: {
+                from: "userforms",
+                localField: "evaluateForm.userForm",
+                foreignField: "_id",
+                as: "userForm"
+            }
+        },{ //convert array -> obj
+            $unwind: "$userForm"
+        },{ //populate formUser
+            $lookup: {
+                from: "formusers",
+                localField: "userForm.form_user",
+                foreignField: "_id",
+                as: "formUser"
+            }
+        },{ //convert array -> obj
+            $unwind: "$formUser"
+        },{ //populate User
+            $lookup: {
+                from: "users",
+                localField: "formUser.user_id",
+                foreignField: "_id",
+                as: "user"
+            }
+        },{ //convert array -> obj
+            $unwind: "$user"
+        },{ //select point && user
+            $project: {
+                point: 1,
+                user: {
+                    staff_id: 1,
+                    lastname: 1,
+                    firstname: 1
+                }
+            }
+        }
+        ,{
+            $sort: {"point": -1}
+        }
+        ],(err,docs)=>{
             res.status(200).json({
-                doc: doc
+                statusCode: 200,
+                standard_points: docs
             })
             return;
         })
