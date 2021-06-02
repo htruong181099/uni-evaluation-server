@@ -27,7 +27,7 @@ exports.validate = (method)=>{
             ]
         }
         case 'deleteUser':
-        case 'recoverUser': {
+        case 'restoreUser': {
             return [
                 param('ucode', 'Invalid Id').exists().isString()
             ]
@@ -113,7 +113,7 @@ exports.deleteUser = async (req,res,next)=>{
 }
 
 //set Delete
-exports.recoverUser = async (req,res,next)=>{
+exports.restoreUser = async (req,res,next)=>{
     try{
         const {ucode} = req.params;
         const user = await User.findOne({

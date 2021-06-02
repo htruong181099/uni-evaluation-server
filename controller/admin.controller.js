@@ -170,13 +170,12 @@ exports.getDeletedUsers = async (req,res,next)=>{
         const users = await User.find({
             isDeleted: true
         })
-        .sort({"staff_id": 1})
+        .sort({"firstname": 1})
         .populate("department","department_code name")
         .select("-__v -password -isDeleted");
 
         return res.status(200).json({
             statusCode: 200,
-            message: "OK",
             users: users
         })
     }

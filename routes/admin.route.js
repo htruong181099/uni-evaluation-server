@@ -36,6 +36,11 @@ module.exports = function(app){
     app.get("/admin/user",
         adminController.getUsers
     )
+
+    app.get("/admin/user/deleted",
+        adminController.getDeletedUsers
+    )
+
     app.get("/admin/user/:id",
         adminController.validate('getUser'),
         getValidationResult,
@@ -65,10 +70,10 @@ module.exports = function(app){
         getValidationResult,
         userController.deleteUser
     )
-    app.post("/admin/user/:ucode/recover",
-        userController.validate('recoverUser'),
+    app.post("/admin/user/:ucode/restore",
+        userController.validate('restoreUser'),
         getValidationResult,
-        userController.recoverUser
+        userController.restoreUser
     )
 
     //add existed user to department
