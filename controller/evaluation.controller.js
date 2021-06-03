@@ -10,14 +10,14 @@ const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
 const Criteria = db.criteria;
 
-const {body, param} = require("express-validator");
+const {body, param, q4} = require("express-validator");
 
 exports.validate = (method)=>{
     switch(method){
         case 'classifyStandard': {
             return [
                 param("fcode", "Invalid form").exists().isString(),
-                body("scode", "Invalid standard").exists().isString()
+                query("scode", "Invalid standard").exists().isString()
             ]
         }
     }
@@ -822,7 +822,7 @@ exports.deleteEvaluateFormDB = async (req,res,next)=>{
 exports.classifyStandard = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
-        const {scode} = req.body;
+        const {scode} = req.query;
 
         const form = await Form.findOne({
             code: fcode,
