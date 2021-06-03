@@ -149,6 +149,12 @@ exports.getFormCriteria = async (req,res,next)=>{
             standard_id: standard._id,
             isDeleted: false
         }).select("_id")
+        if(!formStandard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormStandard not found"
+            })
+        }
 
         const formCriteria = await FormCriteria.find({
             form_standard: formStandard._id,

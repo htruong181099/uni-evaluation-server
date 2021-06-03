@@ -19,6 +19,11 @@ exports.validate = (method)=>{
                 param('id','Invalid Criteria ID').exists().isMongoId()
             ]
         };
+        case 'getCriterionsbyCode': {
+            return [
+                param('scode','Invalid Criteria Code').exists().isString()
+            ]
+        }
         case 'deleteCriteria':
         case 'restoreCriteria': {
             return [
@@ -121,6 +126,37 @@ exports.getCriterions = async (req,res,next)=>{
         const {id} = req.params;
         const standard = await Standard.findOne({
             _id: id,
+            isDeleted: false
+        }).select("_id code name");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found"
+            })
+        }
+        const criterions = await Criteria.find({
+            standard: standard._id,
+            isDeleted: false
+        })
+        .sort({"code": 1})
+        .select("-__v -create_date -standard");
+        
+        return res.status(200).json({
+            statusCode: 200,
+            standard,
+            criterions
+        })
+    } catch (error) {
+        next(error);
+    }        
+}
+
+//get all the criteria of a standard
+exports.getCriterionsbyCode = async (req,res,next)=>{
+    try {
+        const {scode} = req.params;
+        const standard = await Standard.findOne({
+            code: scode,
             isDeleted: false
         }).select("_id code name");
         if(!standard){

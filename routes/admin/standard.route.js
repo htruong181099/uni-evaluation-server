@@ -84,6 +84,11 @@ module.exports = (app) => {
         getValidationResult,
         criteriaController.getCriterions
     )
+    app.get("/admin/standard/:scode/criteria/get",
+        criteriaController.validate('getCriterionsbyCode'),
+        getValidationResult,
+        criteriaController.getCriterionsbyCode
+    )
     //get deleted criterions of a standard
     app.get("/admin/standard/:id/criteria/deleted",
         criteriaController.validate('getDeletedCriterions'),

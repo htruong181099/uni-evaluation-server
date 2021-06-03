@@ -362,7 +362,7 @@ exports.saveEvaluationV2 = async (req,res,next)=>{
             const criteria = await Criteria.findOne({
                 code: body[i].name,
                 isDeleted: false
-            }).select("_id")
+            }).select("_id type")
             const formCriteria = await FormCriteria.findOne({
                 criteria_id: criteria._id,
                 isDeleted: false
@@ -380,6 +380,9 @@ exports.saveEvaluationV2 = async (req,res,next)=>{
                 })
             }
             evaluateCriteria.point = body[i].value?body[i].value:null;
+            if(criteria.type == 'checkbox'){
+                evaluateCriteria.point = body[i].value?body[i].value:0;
+            }
             await evaluateCriteria.save();
         }
         evaluateForm.status = 0;
@@ -519,6 +522,7 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             })
         }
         
+        let total = 0;
         const body = dataToSend;
         for(let i in body){
             const criteria = await Criteria.findOne({
@@ -533,6 +537,7 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                 evaluateForm: evaluateForm._id,
                 form_criteria: formCriteria._id
             })
+            
     
             if(!evaluateCriteria){
                 evaluateCriteria = new EvaluateCriteria({
@@ -545,8 +550,10 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
             evaluateCriteria.point = body[i].value?body[i].value:0;
             await evaluateCriteria.save();
+            total += evaluateCriteria.point;
         }
         evaluateForm.status = 1;
+        evaluateForm.point = total;
         await evaluateForm.save();
         
         res.status(200).json({

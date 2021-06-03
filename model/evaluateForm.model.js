@@ -28,6 +28,9 @@ const EvaluateForm = mongoose.model(
             ],
             default: -1
         },
+        point: {
+            type: Number
+        },
         isDeleted: {
             type: Boolean,
             default: false
