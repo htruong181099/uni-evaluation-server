@@ -238,6 +238,12 @@ module.exports = function(app){
         evaluationController.classifyStandard
     )
 
+    app.post("/admin/form/:fcode/classifyStandards",
+        // evaluationController.validate("classifyStandard"),
+        // getValidationResult,
+        evaluationController.classifyStandards
+    )
+
     //admin
     app.post("/admin/evaluateform/:id/deleteDB",
         evaluationController.deleteEvaluateFormDB

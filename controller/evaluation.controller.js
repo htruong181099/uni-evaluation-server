@@ -827,6 +827,193 @@ exports.classifyStandard = async (req,res,next)=>{
     }
 }
 
+exports.classifyStandards = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id")
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            })
+        }
+
+        const formStandards = await FormStandard.find({
+            form_id: form._id,
+            isDeleted: false
+        })
+        if(!formStandards){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormStandard not found"
+            })
+        }
+
+        const formCriterias = await FormCriteria.find({
+            form_standard: formStandards,
+            isDeleted: false
+        }).select("_id")
+
+        EvaluateCriteria.aggregate([{
+            $match: { // find all evaluate criteria of a standard
+                form_criteria: {$in: formCriterias.map(e=>e._id)}
+            },
+        },
+        { //populate formcriteria
+            $lookup: {
+                from: "formcriterias",
+                localField: "form_criteria",
+                foreignField: "_id",
+                as: "formCriteria"
+            }
+        },
+        { //group by formStandard and evaluateForm
+            $group: {
+                _id: {
+                    formStandard: "$formCriteria.form_standard",
+                    evaluateForm: "$evaluateForm"
+                },
+                evalform: {$first: "$evaluateForm"},
+                formStandard: {$first: "$formCriteria.form_standard"},
+                point: {$sum: "$point"}
+            },
+        },
+        { //convert array -> obj
+            $unwind: "$_id.formStandard",
+        },
+        { //populate formStandard
+            $lookup: {
+                from: "formstandards",
+                localField: "formStandard",
+                foreignField: "_id",
+                as: "formStandard"
+            }
+        },
+        { //convert array -> obj
+            $unwind: "$formStandard",
+        },
+        { //sort by standard_order
+            $sort: {"formStandard.standard_order": 1}
+        },
+        { //populate standard
+            $lookup: {
+                from: "standards",
+                localField: "formStandard.standard_id",
+                foreignField: "_id",
+                as: "standard"
+            }
+        },
+        {
+            $unwind: "$standard",
+        },
+        { //populate evaluateForm
+            $lookup: {
+                from: "evaluateforms",
+                localField: "evalform",
+                foreignField: "_id",
+                as: "evaluateForm"
+            }
+        },
+        { //select point & filter evaluateForm which level == 3
+            $project: {
+                point: 1,
+                evaluateForm: {
+                    $filter: {
+                        input: "$evaluateForm", 
+                        as: "evaluateForm", 
+                        cond: { $eq: [ "$$evaluateForm.level", 3 ] } 
+                    }
+                },
+                formStandard: {
+                    standard_order: 1,
+                    standard_point: 1
+                },
+                standard: {
+                    code: 1,
+                }
+            }
+        },
+        { //convert array -> obj
+             $unwind: "$evaluateForm"
+        },
+        { //populate userForm
+            $lookup: {
+                from: "userforms",
+                localField: "evaluateForm.userForm",
+                foreignField: "_id",
+                as: "userForm"
+            }
+        },
+        { //convert array -> obj
+            $unwind: "$userForm"
+        },
+        { //populate formUser
+            $lookup: {
+                from: "formusers",
+                localField: "userForm.form_user",
+                foreignField: "_id",
+                as: "formUser"
+            }
+        },
+        { //convert array -> obj
+            $unwind: "$formUser"
+        },
+        { //populate User
+            $lookup: {
+                from: "users",
+                localField: "formUser.user_id",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        { //convert array -> obj
+            $unwind: "$user"
+        },
+        { //select point && user
+            $project: {
+                point: 1,
+                formStandard: 1,
+                standard: 1,
+                user: {
+                    staff_id: 1,
+                    lastname: 1,
+                    firstname: 1
+                }
+            }
+        },
+        { //group by
+            $group: {
+                _id: "$user",
+                standards: {$push: {
+                    order: "$formStandard.standard_order",
+                    standard: "$standard.code",
+                    point: "$point",
+                    max_point: "$formStandard.standard_point"
+                }},
+            },
+        },
+        {
+            $sort: {"_id.firstname": 1}
+        }
+        ],(err,docs)=>{
+            res.status(200).json({
+                statusCode: 200,
+                standard_points: docs
+            })
+            return;
+        })
+        
+        // console.log(evaluateCriteria);
+
+    } catch (error) {
+        next(error);
+    }
+}
+
 exports.test = async (req,res,next)=>{
     const userForm_id = req.params.ufid;
     try {
