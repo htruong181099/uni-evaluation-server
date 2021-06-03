@@ -10,7 +10,7 @@ const EvaluateCriteria = db.evaluateCriteria;
 const FormUser = db.formUser;
 const Criteria = db.criteria;
 
-const {body, param, q4} = require("express-validator");
+const {body, param, query} = require("express-validator");
 
 exports.validate = (method)=>{
     switch(method){
