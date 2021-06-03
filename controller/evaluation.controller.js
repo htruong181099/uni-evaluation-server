@@ -229,7 +229,7 @@ exports.getEvaluation = async (req,res,next)=>{
             // user: formUser._id,
             userForm: userForm._id,
             status: [0,1]
-        }).select("_id status level").lean();
+        }).select("_id status level point").lean();
 
         for(let i in evaluateForms){
             const evaluateForm = evaluateForms[i];
@@ -494,15 +494,13 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
         }
 
         const userForm = await UserForm.findById(ufid)
-            .select("_id form_id");
-        
+            .select("_id form_id form_user");        
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
                 message: "UserForm not found"
             })
         }
-
         const evaluateForm = await EvaluateForm.findOne({
             user: user._id,
             userForm: userForm._id,
@@ -515,6 +513,8 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             })
         }
 
+        const form_id = userForm.form_id;
+
         if(evaluateForm.status === 1){
             return res.status(400).json({
                 statusCode: 400,
@@ -522,7 +522,6 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             })
         }
         
-        let total = 0;
         const body = dataToSend;
         for(let i in body){
             const criteria = await Criteria.findOne({
@@ -537,7 +536,6 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                 evaluateForm: evaluateForm._id,
                 form_criteria: formCriteria._id
             })
-            
     
             if(!evaluateCriteria){
                 evaluateCriteria = new EvaluateCriteria({
@@ -550,10 +548,39 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
             evaluateCriteria.point = body[i].value?body[i].value:0;
             await evaluateCriteria.save();
-            total += evaluateCriteria.point;
         }
         evaluateForm.status = 1;
-        evaluateForm.point = total;
+
+        //calculate point
+        const formStandards = await FormStandard.find({
+            form_id: form_id,
+            isDeleted: false
+        }).sort({standard_order: 1})
+        .select("standard_id standard_order standard_point")
+        .populate("standard_id", "code name")
+
+        let final_point = 0;
+        for(let i in formStandards){
+            const formStandard = formStandards[i];
+            const formCriterias = await FormCriteria.find({
+                form_standard: formStandard._id,
+                isDeleted: false
+            }).select("_id")
+            const evaluateCriterias = await EvaluateCriteria.find({
+                evaluateForm: evaluateForm._id,
+                form_criteria: formCriterias
+            })
+            .select("-__v -isDeleted")
+            
+            let standard_point = evaluateCriterias.reduce((acc,ele) => acc + ele.point, 0)
+            if(formStandard.standard_point){
+                standard_point = (standard_point > formStandard.standard_point)? formStandard.standard_point: standard_point
+            } 
+            final_point += standard_point;
+        }
+        //--end calculate point
+
+        evaluateForm.point = final_point;
         await evaluateForm.save();
         
         res.status(200).json({
@@ -562,6 +589,7 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
         })
         
         req.form_id = userForm.form_id;
+        req.formUser_id = userForm.form_user;
         req.level = level;
         req.userForm_id = userForm._id;
         req.fbody = body;
@@ -623,6 +651,98 @@ exports.cloneEvaluateCriteria = async (req,res,next)=>{
                 final_point += standard_point;
             }
             userForm.point = final_point;
+            userForm.save();
+            return;
+        }
+
+        //head formuser
+        const upperLevelHead = await FormUser.findOne({
+            isDeleted: false,
+            department_form_id: formDepartment._id,
+            user_id: formDepartment.head
+        }).select("_id")
+
+        //clone head evaluate form
+        const evaluateForm = new EvaluateForm({
+            user: upperLevelHead._id,
+            userForm: userForm_id,
+            status: 0,
+            level: level + 1
+        })
+
+        const doc = await evaluateForm.save();
+
+        for(let i in body){
+            const criteria = await Criteria.findOne({
+                code: body[i].name,
+                isDeleted: false
+            }).select("_id")
+            const formCriteria = await FormCriteria.findOne({
+                criteria_id: criteria._id,
+                isDeleted: false
+            })
+            let evaluateCriteria = await EvaluateCriteria.findOne({
+                evaluateForm: doc._id,
+                form_criteria: formCriteria._id,
+                level: level+1
+            })
+    
+            if(!evaluateCriteria){
+                evaluateCriteria = new EvaluateCriteria({
+                    evaluateForm: doc._id,
+                    form_criteria: formCriteria._id,
+                    point: body[i].value?body[i].value:0,
+                    level: level+1
+                })
+            }
+            evaluateCriteria.point = body[i].value?body[i].value:0;
+            await evaluateCriteria.save();
+        }
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
+    try {
+        const {form_id, level, userForm_id, fbody, formUser_id} = req;
+        const body = fbody;
+        //get formdepartment level + 1
+        
+        let formDepartment;
+        if(level == 1){
+            const formUser = await FormUser.findOne({
+                _id: formUser_id,
+                isDeleted: false
+            })
+            formDepartment = await FormDepartment.findOne({
+                _id: formUser.department_form_id,
+                form_id: form_id,
+                level: level + 1,
+                isDeleted: false
+            })
+        }
+        else if(level >= 2){
+            formDepartment = await FormDepartment.findOne({
+                form_id: form_id,
+                level: level + 1,
+                isDeleted: false
+            }).select("_id head")
+        }
+
+        if(!formDepartment){
+            const userForm = await UserForm.findOne({
+                _id: userForm_id
+            })
+            const evaluateForm = await EvaluateForm.findOne({
+                userForm: userForm._id,
+                status: 1
+            }).sort({
+                "level": -1
+            })
+    
+            userForm.point = evaluateForm.point;
             userForm.save();
             return;
         }
@@ -997,7 +1117,10 @@ exports.classifyStandards = async (req,res,next)=>{
             },
         },
         {
-            $sort: {"_id.firstname": 1}
+            $sort: {
+                "_id.firstname": 1,
+                "_id.staff_id": 1
+            }
         }
         ],(err,docs)=>{
             res.status(200).json({
