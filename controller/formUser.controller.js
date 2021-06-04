@@ -502,15 +502,13 @@ exports.getFormUserAdmin = async (req,res,next)=>{
             }).select("_id")
             
             formUser.evaluateForm = null;
+            formUser.userForm = userForm;
             if(userForm){
                 const evaluateForm = await EvaluateForm.find({
                     userForm: userForm._id
                 }).select("_id status level point")
                 .sort({"level": 1}).lean();
                 formUser.evaluateForm = evaluateForm;
-                if(evaluateForm){
-                    formUser.evaluateForm.userForm = userForm;
-                }
             }
             
             result.push(formUser)
