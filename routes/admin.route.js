@@ -41,24 +41,18 @@ module.exports = function(app){
     UserFormRouter(app);
     ReviewRouter(app);
 
-
-    //formtype
-    app.get("/admin/review/formtype",
-        formTypeController.getFormTypes
-    )
-
     //form
-    app.post("/admin/review/:rcode/formtype/:ftcode/form/addForm",
-        formController.validate('addForm'),
-        getValidationResult,
-        formController.addForm
-    )
+    
     app.get("/admin/form/:id",
         formController.validate('getForm'),
         getValidationResult,
         formController.getForm
     )
-
+    app.post("/admin/review/:rcode/formtype/:ftcode/form/addForm",
+        formController.validate('addForm'),
+        getValidationResult,
+        formController.addForm
+    )
     app.get("/admin/review/:rcode/formtype/:ftcode/form/",
         formController.validate('getFormfromFormTypeandReview'),
         getValidationResult,

@@ -1,10 +1,15 @@
 const {getValidationResult} = require("../../middleware/validate.middleware");
-const {evaluationReviewController} = require("../../controller/");
+const {evaluationReviewController, formTypeController} = require("../../controller/");
 
 module.exports = (app) =>{
+    
     //evaluation review
     app.get("/admin/review",
         evaluationReviewController.getEvaluationReviews
+    )
+    //formtype
+    app.get("/admin/review/formtype",
+        formTypeController.getFormTypes
     )
     app.post("/admin/review/add",
         evaluationReviewController.validate('addEvaluationReview'),

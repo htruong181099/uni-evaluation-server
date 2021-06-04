@@ -61,7 +61,7 @@ module.exports = function(app){
     //v3
     app.post("/form/:ufid/submitForm/v3",
         evaluationController.submitEvaluationV3,
-        evaluationController.cloneEvaluateCriteriaV2
+        evaluationController.cloneEvaluateCriteria
     )
 
     app.get("/form/:ufid/evaluation/get",
