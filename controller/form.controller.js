@@ -349,7 +349,7 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
             ]
         });
         if(!userForm){
-            return res.status.json({
+            return res.status(404).json({
                 statusCode: 404,
                 message: "UserForm not found"
             })
