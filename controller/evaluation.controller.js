@@ -20,6 +20,11 @@ exports.validate = (method)=>{
                 query("scode", "Invalid standard").exists().isString()
             ]
         }
+        case 'classifyStandards': {
+            return [
+                param("fcode", "Invalid form").exists().isString()
+            ]
+        }
     }
 }
 

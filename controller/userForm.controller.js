@@ -7,6 +7,28 @@ const EvaluateForm = db.evaluateForm;
 const UserForm = db.userForm;
 const Form = db.form;
 
+const {body, param, query} = require("express-validator");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'getPointsDepartment':
+        case 'getResultsDepartment':
+        {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                query("dcode", "Invalid department").exists().isString()
+            ]
+        }
+        case 'getPoints':
+        case 'getResults':    
+        {
+            return [
+                param("fcode", "Invalid form").exists().isString()
+            ]
+        }
+    }
+}
+
 exports.getUserForm = async (req,res,next)=>{
     try {
         const {fcode} = req.params;

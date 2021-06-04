@@ -3,10 +3,10 @@ const CriteriaRouter = require("./admin/criteria.route");
 const StandardRouter = require("./admin/standard.route");
 const DepartmentRouter = require("./admin/department.route");
 const UserFormRouter = require("./admin/userForm.route")
+const ReviewRouter = require("./admin/review.route");
+const userRouter = require("./admin/user.route");
 
 //controller
-const adminController = require('../controller/admin.controller');
-const reviewController = require("../controller/evaluationReview.controller");
 const formTypeController = require("../controller/formType.controller");
 const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
@@ -17,7 +17,8 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
-const { userController, evaluationController, userFormController } = require("../controller");
+const {evaluationController, userFormController } = require("../controller");
+
 
 module.exports = function(app){
 
@@ -32,84 +33,14 @@ module.exports = function(app){
         });
     })
 
-    //user
-    app.get("/admin/user",
-        adminController.getUsers
-    )
-
-    app.get("/admin/user/deleted",
-        adminController.getDeletedUsers
-    )
-
-    app.get("/admin/user/:id",
-        adminController.validate('getUser'),
-        getValidationResult,
-        adminController.getUser
-    )
-
-    app.get("/admin/user/:ucode/get",
-        adminController.validate('getUserbyCode'),
-        getValidationResult,
-        adminController.getUserbyCode
-    )
-
-    app.post("/admin/user/:ucode/edit",
-        adminController.validate('getUserbyCode'),
-        getValidationResult,
-        adminController.editUser
-    )
-
-    app.post("/admin/user/add",
-        adminController.validate('addUser'),
-        getValidationResult,
-        adminController.addUser
-    )
-
-    app.post("/admin/user/:ucode/delete",
-        userController.validate('deleteUser'),
-        getValidationResult,
-        userController.deleteUser
-    )
-    app.post("/admin/user/:ucode/restore",
-        userController.validate('restoreUser'),
-        getValidationResult,
-        userController.restoreUser
-    )
-
-    //add existed user to department
-    app.post("/admin/department/:dcode/user/add",
-        // adminController.validate('addUser'),
-        // getValidationResult,
-        userController.addUsertoDepartment
-    )
-    //create new user to department
-    app.post("/admin/department/:dcode/user/create",
-        // adminController.validate('addUser'),
-        // getValidationResult,
-        userController.createNewUsertoDepartment
-    )
-
-    app.post("/admin/department/:dcode/user/:ucode/delete",
-        // adminController.validate('addUser'),
-        // getValidationResult,
-        userController.removeUserDepartment
-    )
-
     //router
+    userRouter(app);
     DepartmentRouter(app);
     StandardRouter(app);
     CriteriaRouter(app);
     UserFormRouter(app);
+    ReviewRouter(app);
 
-    //evaluation review
-    app.get("/admin/review",
-        reviewController.getEvaluationReview
-    )
-    app.post("/admin/review/add",
-        reviewController.validate('add'),
-        getValidationResult,
-        reviewController.addEvaluationReview
-    )
 
     //formtype
     app.get("/admin/review/formtype",
@@ -209,26 +140,26 @@ module.exports = function(app){
 
     //userform
     app.get("/admin/form/:fcode/getResults",
-        // formController.validate("getResults"),
-        // getValidationResult,
+        userFormController.validate("getResults"),
+        getValidationResult,
         userFormController.getResults
     )
 
     app.get("/admin/form/:fcode/:dcode/getResults",
-        // formController.validate("getResults"),
-        // getValidationResult,
+        userFormController.validate("getResultsDepartment"),
+        getValidationResult,
         userFormController.getResultsDepartment
     )
 
     app.get("/admin/form/:fcode/getPoints",
-        // formController.validate("getResults"),
-        // getValidationResult,
+        userFormController.validate("getPoints"),
+        getValidationResult,
         userFormController.getPoints
     )
 
     app.get("/admin/form/:fcode/:dcode/getPoints",
-        // formController.validate("getResults"),
-        // getValidationResult,
+        userFormController.validate("getPointsDepartment"),
+        getValidationResult,
         userFormController.getPointsDepartment
     )
 
@@ -239,8 +170,8 @@ module.exports = function(app){
     )
 
     app.get("/admin/form/:fcode/classifyStandards",
-        // evaluationController.validate("classifyStandard"),
-        // getValidationResult,
+        evaluationController.validate("classifyStandards"),
+        getValidationResult,
         evaluationController.classifyStandards
     )
 
