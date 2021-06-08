@@ -282,8 +282,6 @@ exports.getEvaFormV2 = async (req,res,next)=>{
 
         const form_id = ufform._id;
 
-        console.log(ufuser);
-
         const formStandards = await FormStandard.find({
             form_id: form_id,
             isDeleted: false

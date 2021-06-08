@@ -124,6 +124,10 @@ module.exports = function(app){
 
     )
 
+    app.post("/admin/form/:fcode/addFormStandard/v2",
+        formStandardController.addFormStandardV2
+    )
+
     //formCriteria
     app.get("/admin/form/:fcode/standard/:scode/getFormCriteria",
         formCriteriaController.getFormCriteria
@@ -172,5 +176,9 @@ module.exports = function(app){
     //admin
     app.post("/admin/evaluateform/:id/deleteDB",
         evaluationController.deleteEvaluateFormDB
+    )
+
+    app.post("/rest/:fcode",
+        formStandardController.addFormStandardV2
     )
 }

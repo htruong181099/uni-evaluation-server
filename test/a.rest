@@ -1,0 +1,13 @@
+POST  http://localhost:5000/rest/8DP9W
+content-type: application/json
+
+{
+    "body": [
+        {
+            "standard_id": "TC001",
+            "standard_order": 1,
+            "standard_point": 10,
+            "criterions": ["TC001-01"]
+        }
+    ]
+}

@@ -1,4 +1,6 @@
 const db = require("../model/");
+const Criteria = require("../model/criteria.model");
+const FormCriteria = require("../model/formCriteria.model");
 const FormStandard = db.formStandard;
 const Standard = db.standard;
 const Form = db.form;
@@ -164,6 +166,84 @@ exports.getFormStandards = async (req,res,next)=>{
             formStandards
         })
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.addFormStandardV2 = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const {standard} = req.body;
+        const form = await Form.findOne({
+            code: fcode,
+            isDeleted: false
+        }).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found",
+            })
+        }
+        
+        const criterions = standard.criterions;
+        if (criterions.length === 0){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Empty criterions"
+            })
+        }
+
+        console.log(standard);
+
+        const standard_id = (await Standard.findOne({
+            code: standard.standard_id,
+            isDeleted: false
+        }).select("_id"))._id;
+
+        if(!standard_id){
+            return res.status(404).json({
+                statusCode: 400,
+                message: "Standard not found"
+            })
+        }
+
+        let formStandard = await FormStandard.findOne({
+            standard_id,
+            form_id: form._id
+        })
+        if(!formStandard){
+            formStandard = new FormStandard({
+                standard_id,
+                form_id: form._id,
+                standard_order: standard.standard_order
+            })
+        }
+        formStandard.standard_order = standard.standard_order;
+        formStandard.standard_point = standard.standard_point;
+        formStandard.isDeleted = false;
+
+        const formStandard_doc = await formStandard.save();
+
+        for(const criteria_obj of criterions){
+            const criteria = await Criteria.findOne({
+                code: criteria_obj.criteria_id,
+                isDeleted: false
+            }).select("_id");
+            const formCriteria = new FormCriteria({
+                criteria_id: criteria._id,
+                form_standard: formStandard_doc._id,
+                criteria_order: criteria_obj.criteria_order,
+                point: criteria_obj.criteria_point
+            })
+            formCriteria.save();
+        }
+        
+        return res.status(201).json({
+            statusCode: 201,
+            message: "Successfully"
+        })
+        
     } catch (error) {
         next(error);
     }
