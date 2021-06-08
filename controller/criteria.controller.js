@@ -108,9 +108,11 @@ exports.getAllCriterions = async (req,res,next)=>{
         const criterions = await Criteria.find({
             isDeleted: false
         })
+        .lean()
         .sort({"create_date": -1})
         .select("-__v -create_date");
-        res.status(200).json({
+
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             criterions
@@ -127,7 +129,9 @@ exports.getCriterions = async (req,res,next)=>{
         const standard = await Standard.findOne({
             _id: id,
             isDeleted: false
-        }).select("_id code name");
+        })
+        .lean()
+        .select("_id code name");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
@@ -138,6 +142,7 @@ exports.getCriterions = async (req,res,next)=>{
             standard: standard._id,
             isDeleted: false
         })
+        .lean()
         .sort({"code": 1})
         .select("-__v -create_date -standard");
         
@@ -158,7 +163,9 @@ exports.getCriterionsbyCode = async (req,res,next)=>{
         const standard = await Standard.findOne({
             code: scode,
             isDeleted: false
-        }).select("_id code name");
+        })
+        .lean()
+        .select("_id code name");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
@@ -169,6 +176,7 @@ exports.getCriterionsbyCode = async (req,res,next)=>{
             standard: standard._id,
             isDeleted: false
         })
+        .lean()
         .sort({"code": 1})
         .select("-__v -create_date -standard");
         
@@ -190,6 +198,7 @@ exports.getCriteria = async (req,res,next)=>{
             _id: id,
             isDeleted: false
         })
+        .lean()
         .select("-__v -create_date");
 
         if(!criteria){
@@ -198,6 +207,7 @@ exports.getCriteria = async (req,res,next)=>{
                 message: "Criteria not found"
             })
         }
+
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
@@ -342,7 +352,10 @@ exports.getDeletedCriterions = async (req,res,next)=>{
         const standard = await Standard.findOne({
             _id: id,
             isDeleted: false
-        }).select("_id code name");
+        })
+        .lean()
+        .select("_id code name");
+        
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
@@ -353,6 +366,7 @@ exports.getDeletedCriterions = async (req,res,next)=>{
             standard: standard._id,
             isDeleted: true
         })
+        .lean()
         .sort({"code": 1})
         .select("-__v -create_date -standard");
         
@@ -372,9 +386,11 @@ exports.getAllDeletedCriterions = async (req,res,next)=>{
         const criterions = await Criteria.find({
             isDeleted: true
         })
+        .lean()
         .sort({"create_date": -1})
         .select("-__v -create_date");
-        res.status(200).json({
+
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             criterions

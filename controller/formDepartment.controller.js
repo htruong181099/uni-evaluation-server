@@ -90,7 +90,9 @@ exports.getFormDepartment = async (req,res,next)=>{
         const formDepartment = await FormDepartment.findOne({
             form_id : form._id,
             department_id: department._id
-        }).select("department_id head -_id")
+        })
+        .lean()
+        .select("department_id head -_id")
         .populate({
             path: "department_id",
             select: "department_code name manager -_id",
@@ -100,6 +102,8 @@ exports.getFormDepartment = async (req,res,next)=>{
             }
         })
         .populate("head", "firstname lastname staff_id -_id")
+        
+        
 
         if(!formDepartment){
             return res.status(404).json({

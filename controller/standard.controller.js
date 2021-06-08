@@ -103,10 +103,12 @@ exports.getDeletedStandards = async (req,res,next)=>{
     try {
         const standards = await Standard.find({
             isDeleted: true
-        }).sort({"code": 1})
+        })
+        .lean()
+        .sort({"code": 1})
         .select("-__v -create_date -isDeleted");
 
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             standards
@@ -123,14 +125,16 @@ exports.getStandardbyID = async (req,res,next)=>{
         const standard = await Standard.findOne({
             _id: id,
             isDeleted: false
-        }).select("-__v -create_date");
+        })
+        .lean()
+        .select("-__v -create_date");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Standard not found"
             });
         }
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "OK",
             standard
@@ -147,14 +151,16 @@ exports.getStandard = async (req,res,next)=>{
         const standard = await Standard.findOne({
             code: scode,
             isDeleted: false
-        }).select("-__v -create_date");
+        })
+        .lean()
+        .select("-__v -create_date");
         if(!standard){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Standard not found"
             });
         }
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "OK",
             standard
@@ -205,6 +211,7 @@ exports.getStandardsWithCriteria = async (req,res,next)=>{
                 standard: standards[i]._id,
                 isDeleted: false
             })
+            .lean()
             .sort({"code": 1})
             .select("-__v -isDeleted -create_date");
             standards[i].criteria = criteria;

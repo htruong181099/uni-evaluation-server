@@ -1,7 +1,7 @@
 const db = require("../model/");
 const User = db.user;
 
-const {body, param, query, validationResult} = require("express-validator");
+const {body, param, query} = require("express-validator");
 const Department = db.department;
 
 exports.validate = (method)=>{
@@ -10,12 +10,12 @@ exports.validate = (method)=>{
             return [
                 param('id', 'Invalid Id').exists().isMongoId()
             ]
-        }
+        };
         case 'getUserbyCode': {
             return [
                 param('ucode', 'Invalid Id').exists().isString()
             ]
-        }
+        };
         case 'addUser': {
             return [
                 body('id','Invalid Code').exists().isString(),
@@ -43,25 +43,33 @@ exports.validate = (method)=>{
                 body("lname", "Invalid lastname").exists().isString(),
                 body("gmail", "Invalid email").exists().isEmail(),
             ]
-        }
+        };
         case 'removeUserDepartment': {
             return [
                 param('ucode', "Invalid User ID").exists().isString(),
                 param("dcode", "Invalid Department").exists().isString(),
             ]
-        }
+        };
         case 'addUsertoDepartment':{
             return [
                 param("dcode", "Invalid Department").exists().isString(),
                 body("user_id", "Invalid id").exists().isString(),
             ]
-        }
+        };
         case 'deleteUser':
         case 'restoreUser': {
             return [
                 param('ucode', 'Invalid Id').exists().isString()
             ]
-        }
+        };
+        case 'getUsers':
+        case 'getDeletedUsers':    
+        {
+            return [
+                query('page', 'Invalid Page').optional().isNumeric(),
+                query('size', 'Invalid Size').optional().isNumeric()
+            ]
+        };
     }
 }
 
@@ -69,7 +77,7 @@ exports.validate = (method)=>{
 exports.getUser = async (req,res,next)=>{
     const {id} = req.params;
     try{
-        const user = await User.findById(id).select("-__v -password");
+        const user = await User.findById(id).select("-__v -password").lean();
         if(!user){
             return res.status(404).json({
                 statusCode: 404,
@@ -96,6 +104,7 @@ exports.getUserbyCode = async (req,res,next)=>{
             staff_id: ucode,
             isDeleted: false
         })
+        .lean()
         .populate("department", "department_code name")
         .select("-__v -password -isDeleted");
         if(!user){
@@ -174,17 +183,22 @@ exports.editUser = async (req, res, next)=>{
 //get all users
 exports.getUsers = async (req,res,next)=>{
     try{
+        let {page, size} = req.query;
+        size = size? parseInt(size) : 10;
+        page = page? parseInt(page): 1;
+        
         const users = await User.find({
             isDeleted: false
         })
+        .lean()
         .sort({"staff_id": 1})
-        .populate("department","department_code name")
-        .select("-__v -password -isDeleted");
+        .populate("department","department_code name -_id")
+        .select("-__v -password -isDeleted")
 
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
-            users: users
+            users
         })
     }
     catch(error){
@@ -198,6 +212,7 @@ exports.getDeletedUsers = async (req,res,next)=>{
         const users = await User.find({
             isDeleted: true
         })
+        .lean()
         .sort({"firstname": 1})
         .populate("department","department_code name")
         .select("-__v -password -isDeleted");

@@ -156,6 +156,7 @@ exports.getFormStandards = async (req,res,next)=>{
             form_id: form._id,
             isDeleted: false
         })
+        .lean()
         .sort({"standard_order": 1})
         .populate("standard_id","code name")
         .select("standard_id standard_order standard_point")
@@ -193,8 +194,6 @@ exports.addFormStandardV2 = async (req,res,next)=>{
                 message: "Empty criterions"
             })
         }
-
-        console.log(standard);
 
         const standard_id = (await Standard.findOne({
             code: standard.standard_id,

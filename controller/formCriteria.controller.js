@@ -135,7 +135,8 @@ exports.getFormCriteria = async (req,res,next)=>{
         }
 
         const standard = await Standard.findOne({
-            code: scode
+            code: scode,
+            isDeleted: false
         }).select("_id");
         if(!standard){
             return res.status(404).json({
@@ -160,6 +161,7 @@ exports.getFormCriteria = async (req,res,next)=>{
             form_standard: formStandard._id,
             isDeleted: false
         })
+        .lean()
         .sort({"criteria_order": 1})
         .populate("criteria_id","name code")
         .select("-isDeleted -__v -form_standard");

@@ -126,7 +126,7 @@ getDeletedEvaluationReviews = async (req,res,next)=>{
     try{
         const reviews = await EvaluationReview.find({
             isDeleted: true
-        })
+        }).lean()
         .sort({"end_date": 1})
         .select("-__v -isDeleted")
         return res.status(200).json({
@@ -203,6 +203,7 @@ getEvaluationReview = async (req,res,next)=>{
             code: rcode,
             isDeleted: false
         })
+        .lean()
         .sort({"end_date": 1})
         .select("-__v -isDeleted")
         if(!review){
@@ -244,8 +245,10 @@ getUserReviews = async (req,res,next)=>{
 
         }).select("review")
         const reviews = await EvaluationReview.find({
-            _id: forms.map(form => form.review)
+            _id: forms.map(form => form.review),
+            isDeleted: false
         })
+        .lean()
         .sort({"end_date": 1})
         .select("-__v -isDeleted")
         return res.status(200).json({

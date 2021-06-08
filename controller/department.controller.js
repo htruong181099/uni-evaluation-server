@@ -134,16 +134,17 @@ exports.addUserDepartment = async (req,res,next)=>{
     }
 }
 
-
+//get all departments
 exports.getDepartments = async (req,res,next)=>{
     try{
         const departments = await Department.find({
             isDeleted: false
         })
-            .sort({"department_code": 1})
-            .populate("manager","staff_id firstname lastname")
-            .populate("parent","department_code name")
-            .select("-__v");
+        .lean()
+        .sort({"department_code": 1})
+        .populate("manager","staff_id firstname lastname")
+        .populate("parent","department_code name")
+        .select("-__v");
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
@@ -163,6 +164,7 @@ exports.getDepartment = async (req,res,next)=>{
             department_code: dcode,
             isDeleted: false
         })
+        .lean()
         .select("-__v")
         .populate("manager", "staff_id firstname lastname")
         if(!department){
@@ -190,6 +192,7 @@ exports.getDepartmentbyID = async (req,res,next)=>{
             _id: id,
             isDeleted: false
         })
+        .lean()
         .select("-__v")
         .populate("manager", "staff_id firstname lastname")
         if(!department){
@@ -229,6 +232,7 @@ exports.getDepartmentUsers = async (req,res,next)=>{
             department: department._id,
             isDeleted: false
         })
+        .lean()
         .sort({
             firstname: 1
         })
@@ -291,7 +295,9 @@ exports.getChildDepartments = async (req,res,next)=>{
         const children = await Department.find({
             parent: parent._id,
             isDeleted: false
-        }).select("-__v -isDeleted")
+        })
+        .lean()
+        .select("-__v -isDeleted")
         .populate("manager", "staff_id firstname lastname")
 
         res.status(200).json({
@@ -310,7 +316,7 @@ exports.getParentsWithChildren = async (req,res,next)=>{
         const parents = await Department.find({
             parent: null,
             isDeleted: false
-        }).select("-__v -isDeleted").lean()
+        }).lean().select("-__v -isDeleted")
         .populate("manager", "staff_id firstname lastname")
         
         for(let i in parents){
@@ -318,7 +324,9 @@ exports.getParentsWithChildren = async (req,res,next)=>{
             const children = await Department.find({
                 parent: parent._id,
                 isDeleted: false
-            }).select("-__v -isDeleted -parent -_id")
+            })
+            .lean()
+            .select("-__v -isDeleted -parent -_id")
             .populate("manager", "staff_id firstname lastname")
             parent.children = children;
         }
@@ -477,12 +485,13 @@ exports.getDeletedDepartments = async (req,res,next)=>{
     try {
         const departments = await Department.find({
             isDeleted: true
-        })
+        }).lean().select("-__v")
 
         return res.status(200).json({
             statusCode: 200,
             departments
         })
+
     } catch (error) {
         next(error);
     }
@@ -493,7 +502,7 @@ exports.getDeletedParent = async (req,res,next)=>{
         const departments = await Department.find({
             isDeleted: true,
             parent: null
-        })
+        }).lean().select("-__v")
 
         return res.status(200).json({
             statusCode: 200,
@@ -523,7 +532,7 @@ exports.getDeletedChildren = async (req,res,next)=>{
         const departments = await Department.find({
             parent: parent._id,
             isDeleted: true
-        })
+        }).lean().select("-__v")
 
         return res.status(200).json({
             statusCode: 200,

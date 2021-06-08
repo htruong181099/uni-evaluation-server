@@ -56,7 +56,8 @@ exports.getCriteriaOptions = async (req,res,next)=>{
     const criteriaOptions = await CriteriaOption.find({
         criteria_id: criteria._id,
         isDeleted: false
-    }).select("-__v -isDeleted").sort({"max_point": -1});
+    }).lean()
+    .select("-__v -isDeleted").sort({"max_point": -1});
     
     return res.status(200).json({
         statusCode: 200,
@@ -235,7 +236,8 @@ exports.getDeletedCriteriaOptions = async (req,res,next)=>{
         const criteriaOptions = await CriteriaOption.find({
             criteria_id: criteria._id,
             isDeleted: true
-        }).select("-__v -isDeleted").sort({"max_point": -1});
+        }).lean()
+        .select("-__v -isDeleted").sort({"max_point": -1});
         
         return res.status(200).json({
             statusCode: 200,
