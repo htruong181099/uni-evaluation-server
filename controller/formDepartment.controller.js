@@ -79,27 +79,36 @@ exports.getFormDepartment = async (req,res,next)=>{
                 message: "Form not found"
             });
         }
-        const department = await Department.find({department_code: dcode, isDeleted: false}).select("_id");
+        const department = await Department.findOne({department_code: dcode, isDeleted: false}).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Department not found"
             });
         }
+
         const formDepartment = await FormDepartment.findOne({
             form_id : form._id,
             department_id: department._id
-        }).select("department_id")
+        }).select("department_id head -_id")
         .populate({
             path: "department_id",
-            select: "department_code name manager",
+            select: "department_code name manager -_id",
             populate: {
-                path: manager,
-                select: "firstname lastname staff_id"
+                path: "manager",
+                select: "firstname lastname staff_id -_id"
             }
         })
+        .populate("head", "firstname lastname staff_id -_id")
 
-        res.status(200).json({
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormDepartment not found"
+            })
+        }
+
+        return res.status(200).json({
             statusCode: 200,
             formDepartment
         })
