@@ -28,6 +28,7 @@ exports.addFormUser = async (req,res,next)=>{
             })
         }
         const formDepartment = await FormDepartment.findOne({
+            form_id: form._id,
             department_id: department._id,
             isDeleted: false
         }).select("_id");
@@ -71,7 +72,7 @@ exports.addFormUser = async (req,res,next)=>{
 
         //if isdeleted, recover formuser
         if(formUser.isDeleted){
-            formUser.isDeleted = true;
+            formUser.isDeleted = false;
             formUser.save();
             return res.status(200).json({
                 statusCode: 200,
@@ -165,10 +166,13 @@ exports.getFormUsers = async (req,res,next)=>{
                 message: "FormDepartment not found"
             })
         }
+        
         const formUser = await FormUser.find({
             department_form_id: formDepartment._id,
             isDeleted: false
-        }).select("user_id")
+        })
+        .lean()
+        .select("user_id")
         .populate({
             path: 'user_id',
             select: 'staff_id firstname lastname department',
