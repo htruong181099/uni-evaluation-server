@@ -1,4 +1,3 @@
-const { standard } = require("../model/");
 const db = require("../model/");
 const FormStandard = db.formStandard;
 const Standard = db.standard;
@@ -6,6 +5,28 @@ const Form = db.form;
 const Criteria = db.criteria;
 const FormCriteria = db.formCriteria;
 
+//validator
+const {body, param, query} = require("express-validator");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'getFormCriteria': {
+            return [
+                param("fcode", "Invalid Form").exists().isString(),
+                param("scode", "Invalid Standard").exists().isString(),
+            ]
+        };
+        case 'editFormCriteria': {
+            return [
+                param("fcode", "Invalid Form").exists().isString(),
+                param("scode", "Invalid Standard").exists().isString(),
+                body("criteria", "Invalid Criteria").exists().isArray()
+            ]
+        }
+    }
+}
+
+//add FormCriteria v1 -> outdated
 exports.addFormCriteria = async (req,res,next)=>{
     try {
         const {fcode, scode} = req.params;
@@ -120,6 +141,7 @@ exports.addFormCriteria = async (req,res,next)=>{
         next(error);
     }
 }
+//outdated
 
 exports.getFormCriteria = async (req,res,next)=>{
     try {
@@ -135,8 +157,7 @@ exports.getFormCriteria = async (req,res,next)=>{
         }
 
         const standard = await Standard.findOne({
-            code: scode,
-            isDeleted: false
+            code: scode
         }).select("_id");
         if(!standard){
             return res.status(404).json({
@@ -170,6 +191,98 @@ exports.getFormCriteria = async (req,res,next)=>{
             statusCode: 200,
             message: "Success",
             formCriteria
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+//edit formCriteria(s)
+exports.editFormCriteria = async (req,res,next)=>{
+    try {
+        const {fcode, scode} = req.params;
+        const {criterions} = req.body;
+        const form = await Form.findOne({
+            code: fcode
+        }).select("_id");
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found",
+            })
+        }
+
+        const standard = await Standard.findOne({
+            code: scode
+        }).select("_id");
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found",
+            })
+        }
+
+        const formStandard = await FormStandard.findOne({
+            form_id: form._id,
+            standard_id: standard._id,
+            isDeleted: false
+        }).select("_id")
+        if(!formStandard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormStandard not found"
+            })
+        }
+
+        //find all formCriteria of a formStandard
+        const formCriterions = await FormCriteria.find({
+            form_standard: formStandard._id,
+            isDeleted: false
+        })
+        .populate("criteria_id", "code")
+        .select("_id criteria_id isDeleted")
+
+        //filter formCriteria to be deleted
+        const upCriterions = criterions.map(e=>e.criteria_id);
+        const deleteCriterions = formCriterions.map(e => e.criteria_id.code).filter(e => !upCriterions.includes(e));
+        /*
+        for(let criteriaObj of deleteCriterions){
+            const criteria = await Criteria.findOne({code: criteriaObj}).select("_id");
+            const formCriteria = await FormCriteria.deleteOne.findOne({
+                form_standard: formStandard._id,
+                criteria_id: criteria._id
+            })
+        }
+
+        for (let i in criterions){
+            const criteria = await Criteria.findOne({
+                code: criterions[i].code
+            }).select("_id")
+            let formCriteria = await FormCriteria.findOne({
+                criteria_id: criteria._id,
+                form_standard: formStandard._id
+            });
+            if(!formCriteria){
+                formCriteria = new FormCriteria({
+                    form_standard: formStandard._id,
+                    criteria_id: criteria._id,
+                    criteria_order: criterions[i].order,
+                    point: criterions[i].point
+                })
+                await formCriteria.save()
+            }
+            else{
+                formCriteria.criteria_order = criterions[i].order;
+                formCriteria.point = criterions[i].point;
+                formCriteria.isDeleted = formCriteria.isDeleted === true? false : formCriteria.isDeleted;
+                await formCriteria.save()
+            }
+            
+        }*/
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Add FormCriteria successfully"
         })
 
     } catch (error) {

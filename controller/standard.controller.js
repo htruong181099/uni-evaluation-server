@@ -1,5 +1,5 @@
 const db = require("../model/");
-const {body, param, query, validationResult} = require("express-validator");
+const {body, param, query} = require("express-validator");
 const Criteria = require("../model/criteria.model");
 const Standard = db.standard;
 
@@ -181,6 +181,8 @@ exports.deleteStandardDB = async (req,res,next)=>{
                 message: "Standard not found"
             });
         }
+        Criteria.deleteMany({standard: standard._id});
+
         Standard.deleteOne({_id: id}, (err)=>{
             if(err){
                 next(err);

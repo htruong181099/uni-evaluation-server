@@ -41,7 +41,7 @@ exports.validate = (method)=>{
                 body("id", "Invalid id").exists().isString(),
                 body("fname", "Invalid firstname").exists().isString(),
                 body("lname", "Invalid lastname").exists().isString(),
-                body("gmail", "Invalid email").exists().isEmail(),
+                body("email", "Invalid email").exists().isEmail(),
             ]
         };
         case 'removeUserDepartment': {

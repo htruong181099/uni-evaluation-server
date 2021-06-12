@@ -301,6 +301,7 @@ exports.getEvaFormV2 = async (req,res,next)=>{
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
                 })
+                .lean()
                 .sort({"max_point" : -1})
                 .select("name max_point description")
                 formCriteria[j].options = options;
@@ -366,14 +367,16 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
             const formCriteria = await FormCriteria.find({
                 form_standard: formStandards[i]._id,
                 isDeleted: false
-            }).populate("criteria_id","code name type description")
+            })
+            .lean()
+            .populate("criteria_id","code name type description")
             .sort({"criteria_order": 1})
             .select("criteria_id criteria_order point").lean();
             for(let j in formCriteria){
                 const options = await CriteriaOption.find({
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
-                })
+                }).lean()
                 .sort({"max_point" : -1})
                 .select("name max_point description")
                 formCriteria[j].options = options;
@@ -431,7 +434,7 @@ exports.getFormDepartments= async (req,res,next)=>{
             form_id: form._id,
             level: 3,
             isDeleted: false
-        }).select("_id head").populate("head", "_id")
+        }).lean().select("_id head").populate("head", "_id")
         
         if(!(formUser.department_form_id == council.id && id == council.head.id )){
             return res.status(403).json({
@@ -445,7 +448,9 @@ exports.getFormDepartments= async (req,res,next)=>{
             form_id: form._id,
             level: 2,
             isDeleted: false
-        }).select("department_id head level")
+        })
+        .lean()
+        .select("department_id head level")
         .populate("department_id", "department_code name")
         .populate("head", "firstname lastname staff_id")
 

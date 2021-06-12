@@ -18,6 +18,8 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
 const {evaluationController, userFormController } = require("../controller");
+const EvaluateCriteria = require("../model/evaluateCriteria.model");
+const FormCriteria = require("../model/formCriteria.model");
 
 
 module.exports = function(app){
@@ -121,19 +123,31 @@ module.exports = function(app){
     )
     app.post("/admin/form/:fcode/addFormStandard",
         formStandardController.addFormStandard
-
     )
 
     app.post("/admin/form/:fcode/addFormStandard/v2",
         formStandardController.addFormStandardV2
     )
 
+    app.post("/admin/form/:fcode/editFormStandard",
+        formStandardController.editFormStandard
+    )
+
     //formCriteria
     app.get("/admin/form/:fcode/standard/:scode/getFormCriteria",
         formCriteriaController.getFormCriteria
     )
+
+    //#outdated#
     app.post("/admin/form/:fcode/standard/:scode/addFormCriteria",
         formCriteriaController.addFormCriteria
+    )
+    //#outdated#
+
+    app.post("/admin/form/:fcode/standard/:scode/editFormCriteria",
+        formCriteriaController.validate('editFormCriteria'),
+        getValidationResult,
+        formCriteriaController.editFormCriteria
     )
 
     //userform
