@@ -1,8 +1,7 @@
 const db = require("../model");
-const Department = require("../model/department.model");
-const FormDepartment = require("../model/formDepartment.model");
+const Department = db.department;
+const FormDepartment = db.formDepartment;
 const FormUser = db.formUser;
-// const Evaluation = db.evaluation;
 const EvaluateForm = db.evaluateForm;
 const UserForm = db.userForm;
 const Form = db.form;
@@ -16,7 +15,9 @@ exports.validate = (method)=>{
         {
             return [
                 param("fcode", "Invalid form").exists().isString(),
-                query("dcode", "Invalid department").exists().isString()
+                param("dcode", "Invalid department").exists().isString(),
+                query("page").optional().isNumeric(),
+                query("size").optional().isNumeric(),
             ]
         }
         case 'getPoints':
@@ -218,34 +219,47 @@ exports.getResultsDepartment = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const {dcode} = req.params;
+
+        //pagination variables
         let {size, page} = req.query;
-        page = page || 1;
+        page = page? parseInt(page) : 1;
         size = size? parseInt(size) : 10;
 
-        const form = await Form.findOne({
-            code: fcode,
-            isDeleted: false
-        }).select("_id")
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode, isDeleted: false}).lean().select("_id"),
+            Department.findOne({department_code: dcode}).lean().select("_id")
+        ])
 
+        //return 404 status if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id")
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Department not found"
+            })
+        }
 
         const formDepartment = await FormDepartment.findOne({
             department_id: department._id,
             form_id: form._id,
             isDeleted: false
-        }).select("_id")
+        }).lean().select("_id");
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormDepartment not found"
+            })
+        }
 
         const formUsers = await FormUser.find({
-            department_form_id: formDepartment._id
+            department_form_id: formDepartment._id,
+            isDeleted: false
         }).select("_id")
 
         const userforms = await UserForm.find({
@@ -253,7 +267,9 @@ exports.getResultsDepartment = async (req,res,next)=>{
             form_id: form._id,
             point: {$ne: null},
             isDeleted: false
-        }).sort({
+        })
+        .lean()
+        .sort({
             point: -1
         })
         .skip((size*page) - size)
@@ -298,6 +314,7 @@ exports.getPoints = async (req,res,next)=>{
             level: 2,
             isDeleted: false
         })
+
         const total = await FormUser.count({
             department_form_id: formDepartments,
             isDeleted: false
@@ -307,9 +324,9 @@ exports.getPoints = async (req,res,next)=>{
             form_id: form._id,
             point: {$ne: null},
             isDeleted: false
-        }).sort({
-            point: -1
         })
+        .lean()
+        .sort({point: -1})
         .select("point -_id")
         
 
@@ -328,20 +345,19 @@ exports.getPointsDepartment = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
 
-        const form = await Form.findOne({
-            code: fcode,
-            isDeleted: false
-        }).select("_id")
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode, isDeleted: false}).lean().select("_id"),
+            Department.findOne({department_code: dcode}).lean().select("_id")
+        ])
 
+        //return 404 status if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id")
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -355,8 +371,16 @@ exports.getPointsDepartment = async (req,res,next)=>{
             level: 2,
             isDeleted: false
         })
+        if(!formDepartment){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormDepartment not found"
+            })
+        }
+
+        //get total user in formDepartment
         const total = await FormUser.count({
-            department_form_id: formDepartment,
+            department_form_id: formDepartment._id,
             isDeleted: false
         }) 
 
@@ -364,11 +388,12 @@ exports.getPointsDepartment = async (req,res,next)=>{
             form_id: form._id,
             point: {$ne: null},
             isDeleted: false
-        }).sort({
+        })
+        .lean()
+        .select("point -_id")
+        .sort({
             point: -1
         })
-        .select("point -_id")
-        
 
         return res.status(200).json({
             statusCode: 200,

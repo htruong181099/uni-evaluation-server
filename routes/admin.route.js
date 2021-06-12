@@ -18,8 +18,6 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
 const {evaluationController, userFormController } = require("../controller");
-const EvaluateCriteria = require("../model/evaluateCriteria.model");
-const FormCriteria = require("../model/formCriteria.model");
 
 
 module.exports = function(app){
@@ -30,7 +28,7 @@ module.exports = function(app){
     )
 
     app.get("/admin",(req,res,next)=>{
-        res.json({
+        res.status(200).json({
             message: "Admin page"
         });
     })
@@ -44,11 +42,11 @@ module.exports = function(app){
     ReviewRouter(app);
 
     //form
-    
+    //get form
     app.get("/admin/form/:id",
-        formController.validate('getForm'),
+        formController.validate('getFormbyID'),
         getValidationResult,
-        formController.getForm
+        formController.getFormbyID
     )
     app.post("/admin/review/:rcode/formtype/:ftcode/form/addForm",
         formController.validate('addForm'),
@@ -103,7 +101,7 @@ module.exports = function(app){
         formDepartmentController.addHead
     )
 
-    //Form User
+    //formUser
     app.get("/admin/form/:fcode/:dcode/getFormUser",
         formUserController.getFormUsers
     )
@@ -199,9 +197,5 @@ module.exports = function(app){
     //admin
     app.post("/admin/evaluateform/:id/deleteDB",
         evaluationController.deleteEvaluateFormDB
-    )
-
-    app.post("/rest/:fcode",
-        formStandardController.addFormStandardV2
     )
 }

@@ -13,20 +13,33 @@ exports.addFormUser = async (req,res,next)=>{
         const {fcode, dcode} = req.params;
         const {ucode} = req.body;
 
-        const form = await Form.findOne({code: fcode}).select("_id");
+        //query form && department
+        const [form, department, user] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id"),
+            User.findOne({staff_id: ucode, isDeleted: false}).select("_id")
+        ])
+
+        //return status 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-        const department = await Department.findOne({department_code: dcode}).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Department not found"
             })
         }
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "User not found"
+            })
+        }
+        
         const formDepartment = await FormDepartment.findOne({
             form_id: form._id,
             department_id: department._id,
@@ -36,17 +49,6 @@ exports.addFormUser = async (req,res,next)=>{
             return res.status(404).json({
                 statusCode: 404,
                 message: "FormDepartment not found"
-            })
-        }
-
-        const user = await User.findOne({
-            staff_id: ucode,
-            isDeleted: false
-        }).select("_id")
-        if(!user){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "User not found"
             })
         }
 
@@ -135,19 +137,20 @@ exports.addFormUsers = async (req,res,next)=>{
 exports.getFormUsers = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
-        const form = await Form.findOne({
-            code: fcode
-        }).select("_id");
+
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id")
+        ])
+
+        //return status 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id")
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -185,7 +188,7 @@ exports.getFormUsers = async (req,res,next)=>{
             }
         })
 
-        res.status(200).json({
+        return res.status(200).json({
             statusCode: 200,
             message: "Success",
             formUser
@@ -201,19 +204,19 @@ exports.removeFormUser = async (req,res,next)=>{
         const {fcode, dcode} = req.params;
         const {delete_users} = req.body;
 
-        const form = await Form.findOne({
-            code: fcode
-        }).select("_id");
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id")
+        ])
+
+        //return status 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -252,11 +255,6 @@ exports.removeFormUser = async (req,res,next)=>{
                 message: "Delete FormUser successfully"
             })
         })
-        // const u = await FormUser.find({
-        //     user_id: del_users
-        // }).populate("user_id")
-        
-
 
     } catch (error) {
         next(error);
@@ -343,19 +341,19 @@ exports.getFormUserIfHead = async (req,res,next)=>{
         const {fcode, dcode} = req.params;
         const user_id = req.userId;
 
-        const form = await Form.findOne({
-            code: fcode
-        }).select("_id");
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id")
+        ])
+
+        //return status 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -394,7 +392,9 @@ exports.getFormUserIfHead = async (req,res,next)=>{
         const formUsers = await FormUser.find({
             department_form_id: formDepartment._id,
             isDeleted: false
-        }).select("user_id")
+        })
+        .lean()
+        .select("user_id")
         .populate({
             path: "user_id",
             select: "staff_id lastname firstname department",
@@ -406,7 +406,6 @@ exports.getFormUserIfHead = async (req,res,next)=>{
                 select: "department_code name _id"
             }
         })
-        .lean();
         let result = []
         for(let i in formUsers){
             const formUser = formUsers[i];
@@ -430,7 +429,6 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             result.push(formUser)
         }
 
-
         return res.status(200).json({
             statusCode: 200,
             message: "Success",
@@ -447,20 +445,19 @@ exports.getFormUserAdmin = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
 
-        const form = await Form.findOne({
-            code: fcode,
-            isDeleted: false
-        }).select("_id");
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id")
+        ])
+
+        //return status 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             })
         }
-
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -483,8 +480,9 @@ exports.getFormUserAdmin = async (req,res,next)=>{
         const formUsers = await FormUser.find({
             department_form_id: formDepartment._id,
             isDeleted: false
-        }).select("user_id")
-        
+        })
+        .lean()
+        .select("user_id")
         .populate({
             path: "user_id",
             select: "staff_id lastname firstname department",
@@ -496,7 +494,6 @@ exports.getFormUserAdmin = async (req,res,next)=>{
                 select: "department_code name _id"
             }
         })
-        .lean();
         let result = []
         for(let i in formUsers){
             const formUser = formUsers[i];

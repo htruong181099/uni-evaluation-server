@@ -22,7 +22,7 @@ exports.validate = (method)=>{
                 body("name","Invalid name input").exists().isString()
             ]
         }
-        case 'getForm': {
+        case 'getFormbyID': {
             return [
                 param("id","Invalid Form ID").exists().isMongoId()
             ]
@@ -59,54 +59,11 @@ exports.validate = (method)=>{
     }
 }
 
-exports.addForm = async (req,res,next)=>{
-    try {
-        const {rcode, ftcode} = req.params;
-        const {code, name} = req.body;
-
-        const review = await EvaluationReview.findOne({code: rcode}).select("_id");
-        const type = await FormType.findOne({code: ftcode}).select("_id");
-        if(!review){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Review not found!"
-            })
-        }
-        if(!type){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Form type not found!"
-            })
-        }
-
-        const form = new Form({
-            code,
-            name,
-            type: type._id,
-            review: review._id
-        })
-        form.save((err)=>{
-            if(err){
-                if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
-                    return res.status(409).send({message: 'Evaluation Review already exists!'});
-                }
-                return next(err);
-            }
-            return res.status(200).json({
-                message: "Add Form successfully"
-            })
-        })
-    } catch (error) {
-        next(error);
-    }  
-
-}
-
-exports.getForm = async (req,res,next)=>{
+exports.getFormbyID = async (req,res,next)=>{
     try {
         const {id} = req.params;
         const form = await Form.findById(id)  
-            .select("-__v");
+            .select("-__v -isDeleted");
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
@@ -123,11 +80,19 @@ exports.getForm = async (req,res,next)=>{
     }
 }
 
-exports.getFormfromFormTypeandReview = async (req,res,next)=>{
+//create new form
+exports.addForm = async (req,res,next)=>{
     try {
         const {rcode, ftcode} = req.params;
-        const review = await EvaluationReview.findOne({code: rcode}).select("_id");
-        const type = await FormType.findOne({code: ftcode}).select("_id");
+        const {code, name} = req.body;
+
+        //query review && type
+        const [review, type] = await Promise.all([
+            EvaluationReview.findOne({code: rcode, isDeleted: false}).select("_id"),
+            FormType.findOne({code: ftcode}).select("_id")
+        ]);
+
+        //return 404 status if not found
         if(!review){
             return res.status(404).json({
                 statusCode: 404,
@@ -140,14 +105,65 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
                 message: "Form type not found!"
             })
         }
+
+        //create new form
+        const form = new Form({
+            code,
+            name,
+            type: type._id,
+            review: review._id
+        })
+        form.save((err)=>{
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                return res.status(409).send({message: 'Evaluation Review already exists!'});
+            }
+            return res.status(200).json({
+                statusCode: 200,
+                message: "Add Form successfully"
+            })
+        })
+
+    } catch (error) {
+        next(error);
+    }  
+
+}
+
+exports.getFormfromFormTypeandReview = async (req,res,next)=>{
+    try {
+        const {rcode, ftcode} = req.params;
+        
+        //query review && type
+        const [review, type] = await Promise.all([
+            EvaluationReview.findOne({code: rcode, isDeleted: false}).select("_id"),
+            FormType.findOne({code: ftcode}).select("_id")
+        ]);
+
+        //return 404 status if not found
+        if(!review){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Review not found!"
+            })
+        }
+        if(!type){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form type not found!"
+            })
+        }
+
         const form = await Form.findOne({
             review: review._id,
-            type: type._id
-        }).select("-__v");
+            type: type._id,
+            isDeleted: false
+        })
+        .lean()
+        .select("-__v -isDeleted");
 
         return res.status(200).json({
             statusCode: 200,
-            message: "success",
+            message: "Success",
             form
         })
     } catch (error) {
@@ -159,9 +175,18 @@ exports.getFormfromFormTypeandReview = async (req,res,next)=>{
 exports.getUserForms = async (req,res,next)=>{
     try {
         const {rcode} = req.params;
+
         const review = await EvaluationReview.findOne({
-            code: rcode
+            code: rcode,
+            isDeleted: false
         }).select("_id");
+        if(!review){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Review not found"
+            })
+        }
+
         const forms = await Form.find({
             review: review._id,
             isDeleted: false
@@ -171,7 +196,9 @@ exports.getUserForms = async (req,res,next)=>{
             form_id: forms.map(form=>form._id),
             user_id: req.userId,
             isDeleted: false
-        }).populate({
+        })
+        .lean()
+        .populate({
             path: "form_id",
             select: "code name type",
             populate: {
@@ -188,14 +215,14 @@ exports.getUserForms = async (req,res,next)=>{
             }
         })
         .select("form_id department_form_id")
-        .lean();
+        
 
         for(let i in formUsers){
             const formUser = formUsers[i];
             let userForm = await UserForm.findOne({
                 form_user: formUser._id,
                 form_id: formUser.form_id._id
-            });
+            }).lean();
             if(!userForm){
                 userForm = new UserForm({
                     form_user: formUser._id,
@@ -205,8 +232,6 @@ exports.getUserForms = async (req,res,next)=>{
             }
             formUser.userForm = userForm;
         }
-
-        
 
         return res.status(200).json({
             statusCode: 200,
@@ -279,15 +304,16 @@ exports.getEvaFormV2 = async (req,res,next)=>{
         
         const ufform = req.ufform;
         const {ufuser, ufdep} = req;
-
         const form_id = ufform._id;
 
         const formStandards = await FormStandard.find({
             form_id: form_id,
             isDeleted: false
-        }).populate("standard_id", "code name description")
+        })
+        .lean()
+        .populate("standard_id", "code name description")
         .sort({"standard_order" : 1})
-        .select("standard_id standard_order standard_point").lean();
+        .select("standard_id standard_order standard_point");
 
         for(let i in formStandards){
             const formCriteria = await FormCriteria.find({
