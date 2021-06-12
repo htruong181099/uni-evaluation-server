@@ -135,6 +135,8 @@ module.exports = function(app){
 
     //formCriteria
     app.get("/admin/form/:fcode/standard/:scode/getFormCriteria",
+        formCriteriaController.validate('getFormCriteria'),
+        getValidationResult,
         formCriteriaController.getFormCriteria
     )
 
@@ -143,6 +145,13 @@ module.exports = function(app){
         formCriteriaController.addFormCriteria
     )
     //#outdated#
+
+    //add single formCriteria to formStandard
+    app.post("/admin/form/:fcode/standard/:scode/addSingleFormCriteria",
+        formCriteriaController.validate('addSingleFormCriteria'),
+        getValidationResult,
+        formCriteriaController.addSingleFormCriteria
+    )
 
     app.post("/admin/form/:fcode/standard/:scode/editFormCriteria",
         formCriteriaController.validate('editFormCriteria'),
