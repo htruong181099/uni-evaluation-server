@@ -123,12 +123,18 @@ exports.addFormRating = async (req,res,next)=>{
             max_point
         })
 
-        formRating.save();
+        formRating.save((err,doc)=>{
+            if(err){
+                return next(err);
+            }
+            return res.status(201).json({
+                statusCode: 201,
+                message: "Success",
+                formRating: doc
+            })
+        }); 
 
-        return res.status(201).json({
-            statusCode: 201,
-            message: "Success"
-        })
+        
 
     } catch (error) {
         next(error);
