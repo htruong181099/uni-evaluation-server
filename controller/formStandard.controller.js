@@ -8,6 +8,27 @@ const Form = db.form;
 //validator
 const {body, param, query} = require("express-validator");
 
+exports.validate = (method)=>{
+    switch(method){
+        case 'getFormStandards': {
+            return [
+                param("fcode", "Invalid form").exists().isString()
+            ]
+        }
+        case 'addFormStandardV2': {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                body("standard").exists().isObject()
+            ]
+        }
+        case 'editFormStandard':{
+            return [
+                param("fcode", "Invalid form").exists().isString()
+            ]
+        }
+    }
+}
+
 //add formStandards
 exports.addFormStandard = async (req,res,next)=>{
     try {

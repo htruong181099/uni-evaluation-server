@@ -64,6 +64,8 @@ module.exports = function(app){
 
     //FormDepartment
     app.get("/admin/form/:fcode/getFormDepartments",
+        formDepartmentController.validate('getFormDepartments'),
+        getValidationResult,
         formDepartmentController.getFormDepartments
     )
     app.post("/admin/form/:fcode/addFormDepartments",
@@ -72,6 +74,8 @@ module.exports = function(app){
     )
 
     app.post("/admin/form/:fcode/addFormDepartments/v2",
+        formDepartmentController.validate('addFormDepartmentsV2'),
+        getValidationResult,
         formDepartmentController.addFormDepartmentsV2,
         formUserController.addFormUsersV2
     )
@@ -102,20 +106,30 @@ module.exports = function(app){
 
     //formUser
     app.get("/admin/form/:fcode/:dcode/getFormUser",
+        formUserController.validate('getFormUsers'),
+        getValidationResult,
         formUserController.getFormUsers
     )
     app.post("/admin/form/:fcode/:dcode/removeFormUser",
+        formUserController.validate('removeFormUser'),
+        getValidationResult,
         formUserController.removeFormUser
     )
     app.post("/admin/form/:fcode/:dcode/addFormUser",
+        formUserController.validate('addFormUser'),
+        getValidationResult,
         formUserController.addFormUser
     )
     app.get("/admin/form/:fcode/:dcode/formUser/get",
-        formUserController.getFormUserAdmin
+        formUserController.validate('getFormUsersAdmin'),
+        getValidationResult,
+        formUserController.getFormUsersAdmin
     )
 
     //formStandard
     app.get("/admin/form/:fcode/getFormStandard",
+        formStandardController.validate('getFormStandards'),
+        getValidationResult,
         formStandardController.getFormStandards
     )
     app.post("/admin/form/:fcode/addFormStandard",
@@ -123,10 +137,14 @@ module.exports = function(app){
     )
 
     app.post("/admin/form/:fcode/addFormStandard/v2",
+        formStandardController.validate('addFormStandardV2'),
+        getValidationResult,
         formStandardController.addFormStandardV2
     )
 
     app.post("/admin/form/:fcode/editFormStandard",
+        formStandardController.validate('editFormStandard'),
+        getValidationResult,
         formStandardController.editFormStandard
     )
 

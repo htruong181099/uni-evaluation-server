@@ -7,6 +7,37 @@ const FormDepartment = db.formDepartment;
 const FormUser = db.formUser;
 const User = db.user;
 
+//validator
+const {body, param, query} = require("express-validator");
+
+exports.validate = (method)=>{
+    switch(method){
+        case 'getFormUsers':
+        case 'getFormUsersAdmin':    
+        {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                param("dcode", "Invalid department").exists().isString()
+            ]
+        }
+        case 'addFormUser': {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                param("dcode", "Invalid department").exists().isString(),
+                body("ucode", "Invalid user").exists().isString()
+            ]
+        }
+        case 'removeFormUser': {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                param("dcode", "Invalid department").exists().isString(),
+                body("delete_users").exists().isArray()
+            ]
+        }
+    }
+}
+
+
 //add single formuser
 exports.addFormUser = async (req,res,next)=>{
     try {
@@ -203,6 +234,13 @@ exports.removeFormUser = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
         const {delete_users} = req.body;
+
+        if(delete_user.length == 0){
+            return res.status(422).json({
+                statusCode: 422,
+                message: "Empty array"
+            })
+        }
 
         //query form && department
         const [form, department] = await Promise.all([
@@ -441,7 +479,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
 }
 
 //get FormUser if admin
-exports.getFormUserAdmin = async (req,res,next)=>{
+exports.getFormUsersAdmin = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
 

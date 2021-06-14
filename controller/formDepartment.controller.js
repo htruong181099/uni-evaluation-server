@@ -12,7 +12,7 @@ exports.validate = (method)=>{
         case 'addFormDepartment': {
             return [
                 param("fcode","Invalid Form code").exists().isString(),
-                body("dcode", "Invalid Department code").exists().isString(),
+                body("dcode", "Invalid Department code").exists().isString()
             ]
         }
         case 'getFormDepartment':
@@ -24,14 +24,16 @@ exports.validate = (method)=>{
                 param("dcode", "Invalid Department code").exists().isString(),
             ]
         }
+        case 'getFormDepartments':
         case 'checkCouncil' :{
             return [
                 param("fcode","Invalid Form code").exists().isString()
             ]
         }
-        case 'addFormDepartments': {
+        case 'addFormDepartments':
+        case 'addFormDepartmentsV2': {
             return [
-                param("fcode","").exists().isString(),
+                param("fcode","Invalid Form").exists().isString(),
                 body("dcodes").exists().isArray(),
             ]
         }
@@ -41,29 +43,53 @@ exports.validate = (method)=>{
 exports.addFormDepartment = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
-        const {dcode, level} = req.body;
-        const form = await Form.findOne({code: fcode}).select("_id");
+        const {dcode} = req.body;
+
+        //query form && department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.find({department_code: dcode}).select("_id")
+        ]) 
+
+        //return 404 status if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             });
         }
-        const department = await Department.find({department_code: dcode}).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Department not found"
             });
         }
+
+        //check if already have FD in form -> if found return 409
+        if(await FormDepartment.findOne({
+            form_id : form._id,
+            department_id: department._id,
+            level: 2
+        })){
+            return res.status(409).json({
+                statusCode: 409,
+                message: "FormDepartment is existed"
+            });
+        }
+
+        //if not found create new FD
         const formDepartment = new FormDepartment({
             form_id : form._id,
             department_id: department._id,
             level
         })
-        formDepartment.save((err)=>{
+        formDepartment.save();
 
-        })
+        return res.status(201).json({
+            statusCode: 201,
+            message: "Success"
+        });
+
     } catch (error) {
         next(error);
     }
@@ -196,7 +222,9 @@ exports.getFormDepartments = async (req,res,next)=>{
         const formDepartments = await FormDepartment.find({
             form_id: form._id,
             isDeleted: false
-        }).populate("department_id","department_code name")
+        })
+        .lean()
+        .populate("department_id","department_code name")
         .select("-__v -isDeleted");
         
         return res.status(200).json({
@@ -228,6 +256,7 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
         .populate("department_id", "department_code")
         .select("_id");
 
+        //filter fd to be deleted
         const deleteDepartments = existedDepartment.map(e => e.department_id.department_code).filter(e=>!dcodes.includes(e));
 
         let recoverDepartments = [];
