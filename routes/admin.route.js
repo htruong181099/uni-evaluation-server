@@ -180,6 +180,16 @@ module.exports = function(app){
         getValidationResult,
         formRatingController.getFormRating
     )
+    app.post("/admin/formrating/:id/edit",
+        formRatingController.validate('editFormRating'),
+        getValidationResult,
+        formRatingController.editFormRating
+    )
+    app.post("/admin/formrating/:id/delete",
+        formRatingController.validate('deleteFormRatingDB'),
+        getValidationResult,
+        formRatingController.deleteFormRatingDB
+    )
     app.get("/admin/form/:fcode/formRating",
         formRatingController.validate('getFormRatings'),
         getValidationResult,

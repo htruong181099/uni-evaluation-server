@@ -1,12 +1,15 @@
 const db = require("../model/");
 const FormRating = db.formRating;
+const Form = db.form;
 
 //validator
 const {body, param, query} = require("express-validator");
 
 exports.validate = (method)=>{
     switch(method){
-        case 'getFormRating':{
+        case 'getFormRating':
+        case 'deleteFormRatingDB':
+        {
             return [
                 // param("fcode", "Invalid form").exists().isString(),
                 param("id", "Invalid formRaing ID").exists().isMongoId()
@@ -20,6 +23,14 @@ exports.validate = (method)=>{
         case 'addFormRating': {
             return [
                 param("fcode", "Invalid form").exists().isString(),
+                body("name").exists().isString(),
+                body("min_point").optional().isNumeric(),
+                body("max_point").optional().isNumeric(),
+            ]
+        }
+        case 'editFormRating': {
+            return [
+                param("id", "Invalid form").exists().isMongoId(),
                 body("name").exists().isString(),
                 body("min_point").optional().isNumeric(),
                 body("max_point").optional().isNumeric(),
@@ -123,3 +134,50 @@ exports.addFormRating = async (req,res,next)=>{
         next(error);
     }
 }   
+
+//edit formRating
+exports.editFormRating = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+        const {name, min_point, max_point} = req.body;
+
+        const formRating = await FormRating.findById(id);
+        if(!formRating){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "FormRating not found"
+            })
+        }
+
+        formRating.name = name;
+        formRating.min_point = min_point;
+        formRating.max_point = max_point;
+
+        formRating.save();
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}  
+
+//remove formRating 
+exports.deleteFormRatingDB = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+        const result = await FormRating.deleteOne({_id: id});
+        console.log(result);
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+        
+    } catch (error) {
+        next(error);
+    }
+}  

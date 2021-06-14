@@ -22,7 +22,6 @@ db.formType = require("./formtype.model");
 db.formDepartment = require("./formDepartment.model");
 db.formUser = require("./formUser.model");
 //danh gia, tieu chuan, tieu chi Form
-db.formEvaluation = require("./formEvaluation.model");
 db.formStandard = require("./formStandard.model");
 db.formCriteria = require("./formCriteria.model");
 db.criteriaOption = require("./criteriaOption.model");
