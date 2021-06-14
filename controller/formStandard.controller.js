@@ -119,17 +119,7 @@ exports.addFormStandardV2 = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const {standard} = req.body;
-        const form = await Form.findOne({
-            code: fcode,
-            isDeleted: false
-        }).select("_id");
-        if(!form){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "Form not found",
-            })
-        }
-        
+
         const criterions = standard.criterions;
         if (criterions.length === 0){
             return res.status(400).json({
@@ -138,17 +128,29 @@ exports.addFormStandardV2 = async (req,res,next)=>{
             })
         }
 
-        const standard_id = (await Standard.findOne({
-            code: standard.standard_id,
-            isDeleted: false
-        }).select("_id"))._id;
+        //query form && standard
+        const [form, standardDoc] = await Promise.all([
+            Form.findOne({code: fcode, isDeleted: false}).select("_id"),
+            Standard.findOne({
+                code: standard.standard_id,
+                isDeleted: false
+            }).select("_id")
+        ])
 
-        if(!standard_id){
+        //return 404 if not found
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found",
+            })
+        }
+        if(!standardDoc){
             return res.status(404).json({
                 statusCode: 400,
                 message: "Standard not found"
             })
         }
+        const standard_id = standardDoc._id;
 
         let formStandard = await FormStandard.findOne({
             standard_id,
@@ -230,7 +232,6 @@ exports.editFormStandard = async (req,res,next)=>{
                 form_standard: formStandard._id
             },async (err)=>{
                 if(err){return next(err)}
-                console.log(formStandard._id);
                 const doc = await FormStandard.deleteOne({_id: formStandard._id});
                 console.log(doc);
             })

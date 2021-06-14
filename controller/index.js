@@ -16,5 +16,7 @@ controller.standardController = require("./standard.controller");
 controller.userController = require("./user.controller");
 controller.userFormController = require("./userForm.controller");
 controller.evaluationController = require("./evaluation.controller");
+controller.formRatingController = require("./formRating.controller");
+
 
 module.exports = controller;

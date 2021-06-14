@@ -7,7 +7,7 @@ const ReviewRouter = require("./admin/review.route");
 const userRouter = require("./admin/user.route");
 
 //controller
-const formTypeController = require("../controller/formType.controller");
+const {formRatingController, evaluationController, userFormController} = require("../controller/");
 const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
 const formUserController = require("../controller/formUser.controller");
@@ -17,7 +17,6 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
-const {evaluationController, userFormController } = require("../controller");
 
 
 module.exports = function(app){
@@ -156,6 +155,24 @@ module.exports = function(app){
         getValidationResult,
         formCriteriaController.editFormCriteria
     )
+
+    //formRating
+    app.get("/admin/formrating/:id",
+        formRatingController.validate('getFormRating'),
+        getValidationResult,
+        formRatingController.getFormRating
+    )
+    app.get("/admin/form/:fcode/formRating",
+        formRatingController.validate('getFormRatings'),
+        getValidationResult,
+        formRatingController.getFormRatings
+    )
+    app.post("/admin/form/:fcode/formRating",
+        formRatingController.validate('addFormRating'),
+        getValidationResult,
+        formRatingController.addFormRating
+    )
+
 
     //userform
     app.get("/admin/form/:fcode/getResults",

@@ -30,6 +30,7 @@ db.evaluateCriteria = require("./evaluateCriteria.model");
 db.evaluateForm = require("./evaluateForm.model");
 db.userForm = require("./userForm.model");
 
+db.formRating = require("./formRating.model");
 
 const User = db.user;
 const FormType = db.formType;
