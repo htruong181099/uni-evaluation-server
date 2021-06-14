@@ -67,9 +67,9 @@ exports.addCriteria = async (req,res,next)=>{
         }
 
         if (!['radio','checkbox','input','detail'].includes(type)){
-            return res.status(400).json({
-                statusCode: 400,
-                message: "Invalid Criteria type"
+            return res.status(422).json({
+                statusCode: 422,
+                message: "Invalid Type"
             })
         }
 
@@ -302,7 +302,7 @@ exports.editCriteria = async (req,res,next)=>{
         const {ccode} = req.params;
         const {new_ccode, name, description, type} = req.body;
 
-        if(!['radio', 'checkbox', 'input'].includes(type)){
+        if(!['radio', 'checkbox', 'input', 'detail'].includes(type)){
             return res.status(422).send({
                 statusCode: 422,
                 message: "Invalid type"
