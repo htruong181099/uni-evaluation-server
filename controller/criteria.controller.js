@@ -66,7 +66,7 @@ exports.addCriteria = async (req,res,next)=>{
             })
         }
 
-        if (!['radio','checkbox','input'].includes(type)){
+        if (!['radio','checkbox','input','detail'].includes(type)){
             return res.status(400).json({
                 statusCode: 400,
                 message: "Invalid Criteria type"

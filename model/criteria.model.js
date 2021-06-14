@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const TYPE = ['radio', 'checkbox', 'input'];
+const TYPE = ['radio', 'checkbox', 'input','detail'];
 
 
 const Criteria = mongoose.model(
