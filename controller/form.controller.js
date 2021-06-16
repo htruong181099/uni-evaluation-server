@@ -460,7 +460,7 @@ exports.getFormDepartments= async (req,res,next)=>{
             form_id: form._id,
             level: 3,
             isDeleted: false
-        }).lean().select("_id head").populate("head", "_id")
+        }).select("_id head").populate("head", "_id")
         
         if(!(formUser.department_form_id == council.id && id == council.head.id )){
             return res.status(403).json({
