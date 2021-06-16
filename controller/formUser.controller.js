@@ -235,7 +235,7 @@ exports.removeFormUser = async (req,res,next)=>{
         const {fcode, dcode} = req.params;
         const {delete_users} = req.body;
 
-        if(delete_user.length == 0){
+        if(delete_users.length == 0){
             return res.status(422).json({
                 statusCode: 422,
                 message: "Empty array"
