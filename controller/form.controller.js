@@ -38,10 +38,15 @@ exports.validate = (method)=>{
                 param("rcode","Invalid Review Code").exists().isString()
             ]
         }
-        case 'getFormDepartments':
+        case 'getFormDepartments':{
+            return [
+                param("fcode","Invalid FormCode").exists().isString(),
+                query("role", "Invalid role").optional().isString()
+            ]
+        }
         case 'getEvaForm': {
             return [
-                param("fcode","Invalid FormCode").exists().isString()
+                param("fcode","Invalid FormCode").exists().isString(),
             ]
         }
         case 'getEvaFormv2':
@@ -212,7 +217,7 @@ exports.getUserForms = async (req,res,next)=>{
             populate: {
                 path: "department_id",
                 select: "department_code name -_id"
-            }
+            },
         })
         .select("form_id department_form_id")
         
@@ -428,6 +433,7 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
 //get Form Departments via Council
 exports.getFormDepartments= async (req,res,next)=>{
     try {
+        const {role} = req.query;
         const {fcode} = req.params;
         const id = req.userId;
 
@@ -462,13 +468,14 @@ exports.getFormDepartments= async (req,res,next)=>{
             isDeleted: false
         }).select("_id head").populate("head", "_id")
         
-        if(!(formUser.department_form_id == council.id && id == council.head.id )){
-            return res.status(403).json({
-                statusCode: 403,
-                message: "Required council head"
-            })
+        if(role && role === "head"){
+            if(!(formUser.department_form_id == council.id && id == council.head.id )){
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Required council head"
+                })
+            }
         }
-        
 
         const formDepartments = await FormDepartment.find({
             form_id: form._id,
