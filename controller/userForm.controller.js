@@ -130,7 +130,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
 
         let evaluateForm = await EvaluateForm.findOne({
             userForm: userForm._id,
-            user: user._id
+            level: 1
         })
         if(!evaluateForm){
             evaluateForm = new EvaluateForm({
