@@ -341,12 +341,19 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             })
         }
 
-        const formDepartment = new FormDepartment({
+        let  formDepartment = await FormDepartment.findOne({
             form_id: form._id,
             department_id: department._id,
-            head: department.manager,
             level: 3
         })
+        if(!formDepartment){
+            formDepartment = new FormDepartment({
+                form_id: form._id,
+                department_id: department._id,
+                head: department.manager,
+                level: 3
+            })
+        }
         const fd = await formDepartment.save();
 
         const users = await User.find({
@@ -492,6 +499,34 @@ exports.addHead = async (req,res,next)=>{
             message: "Success"
         })
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.deleteDB = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const form = await Form.findOne({
+            code: fcode
+        }).select("_id")
+        const formDepartments = await FormDepartment.find({
+            form_id: form._id,
+            level: 3
+        })
+        FormUser.deleteMany({
+            department_form_id: formDepartments.map(e=>e._id),
+            form_id: form._id
+        },async(err, doc)=>{
+            // console.log(doc);
+            const result = await FormDepartment.deleteMany({
+                _id: formDepartments.map(e=>e._id)
+            })
+            return res.status(200).json({
+                statusCode: 200,
+                result
+            })
+        })
     } catch (error) {
         next(error);
     }

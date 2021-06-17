@@ -243,4 +243,8 @@ module.exports = function(app){
     app.post("/admin/evaluateform/:id/deleteDB",
         evaluationController.deleteEvaluateFormDB
     )
+
+    app.post("/admin/formdep/:fcode/deleteDB",
+        formDepartmentController.deleteDB
+    )
 }

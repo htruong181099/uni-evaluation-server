@@ -506,6 +506,22 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                 message: "UserForm not found"
             })
         }
+        const form_id = userForm.form_id;
+        if(level == 2 || level == 3){
+            const formDepartment = await FormDepartment.findOne({
+                form_id,
+                level,
+                head: user_id,
+                isDeleted: false
+            }).lean()
+            if(!formDepartment){
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Required head role"
+                })
+            }
+        }
+
         const evaluateForm = await EvaluateForm.findOne({
             user: user._id,
             userForm: userForm._id,
@@ -518,7 +534,7 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             })
         }
 
-        const form_id = userForm.form_id;
+        
 
         if(evaluateForm.status === 1){
             return res.status(400).json({
