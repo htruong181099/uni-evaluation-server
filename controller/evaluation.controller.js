@@ -962,7 +962,10 @@ exports.classifyStandards = async (req,res,next)=>{
                     $filter: {
                         input: "$evaluateForm", 
                         as: "evaluateForm", 
-                        cond: { $eq: [ "$$evaluateForm.level", 3 ] } 
+                        cond: { $and: [
+                            {$eq: [ "$$evaluateForm.level", 3 ] } ,
+                            {$eq: [ "$$evaluateForm.status", 1 ] }
+                        ]}
                     }
                 },
                 formStandard: {
