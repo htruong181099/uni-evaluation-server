@@ -1,6 +1,6 @@
 const db = require("../model/");
-const Criteria = require("../model/criteria.model");
-const FormCriteria = require("../model/formCriteria.model");
+const Criteria = db.criteria;
+const FormCriteria = db.formCriteria;
 const FormStandard = db.formStandard;
 const Standard = db.standard;
 const Form = db.form;
@@ -199,7 +199,8 @@ exports.addFormStandardV2 = async (req,res,next)=>{
                 criteria_id: criteria._id,
                 form_standard: formStandard_doc._id,
                 criteria_order: criteria_obj.criteria_order,
-                point: criteria_obj.criteria_point
+                point: criteria_obj.criteria_point,
+                base_point: criteria_obj.base_point
             })
             formCriteria.save();
         }

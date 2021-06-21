@@ -6,7 +6,6 @@ const bcrypt = require("bcrypt");
 const FormDepartment = require("../model/formDepartment.model");
 const EvaluationReview = require("../model/evaluationReview.model");
 const Form = require("../model/form.model");
-const Department = require("../model/department.model");
 
 exports.validate = (method)=>{
     switch(method){

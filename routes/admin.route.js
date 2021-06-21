@@ -253,4 +253,15 @@ module.exports = function(app){
         // criteriaController.getCriteriaTypes
         evaluationController.up
     )
+
+    app.post("/te",
+        // formCriteriaController.update
+        // criteriaController.getCriteriaTypes
+        (req,res,next)=>{
+            console.log(req.body);
+            res.status(500).send({
+                body: req.body
+            })
+        }
+    )
 }

@@ -20,7 +20,7 @@ const FormCriteria = mongoose.model(
         point:{
             type: Number
         },
-        point_per_once: {
+        base_point: {
             type: Number,
         },
         isDeleted: {

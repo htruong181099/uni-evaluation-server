@@ -2,10 +2,10 @@ const db = require("../model");
 const Form = db.form;
 const FormDepartment = db.formDepartment;
 const Department = db.department;
+const User = db.user;
+const FormUser = db.formUser;
 
-const {body, param, query, validationResult} = require("express-validator");
-const User = require("../model/user.model");
-const FormUser = require("../model/formUser.model");
+const {body, param, query} = require("express-validator");
 
 exports.validate = (method)=>{
     switch(method){
