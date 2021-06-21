@@ -7,7 +7,7 @@ const ReviewRouter = require("./admin/review.route");
 const userRouter = require("./admin/user.route");
 
 //controller
-const {formRatingController, evaluationController, userFormController} = require("../controller/");
+const {formRatingController, evaluationController, userFormController, criteriaController} = require("../controller/");
 const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
 const formUserController = require("../controller/formUser.controller");
@@ -246,5 +246,10 @@ module.exports = function(app){
 
     app.post("/admin/formdep/:fcode/deleteDB",
         formDepartmentController.deleteDB
+    )
+
+    app.get("/upz",
+        // formCriteriaController.update
+        criteriaController.getCriteriaTypes
     )
 }

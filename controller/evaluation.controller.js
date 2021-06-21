@@ -1,14 +1,19 @@
 const db = require("../model");
-const EvaluateForm = require("../model/evaluateForm.model");
-const Form = require("../model/form.model");
-const FormCriteria = require("../model/formCriteria.model");
-const FormDepartment = require("../model/formDepartment.model");
-const FormStandard = require("../model/formStandard.model");
-const Standard = require("../model/standard.model");
-const UserForm = require("../model/userForm.model");
-const EvaluateCriteria = db.evaluateCriteria;
+
+const Form = db.form;
+const FormCriteria = db.formCriteria;
+const FormDepartment = db.formDepartment;
+const FormStandard = db.formStandard;
 const FormUser = db.formUser;
+const UserForm = db.userForm;
+
 const Criteria = db.criteria;
+const Standard = db.standard;
+
+const EvaluateForm = db.evaluateForm;
+const EvaluateCriteria = db.evaluateCriteria;
+const EvaluateDescription = db.evaluateDescription;
+
 
 const {body, param, query} = require("express-validator");
 
@@ -1231,6 +1236,164 @@ exports.cloneEvaluateCriteriaExpired = async (req,res,next)=>{
             await evaluateCriteria.save();
         }
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+
+//version 3
+exports.submitEvaluationV3 = async (req,res,next)=>{
+    try {        
+        const {ufid} = req.params;
+        const {dataToSend, level} = req.body;
+        const user_id = req.userId;
+
+        //query user && userForm
+        const [user, userForm] = await Promise.all([
+            FormUser.findOne({user_id, isDeleted: false}).select("_id"),
+            UserForm.findById(ufid).select("_id form_id form_user")  
+        ])
+
+        //return 404 status if not found
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }     
+        if(!userForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
+
+        //check head
+        const form_id = userForm.form_id;
+        if(level == 2 || level == 3){
+            const formDepartment = await FormDepartment.findOne({
+                form_id,
+                level,
+                head: user_id,
+                isDeleted: false
+            }).lean()
+            if(!formDepartment){
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Required head role"
+                })
+            }
+        }
+
+        //query evaluateForm
+        const evaluateForm = await EvaluateForm.findOne({
+            user: user._id,
+            userForm: userForm._id,
+            level
+        }).select("_id status");
+        if(!evaluateForm){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Evaluate Form not found"
+            })
+        }
+
+        //return 400 error if form had been submitted
+        if(evaluateForm.status === 1){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Form is completed. Cannot submit"
+            })
+        }
+        
+        const body = dataToSend;
+        for(let criteriaObj of body){
+            const criteria = await Criteria.findOne({
+                code: criteriaObj.name,
+                isDeleted: false
+            }).select("_id")
+            const formCriteria = await FormCriteria.findOne({
+                criteria_id: criteria._id,
+                isDeleted: false
+            })
+            let evaluateCriteria = await EvaluateCriteria.findOne({
+                evaluateForm: evaluateForm._id,
+                form_criteria: formCriteria._id
+            })
+    
+            if(!evaluateCriteria){
+                evaluateCriteria = new EvaluateCriteria({
+                    evaluateForm: evaluateForm._id,
+                    form_criteria: formCriteria._id,
+                    point: criteriaObj.value?criteriaObj.value:0,
+                })
+            }
+            let point = criteriaObj.value?criteriaObj.value:0;
+            point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
+            evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
+            const saved = await evaluateCriteria.save();
+
+            if(criteriaObj.description.length != 0){
+                for(description of criteriaObj.description){
+                    const evaluateDescription = new EvaluateDescription({
+                        evaluateCriteria: saved._id,
+                        name: description.name,
+                        value: description.value,
+                        type: description.type,
+                        description: description.description
+                    })
+                    evaluateDescription.save();
+                }
+            }
+        }
+        evaluateForm.status = 1;
+
+        //calculate point
+        const formStandards = await FormStandard.find({
+            form_id: form_id,
+            isDeleted: false
+        }).sort({standard_order: 1})
+        .select("standard_id standard_order standard_point")
+        .populate("standard_id", "code name")
+
+        let final_point = 0;
+        for(let i in formStandards){
+            const formStandard = formStandards[i];
+            const formCriterias = await FormCriteria.find({
+                form_standard: formStandard._id,
+                isDeleted: false
+            }).select("_id")
+            const evaluateCriterias = await EvaluateCriteria.find({
+                evaluateForm: evaluateForm._id,
+                form_criteria: formCriterias
+            })
+            .select("-__v -isDeleted")
+            
+            let standard_point = evaluateCriterias.reduce((acc,ele) => acc + ele.point, 0)
+            if(formStandard.standard_point){
+                standard_point = (standard_point > formStandard.standard_point)? formStandard.standard_point: standard_point
+            } 
+            final_point += standard_point;
+        }
+        //--end calculate point
+
+        evaluateForm.point = final_point;
+        await evaluateForm.save();
+        
+        res.status(200).json({
+            statusCode: 200,
+            message: "Save evaluation successfully"
+        })
+        
+        req.form_id = userForm.form_id;
+        req.formUser_id = userForm.form_user;
+        req.level = level;
+        req.userForm_id = userForm._id;
+        req.fbody = body;
+        next();
+        
     } catch (error) {
         next(error);
     }

@@ -14,12 +14,17 @@ const FormCriteria = mongoose.model(
             required: true
         },
         criteria_order: {
-            type: String,
+            type: Number,
             required: true
         },
         point:{
             type: Number
         },
+        // read_only: {
+        //     type: Boolean,
+        //     default: false,
+        //     required: true
+        // },
         isDeleted: {
             type: Boolean,
             default: false

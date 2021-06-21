@@ -7,6 +7,11 @@ module.exports = (app) => {
     app.get("/admin/criteria",
         criteriaController.getAllCriterions
     )
+
+    app.get("/admin/criteria/types",
+        criteriaController.getCriteriaTypes
+    )
+
     app.get("/admin/criteria/:id/",
         criteriaController.validate('getCriteria'),
         getValidationResult,

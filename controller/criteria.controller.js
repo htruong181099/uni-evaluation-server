@@ -399,3 +399,16 @@ exports.getAllDeletedCriterions = async (req,res,next)=>{
         next(error);
     }        
 }
+
+//get all possibles criteria's types
+exports.getCriteriaTypes = async (req,res,next)=>{
+    try {
+        const types = Criteria.getCriteriaTypes();
+        res.status(200).send({
+            statusCode: 200,
+            types
+        })
+    } catch (error) {
+        next(error);
+    }
+}

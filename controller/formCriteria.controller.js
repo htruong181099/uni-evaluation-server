@@ -393,3 +393,21 @@ exports.editFormCriteria = async (req,res,next)=>{
         next(error);
     }
 }
+
+exports.update = async (req,res,next)=>{
+    try {
+        const r = await FormCriteria.find({})
+        .then(async (fcs)=>{
+            for(fc of fcs){
+                fc.criteria_order = parseInt(fc.criteria_order);
+                await fc.save()
+            }
+        })
+        res.status(200).json({
+            statusCode: 200,
+            r
+        })
+    } catch (error) {
+        next(error);
+    }
+}
