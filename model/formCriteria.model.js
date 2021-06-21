@@ -20,11 +20,9 @@ const FormCriteria = mongoose.model(
         point:{
             type: Number
         },
-        // read_only: {
-        //     type: Boolean,
-        //     default: false,
-        //     required: true
-        // },
+        point_per_once: {
+            type: Number,
+        },
         isDeleted: {
             type: Boolean,
             default: false

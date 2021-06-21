@@ -250,6 +250,7 @@ module.exports = function(app){
 
     app.get("/upz",
         // formCriteriaController.update
-        criteriaController.getCriteriaTypes
+        // criteriaController.getCriteriaTypes
+        evaluationController.up
     )
 }

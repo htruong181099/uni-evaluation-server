@@ -192,7 +192,7 @@ exports.getFormCriteria = async (req,res,next)=>{
         })
         .lean()
         .sort({"criteria_order": 1})
-        .populate("criteria_id","name code")
+        .populate("criteria_id","name code type")
         .select("-isDeleted -__v -form_standard");
 
         return res.status(200).json({
@@ -216,6 +216,7 @@ exports.addSingleFormCriteria = async (req,res,next)=>{
          *      criteria_id,
          *      criteria_order,
          *      criteria_point
+         *      base_point (optional)
          *  }
          */
         //find form && standard && criteria
@@ -268,6 +269,7 @@ exports.addSingleFormCriteria = async (req,res,next)=>{
                 form_standard: formStandard._id,
                 criteria_id: criteriaDoc._id,
                 criteria_order: criteria.criteria_order,
+                base_point : criteria.base_point,
                 point: criteria.criteria_point
             })
 
@@ -281,6 +283,7 @@ exports.addSingleFormCriteria = async (req,res,next)=>{
         //modify if existed
         formCriteria.criteria_order = criteria.criteria_order;
         formCriteria.point = criteria.criteria_point;
+        formCriteria.base_point = criteria.base_point;
         formCriteria.isDeleted = false;
 
         formCriteria.save();
@@ -365,7 +368,6 @@ exports.editFormCriteria = async (req,res,next)=>{
                 form_standard: formStandard._id,
                 criteria_id: deleteCriterionsObj.map(e=>e._id)
             })
-            console.log(delFormCriteria);
         }
 
         //update formCriteria
@@ -380,6 +382,7 @@ exports.editFormCriteria = async (req,res,next)=>{
             if(formCriteria){
                 formCriteria.criteria_order = criteriaObj.criteria_order;
                 formCriteria.point = criteriaObj.criteria_point;
+                formCriteria.base_point = criteriaObj.base_point;
                 formCriteria.save();
             }
         }
@@ -389,24 +392,6 @@ exports.editFormCriteria = async (req,res,next)=>{
             message: "Success"
         })
 
-    } catch (error) {
-        next(error);
-    }
-}
-
-exports.update = async (req,res,next)=>{
-    try {
-        const r = await FormCriteria.find({})
-        .then(async (fcs)=>{
-            for(fc of fcs){
-                fc.criteria_order = parseInt(fc.criteria_order);
-                await fc.save()
-            }
-        })
-        res.status(200).json({
-            statusCode: 200,
-            r
-        })
     } catch (error) {
         next(error);
     }

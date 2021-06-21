@@ -17,6 +17,11 @@ const EvaluateCriteria = mongoose.model(
         point: {
             type: Number,
         },
+        read_only: {
+            type: Boolean,
+            default: false,
+            required: true
+        },
         isDeleted: {
             type: Boolean,
             default: false

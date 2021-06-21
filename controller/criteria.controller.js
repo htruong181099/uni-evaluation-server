@@ -2,6 +2,7 @@ const db = require("../model/");
 const {body, param} = require("express-validator");
 const Criteria = db.criteria;
 const Standard = db.standard;
+const TYPE = db.TYPE;
 
 exports.validate = (method)=>{
     switch(method){
@@ -66,7 +67,7 @@ exports.addCriteria = async (req,res,next)=>{
             })
         }
 
-        if (!['radio','checkbox','input','detail'].includes(type)){
+        if (!TYPE.includes(type)){
             return res.status(422).json({
                 statusCode: 422,
                 message: "Invalid Type"
@@ -144,7 +145,7 @@ exports.getCriterions = async (req,res,next)=>{
         })
         .lean()
         .sort({"code": 1})
-        .select("-__v -create_date -standard");
+        .select("-__v -create_date -standard -isDeleted");
         
         return res.status(200).json({
             statusCode: 200,
@@ -302,7 +303,7 @@ exports.editCriteria = async (req,res,next)=>{
         const {ccode} = req.params;
         const {new_ccode, name, description, type} = req.body;
 
-        if(!['radio', 'checkbox', 'input', 'detail'].includes(type)){
+        if(!TYPE.includes(type)){
             return res.status(422).send({
                 statusCode: 422,
                 message: "Invalid type"

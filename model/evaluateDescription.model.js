@@ -16,11 +16,6 @@ const EvaluateDescription = mongoose.model(
             default: 0,
             required: true
         },
-        type: {
-            type: String,
-            enum: ["amount", "detail"],
-            required: true
-        },
         description: {
             type: String
         }

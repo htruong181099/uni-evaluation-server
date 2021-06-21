@@ -12,7 +12,7 @@ db.mongoose = mongoose;
 db.user = require("./user.model");
 db.department = require("./department.model");
 //danh muc tieu chuan, tieu chi
-db.criteria = require("./criteria.model");
+db.criteria = require("./criteria.model").Criteria;
 db.standard = require("./standard.model");
 //dot danh gia, form, loai form
 db.evaluationReview = require("./evaluationReview.model");
@@ -32,6 +32,8 @@ db.userForm = require("./userForm.model");
 db.formRating = require("./formRating.model");
 db.evaluateDescription = require("./evaluateDescription.model");
 db.ratingRequirement = require("./ratingRequirement.model")
+
+db.TYPE = require("./criteria.model").TYPE;
 
 const User = db.user;
 const FormType = db.formType;

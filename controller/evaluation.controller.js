@@ -1335,14 +1335,14 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
             evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
             const saved = await evaluateCriteria.save();
 
-            if(criteriaObj.description.length != 0){
-                for(description of criteriaObj.description){
+            if(criteriaObj.details.length != 0){
+                for(detail of criteriaObj.details){
                     const evaluateDescription = new EvaluateDescription({
                         evaluateCriteria: saved._id,
-                        name: description.name,
-                        value: description.value,
-                        type: description.type,
-                        description: description.description
+                        name: detail.name,
+                        value: detail.value,
+                        type: detail.type,
+                        description: detail.description
                     })
                     evaluateDescription.save();
                 }
@@ -1394,6 +1394,20 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
         req.fbody = body;
         next();
         
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+exports.up = async (req,res,next)=>{
+    try {
+        EvaluateCriteria.updateMany({},{read_only: false},(err,doc)=>{
+            return res.status(200).json({
+                statusCode: 200,
+                doc
+            })
+        })
     } catch (error) {
         next(error);
     }

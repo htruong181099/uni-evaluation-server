@@ -39,48 +39,6 @@ const CriteriaSchema = new mongoose.Schema({
 CriteriaSchema.statics.getCriteriaTypes = ()=>{
     // ['radio', 'checkbox', 'input', 'number','detail']
     return TYPE;
-    let types = [];
-    for(type of TYPE){
-        switch(type){
-            case 'radio': {
-                types.push({
-                    type,
-                    description: "Chọn 1"
-                })
-                break;
-            }
-            case 'checkbox': {
-                types.push({
-                    type,
-                    description: "Tích chọn"
-                })
-                break;
-            }
-            case 'input': {
-                types.push({
-                    type,
-                    description: "Input số điểm"
-                })
-                break;
-            }
-            case 'number': {
-                types.push({
-                    type,
-                    description: "Input số lần"
-                })
-                break;
-            }
-            case 'detail': {
-                types.push({
-                    type,
-                    description: "Input chi tiết, % đóng góp"
-                })
-                break;
-            }
-        }
-        
-    }
-    
 }
 
 const Criteria = mongoose.model(
@@ -88,4 +46,7 @@ const Criteria = mongoose.model(
     CriteriaSchema
 )
 
-module.exports = Criteria;
+module.exports = {
+    Criteria,
+    TYPE
+}
