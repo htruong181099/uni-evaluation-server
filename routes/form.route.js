@@ -64,7 +64,7 @@ module.exports = function(app){
     app.get("/form/:ufid/evaluation/get",
         formController.validate("getEvaluation"),
         getValidationResult,
-        evaluationController.getEvaluation
+        evaluationController.getEvaluationV2
     )
 
     app.post("/form/:ufid/test",

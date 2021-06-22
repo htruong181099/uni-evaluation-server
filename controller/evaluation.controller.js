@@ -1200,7 +1200,7 @@ exports.getEvaluationV2 = async (req,res,next)=>{
             for(ec of evaluateCriteria){
                 ec.details = await EvaluateDescription.find({
                     evaluateCriteria: ec._id
-                }).lean().select("-_id")
+                }).lean().select("-_id -evaluateCriteria -__v")
             }
             evaluateForm.evaluateCriteria = evaluateCriteria;
         }
