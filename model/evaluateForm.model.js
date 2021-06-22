@@ -31,6 +31,9 @@ const EvaluateForm = mongoose.model(
         point: {
             type: Number
         },
+        uptime: {
+            type: Date,
+        },
         isDeleted: {
             type: Boolean,
             default: false

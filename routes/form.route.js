@@ -42,17 +42,14 @@ module.exports = function(app){
         formController.getFormDepartments
     );
 
-    //v1
+    //newest
     app.post("/form/:ufid/submitForm",
-        evaluationController.submitEvaluation
+        evaluationController.submitEvaluation,
+        evaluationController.cloneEvaluateCriteria
     )
 
     app.post("/form/:ufid/saveForm",
         evaluationController.saveEvaluation
-    )
-    //v2
-    app.post("/form/:ufid/submitForm/v2",
-        evaluationController.submitEvaluationV2
     )
 
     app.post("/form/:ufid/saveForm/v2",

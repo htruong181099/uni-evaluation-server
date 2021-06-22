@@ -248,12 +248,6 @@ module.exports = function(app){
         formDepartmentController.deleteDB
     )
 
-    app.get("/upz",
-        // formCriteriaController.update
-        // criteriaController.getCriteriaTypes
-        evaluationController.up
-    )
-
     app.post("/te",
         // formCriteriaController.update
         // criteriaController.getCriteriaTypes

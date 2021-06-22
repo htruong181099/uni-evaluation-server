@@ -324,7 +324,9 @@ exports.getEvaFormV2 = async (req,res,next)=>{
             const formCriteria = await FormCriteria.find({
                 form_standard: formStandards[i]._id,
                 isDeleted: false
-            }).populate("criteria_id","code name type description")
+            })
+            .lean()
+            .populate("criteria_id","code name type description")
             .sort({"criteria_order": 1})
             .select("criteria_id criteria_order point base_point").lean();
             for(let j in formCriteria){
