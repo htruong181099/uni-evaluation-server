@@ -902,23 +902,21 @@ exports.saveEvaluation = async (req,res,next)=>{
         const user_id = req.userId;
 
         //query formuser && userform
-        const [user, userForm] = await Promise.all([
-            FormUser.findOne({user_id}).select("_id"),
-            UserForm.findById(ufid).select("_id")
-        ])
-        if(!user){
-            return res.status(404).json({
-                statusCode: 404,
-                message: "UserForm not found"
-            })
-        }
+        const userForm = await UserForm.findById(ufid).select("_id form_id");
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
                 message: "UserForm not found"
             })
         }
-
+        const user = await FormUser.findOne({user_id, form_id: userForm.form_id}).select("_id");
+        if(!user){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "UserForm not found"
+            })
+        }
+        
         const evaluateForm = await EvaluateForm.findOne({
             user: user._id,
             userForm: userForm._id,
@@ -968,12 +966,22 @@ exports.saveEvaluation = async (req,res,next)=>{
 
             if(criteriaObj.details && criteriaObj.details.length != 0){
                 for(detail of criteriaObj.details){
-                    const evaluateDescription = new EvaluateDescription({
+                    let evaluateDescription = await EvaluateDescription.findOne({
                         evaluateCriteria: saved._id,
-                        name: detail.name,
-                        value: detail.value,
-                        description: detail.description
                     })
+                    if(!evaluateDescription){
+                        evaluateDescription = new EvaluateDescription({
+                            evaluateCriteria: saved._id,
+                            name: detail.name,
+                            value: detail.value,
+                            description: detail.description
+                        })
+                        evaluateDescription.save();
+                        continue;
+                    }
+                    evaluateDescription.name = detail.name
+                    evaluateDescription.value = detail.value
+                    evaluateDescription.description = detail.description
                     evaluateDescription.save();
                 }
             }
@@ -997,20 +1005,16 @@ exports.submitEvaluation = async (req,res,next)=>{
         const {dataToSend, level} = req.body;
         const user_id = req.userId;
 
-        //query user && userForm
-        const [user, userForm] = await Promise.all([
-            FormUser.findOne({user_id, isDeleted: false}).select("_id"),
-            UserForm.findById(ufid).select("_id form_id form_user")  
-        ])
-
-        //return 404 status if not found
-        if(!user){
+        //query userform && formuser
+        const userForm = await UserForm.findById(ufid).select("_id form_id");
+        if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
                 message: "UserForm not found"
             })
-        }     
-        if(!userForm){
+        }
+        const user = await FormUser.findOne({user_id, form_id: userForm.form_id, isDeleted: false}).select("_id");
+        if(!user){
             return res.status(404).json({
                 statusCode: 404,
                 message: "UserForm not found"
@@ -1085,12 +1089,22 @@ exports.submitEvaluation = async (req,res,next)=>{
 
             if(criteriaObj.details && criteriaObj.details.length != 0){
                 for(detail of criteriaObj.details){
-                    const evaluateDescription = new EvaluateDescription({
+                    let evaluateDescription = await EvaluateDescription.findOne({
                         evaluateCriteria: saved._id,
-                        name: detail.name,
-                        value: detail.value,
-                        description: detail.description
                     })
+                    if(!evaluateDescription){
+                        evaluateDescription = new EvaluateDescription({
+                            evaluateCriteria: saved._id,
+                            name: detail.name,
+                            value: detail.value,
+                            description: detail.description
+                        })
+                        evaluateDescription.save();
+                        continue;
+                    }
+                    evaluateDescription.name = detail.name
+                    evaluateDescription.value = detail.value
+                    evaluateDescription.description = detail.description
                     evaluateDescription.save();
                 }
             }
@@ -1200,7 +1214,7 @@ exports.getEvaluationV2 = async (req,res,next)=>{
             for(ec of evaluateCriteria){
                 ec.details = await EvaluateDescription.find({
                     evaluateCriteria: ec._id
-                }).lean().select("-_id -evaluateCriteria -__v")
+                }).lean().select("-evaluateCriteria -__v")
             }
             evaluateForm.evaluateCriteria = evaluateCriteria;
         }
