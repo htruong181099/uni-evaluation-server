@@ -121,7 +121,7 @@ exports.getFormStandards = async (req,res,next)=>{
         })
         .lean()
         .sort({"standard_order": 1})
-        .populate("standard_id","code name")
+        .populate("standard_id","code name description")
         .select("standard_id standard_order standard_point")
 
         return res.status(200).json({
