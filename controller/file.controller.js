@@ -338,7 +338,8 @@ exports.getFile = (req, res, next)=>{
 exports.download = async (req,res,next)=>{
     try {
         const filePath = req.filePath;
-        res.download(filePath);
+        // res.download(filePath);
+        res.send(filePath)
     } catch (error) {
         next(error)
     }
