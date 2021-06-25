@@ -33,12 +33,14 @@ app.use((req,res,next)=>{
     next();
 })
 
+//static
+app.use(express.static('public'))
+
 //Router
 const Router = require('./routes');
 Router(app);
 
-//static
-app.use(express.static('public'))
+
 
 //Error handler
 app.use((err,req,res,next)=>{
