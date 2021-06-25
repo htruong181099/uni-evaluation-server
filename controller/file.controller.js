@@ -172,7 +172,6 @@ exports.deleteFile = async (req,res,next)=>{
 exports.createFile = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
-        // const {dcode, scode, ccode} = req.query;
         const {dcode, scode, ccode} = req.body;
         console.log(req.query);
 
@@ -271,18 +270,13 @@ exports.createFile = async (req,res,next)=>{
         //     header: ["MSVC", "Mã tiêu chí","Tên tiêu chí","Điểm/lần",
         //     "Điểm tối đa","Số lần","Điểm"]
         // });
-        console.log(wb);
+        
         xlsx.writeFile(wb, `./public/files/${dcode}-${ccode}.xlsx`);
-        const filePath = `${path.dirname(require.main.filename)}\\public\\files\\${dcode}-${ccode}.xlsx`;
+        const filePath = `${ROOTDIR}/public/files/${dcode}-${ccode}.xlsx`;
         
         //res.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        res.download(filePath, (err)=>{
-            console.log(err);
-            
-        })
-        
         req.filePath = filePath;
-        // next();
+        next();
     } catch (error) {
         next(error);
     }
@@ -298,15 +292,14 @@ exports.removeFile = async (req,res,next)=>{
 }
 
 
-exports.downloadFile = async (req,res,next)=>{
+exports.downloadAndDelete = async (req,res,next)=>{
     try {
-        const filePath = `${path.dirname(require.main.filename)}\\public\\files\\User.xlsx`;
-        console.log(filePath);
-        res.download(filePath);
-        res.status(200).json({
-            message: "ok"
-        });
-        fs.unlinkSync(req.file.path)
+        const filePath = req.filePath;
+        res.download(filePath, (err)=>{
+            if(err){console.err(err)}
+            fs.unlinkSync(filePath)
+        })
+        
     } catch (error) {
         next(error)
     }
@@ -315,7 +308,7 @@ exports.downloadFile = async (req,res,next)=>{
 exports.getFile = (req, res, next)=>{
     try {
         const {file} = req.query;
-        let filePath;
+        let filePath = `${ROOTDIR}/public/files/template/`;
         switch(file){
             case 'user': {
                 filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
@@ -323,7 +316,7 @@ exports.getFile = (req, res, next)=>{
                 break;
             }
             case 'department': {
-                filePath = `${ROOTDIR}\\public\\files\\template\\Department_template.xlsx`;
+                filePath = `${ROOTDIR}/public/files/template/Department_template.xlsx`;
                 req.filePath = filePath;
                 break;
             }

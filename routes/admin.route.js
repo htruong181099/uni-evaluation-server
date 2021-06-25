@@ -262,30 +262,14 @@ module.exports = function(app){
     )
 
     app.post("/testA",
-        // formCriteriaController.update
-        // criteriaController.getCriteriaTypes
         upload.single('file'),
         fileController.readExcelUser,
         // fileController.importUsers,
         fileController.deleteFile
     )
 
-    app.get("/download",
-        fileController.downloadFile
-    )
-
-    app.post("/:fcode/create",
+    app.post("/admin/form/:fcode/file/export",
         fileController.createFile,
         fileController.removeFile
-    )
-
-    app.post("/kl",
-        upload.single('file'),
-        (req,res,next)=>{
-            res.send({
-                req: req.body,
-                file: req.file
-            })
-        }
     )
 }
