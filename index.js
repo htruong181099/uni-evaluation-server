@@ -37,6 +37,9 @@ app.use((req,res,next)=>{
 const Router = require('./routes');
 Router(app);
 
+//static
+app.use(express.static('public'))
+
 //Error handler
 app.use((err,req,res,next)=>{
     const error = err;
