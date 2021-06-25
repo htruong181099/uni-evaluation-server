@@ -30,6 +30,20 @@ exports.validate = (method)=>{
                 param("fcode", "Invalid form").exists().isString()
             ]
         }
+        case 'saveEvaluation': {
+            return [
+                param("ufid", "Invalid ufid").exists().isMongoId(),
+                body("dataToSend", "Invalid data").exists().isArray(),
+                body("level", "Invalid level").exists().isNumeric()
+            ]
+        }
+        case 'submitEvaluation': {
+            return [
+                param("ufid", "Invalid ufid").exists().isMongoId(),
+                body("dataToSend", "Invalid data").exists().isArray(),
+                body("level", "Invalid level").exists().isNumeric()
+            ]
+        }
     }
 }
 
@@ -283,8 +297,6 @@ exports.submitEvaluationV3 = async (req,res,next)=>{
                 message: "Evaluate Form not found"
             })
         }
-
-        
 
         if(evaluateForm.status === 1){
             return res.status(400).json({
@@ -942,7 +954,7 @@ exports.saveEvaluation = async (req,res,next)=>{
             const criteria = await Criteria.findOne({
                 code: criteriaObj.name,
                 isDeleted: false
-            }).select("_id")
+            }).select("_id type")
             const formCriteria = await FormCriteria.findOne({
                 criteria_id: criteria._id,
                 isDeleted: false

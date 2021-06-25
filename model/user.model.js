@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const GENDER = ["Male", "Female", "Other"];
+const ROLES = ['user','admin','root'];
 
 const UserSchema = new mongoose.Schema({
     staff_id: {
@@ -19,7 +21,8 @@ const UserSchema = new mongoose.Schema({
         type: Date
     },
     gender: {
-        type: String
+        type: String,
+        enum: GENDER
     },
     email: {
         type: String,
@@ -34,12 +37,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: 'user',
-        enum: ['user','admin','root']
+        enum: ROLES
     },
     phone: {
         type: String
     },
-    address: String,
+    address: {
+        type: String
+    },
     department: [
         {
             type: mongoose.Schema.Types.ObjectId,

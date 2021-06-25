@@ -7,7 +7,7 @@ const ReviewRouter = require("./admin/review.route");
 const userRouter = require("./admin/user.route");
 
 //controller
-const {formRatingController, evaluationController, userFormController, criteriaController} = require("../controller/");
+const {formRatingController, evaluationController, userFormController, criteriaController, fileController} = require("../controller/");
 const formController = require("../controller/form.controller");
 const formDepartmentController = require("../controller/formDepartment.controller");
 const formUserController = require("../controller/formUser.controller");
@@ -17,6 +17,7 @@ const formCriteriaController = require("../controller/formCriteria.controller");
 //middleware
 const jwtMiddleware = require('../middleware/jwt.middleware');
 const {getValidationResult} = require("../middleware/validate.middleware");
+const upload = require("../middleware/multer.middleware")
 
 
 module.exports = function(app){
@@ -248,13 +249,42 @@ module.exports = function(app){
         formDepartmentController.deleteDB
     )
 
-    app.post("/te",
+    app.post("/admin/user/file/import",
+        upload.single('file'),
+        fileController.readExcelUser,
+        fileController.importUsers,
+        fileController.deleteFile
+    )
+
+    app.get("/admin/user/file/download",
+        fileController.getFile,
+        fileController.download
+    )
+
+    app.post("/testA",
         // formCriteriaController.update
         // criteriaController.getCriteriaTypes
+        upload.single('file'),
+        fileController.readExcelUser,
+        // fileController.importUsers,
+        fileController.deleteFile
+    )
+
+    app.get("/download",
+        fileController.downloadFile
+    )
+
+    app.post("/:fcode/create",
+        fileController.createFile,
+        fileController.removeFile
+    )
+
+    app.post("/kl",
+        upload.single('file'),
         (req,res,next)=>{
-            console.log(req.body);
-            res.status(500).send({
-                body: req.body
+            res.send({
+                req: req.body,
+                file: req.file
             })
         }
     )
