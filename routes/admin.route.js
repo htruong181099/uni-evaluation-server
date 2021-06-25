@@ -269,7 +269,8 @@ module.exports = function(app){
     )
 
     app.post("/admin/form/:fcode/file/export",
+        // fileController.validate("exportCriteria"),
         fileController.createFile,
-        fileController.removeFile
+        fileController.downloadAndDelete
     )
 }
