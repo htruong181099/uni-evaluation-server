@@ -318,7 +318,7 @@ exports.getFile = (req, res, next)=>{
         let filePath;
         switch(file){
             case 'user': {
-                filePath = `${ROOTDIR}\\public\\files\\template\\User_template.xlsx`;
+                filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
                 req.filePath = filePath;
                 break;
             }
