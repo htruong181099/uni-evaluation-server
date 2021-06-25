@@ -318,12 +318,12 @@ exports.getFile = (req, res, next)=>{
         let filePath;
         switch(file){
             case 'user': {
-                filePath = `${ROOTDIR}\\public\\files\\import\\User_template.xlsx`;
+                filePath = `${ROOTDIR}\\public\\files\\template\\User_template.xlsx`;
                 req.filePath = filePath;
                 break;
             }
             case 'department': {
-                filePath = `${ROOTDIR}\\public\\files\\import\\Department_template.xlsx`;
+                filePath = `${ROOTDIR}\\public\\files\\template\\Department_template.xlsx`;
                 req.filePath = filePath;
                 break;
             }
@@ -338,8 +338,8 @@ exports.getFile = (req, res, next)=>{
 exports.download = async (req,res,next)=>{
     try {
         const filePath = req.filePath;
-        res.download(filePath);
-        // res.send(filePath)
+        // res.download(filePath);
+        res.send(filePath)
     } catch (error) {
         next(error)
     }
