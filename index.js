@@ -34,7 +34,7 @@ app.use((req,res,next)=>{
 })
 
 //static
-app.use(express.static('public'))
+app.use(express.static(__dirname + '/public'));
 
 //Router
 const Router = require('./routes');
