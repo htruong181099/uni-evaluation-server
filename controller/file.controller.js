@@ -1,5 +1,3 @@
-
-
 const fs = require("fs");
 const xlsx = require('xlsx');
 const path = require("path");
@@ -26,6 +24,23 @@ const EvaluateForm = require("../model/evaluateForm.model");
 const UserForm = require("../model/userForm.model");
 const EvaluateDescription = require("../model/evaluateDescription.model");
 
+exports.validate = (method) =>{
+    switch(method){
+        case 'exportEvaluation':
+        case 'importEvaluation':
+        {
+            return [
+                param("fcode", "Invalid Form").exists().isString(),
+                body("dcode", "Invalid Department").exists().isString(),
+                body("scode", "Invalid Standard").exists().isString(),
+                body("ccode", "Invalid Criteria").exists().isString()
+            ]
+        }
+    }
+}
+
+
+//users files
 exports.readExcelUser = async (req,res,next)=>{
     try {
         
@@ -144,6 +159,8 @@ exports.importUsers = async (req,res,next)=>{
     }
 }
 
+
+//--evaluations files
 exports.readExcelEvaluateCriteria = async (req,res,next)=>{
     try {
         const filePath = (req.file&&req.file.path)?req.file.path:null;
@@ -312,31 +329,15 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
             evaluateFormsMap[evaluateForm.userForm] = evaluateForm._id
         })
 
-        let evaluateCriterias = []
-        for(row of xlData){
-            let evaluateCriteriaObj = {}
-            evaluateCriteriaObj.description = {}
-            for(key in row){
-                switch(key){
-                    case 'MSVC': {
-                        const staff_id = row[key];
-                        const formUser = formUsersMap[staff_id];
-                        const userForm = userFormsMap[formUser];
-                        const evaluateForm = evaluateFormsMap[userForm];
-                        evaluateCriteriaObj.evaluateForm = evaluateForm;
-                        break;
-                    }
-                    case 'Số lần': {
-                        evaluateCriteriaObj.description.value = row[key]
-                        break;
-                    }
-                }
-            }
-            evaluateCriteriaObj.form_criteria = formCriteria._id;
-            evaluateCriteriaObj.point = evaluateCriteriaObj.description.value * formCriteria.base_point;
-            evaluateCriteriaObj.read_only = true;
-            evaluateCriterias.push(evaluateCriteriaObj);
+        //data
+        const data = {
+            formUsersMap,
+            userFormsMap,
+            evaluateFormsMap,
+            formCriteria
         }
+
+        let evaluateCriterias = excelToImportJSON(xlData, criteria.type, data);
 
         req.evaluateCriterias = evaluateCriterias;
         next();
@@ -349,13 +350,12 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
 exports.importEvaluations = async (req,res,next)=>{
     try {
         const evaluateCriterias = req.evaluateCriterias;
-        const evaluateCriteriasCount = evaluateCriterias.length;
+        const criteriaType = req.criteriaType;
         EvaluateCriteria.insertMany(evaluateCriterias, async (err, docs)=>{
             if(err){console.error(err)}
-            if(docs){
-                console.log("docs");
-                console.log(docs);
-
+            
+            //if criteria type is number or detail -> add descriptions
+            if(docs && ['number', 'detail'].includes(criteriaType)){
                 docsMap = {}
                 docs.forEach(doc => {
                     docsMap[doc.evaluateForm] = {
@@ -363,16 +363,18 @@ exports.importEvaluations = async (req,res,next)=>{
                         form_criteria : doc.form_criteria
                     }
                 })
-                console.log("docsMap");
-                console.log(docsMap);
+                
                 evaluateDescriptions = []
                 evaluateCriterias.forEach(evaluateCriteria => {
-                    evaluateDescription = {}
-                    evaluateDescription.evaluateCriteria = docsMap[evaluateCriteria.evaluateForm]._id;
-                    evaluateDescription.value = evaluateCriteria.description.value;
+                    const {value, name, description} = evaluateCriteria.description;
+                    evaluateDescription = {
+                        evaluateCriteria: docsMap[evaluateCriteria.evaluateForm]._id,
+                        value,
+                        name,
+                        description
+                    }
                     evaluateDescriptions.push(evaluateDescription)
                 })
-
 
                 const evaluateDescriptionWriteResult = await EvaluateDescription.bulkWrite(
                     evaluateDescriptions.map(evaluateDescription => ({
@@ -389,12 +391,10 @@ exports.importEvaluations = async (req,res,next)=>{
                 )
                 console.log(evaluateDescriptionWriteResult);
             }
+
             req.doc = docs
             next();
         })
-        // res.status(200).json({
-        //     evaluateCriterias
-        // })
 
     } catch (error) {
         next(error);
@@ -402,6 +402,7 @@ exports.importEvaluations = async (req,res,next)=>{
 }
 
 
+//--departments files
 exports.importDepartments = async (req,res,next)=>{
     try {
         const departments = req.departments;
@@ -419,13 +420,25 @@ exports.importDepartments = async (req,res,next)=>{
     }
 }
 
-exports.deleteFile = async (req,res,next)=>{
+//--file utils
+exports.getTemplate = (req, res, next)=>{
     try {
-        fs.unlinkSync(req.file.path)
-        return res.status(200).json({
-            statusCode: 200,
-            message: "Success"
-        })
+        const {file} = req.query;
+        let filePath = `${ROOTDIR}/public/files/template/`;
+        switch(file){
+            case 'user': {
+                filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
+                req.filePath = filePath;
+                break;
+            }
+            case 'department': {
+                filePath = `${ROOTDIR}/public/files/template/Department_template.xlsx`;
+                req.filePath = filePath;
+                break;
+            }
+        }
+        req.filePath = filePath;
+        next();
     } catch (error) {
         next(error);
     }
@@ -440,7 +453,7 @@ exports.createFile = async (req,res,next)=>{
             Form.findOne({code: fcode}).select("_id"),
             Department.findOne({department_code: dcode}).select("_id"),
             Standard.findOne({code: scode}).select("_id"),
-            Criteria.findOne({code: ccode}).select("_id code name")
+            Criteria.findOne({code: ccode}).select("-__v")
         ])
 
         if(!form){
@@ -465,6 +478,13 @@ exports.createFile = async (req,res,next)=>{
             return res.status(404).json({
                 statusCode: 404,
                 message: "Criteria not found"
+            })
+        }
+
+        if(['radio','detail'].includes(criteria.type)){
+            return res.status(405).json({
+                statusCode: 405,
+                message: "Criteria type is not supported"
             })
         }
 
@@ -512,17 +532,12 @@ exports.createFile = async (req,res,next)=>{
             })
         }
 
-        const data = formUsers.map(u => {
-            return {
-                "MSVC": u.user_id.staff_id,
-                "Mã tiêu chí": criteria.code,
-                "Tên tiêu chí": criteria.name,
-                "Điểm/lần": formCriteria.base_point,
-                "Điểm tối đa": formCriteria.point?formCriteria.point:"",
-                "Số lần": "",
-                "Điểm": ""
-            }
-        })
+        const body = {
+            formUsers,
+            criteria,
+            formCriteria
+        }
+        let data = jsonToExcelData(body, criteria.type);
 
         let wb = xlsx.utils.book_new();
         const dataSheet = xlsx.utils.json_to_sheet(data)
@@ -543,6 +558,42 @@ exports.createFile = async (req,res,next)=>{
     }
 }
 
+exports.download = async (req,res,next)=>{
+    try {
+        const filePath = req.filePath;
+        res.download(filePath);
+    } catch (error) {
+        next(error)
+    }
+    
+}
+
+exports.downloadAndDelete = async (req,res,next)=>{
+    const filePath = req.filePath;
+    try {
+        res.download(filePath, (err)=>{
+            if(err){console.err(err)}
+            fs.unlinkSync(filePath)
+        })
+        
+    } catch (error) {
+        next(error)
+        fs.unlinkSync(filePath)
+    }
+}
+
+exports.deleteFile = async (req,res,next)=>{
+    try {
+        fs.unlinkSync(req.file.path)
+        return res.status(201).json({
+            statusCode: 201,
+            message: "Success"
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
 exports.removeFile = async (req,res,next)=>{
     try {
         const filePath = req.filePath;
@@ -551,51 +602,158 @@ exports.removeFile = async (req,res,next)=>{
         next(error);
     }
 }
+//------------>
 
 
-exports.downloadAndDelete = async (req,res,next)=>{
-    try {
-        const filePath = req.filePath;
-        res.download(filePath, (err)=>{
-            if(err){console.err(err)}
-            fs.unlinkSync(filePath)
-        })
-        
-    } catch (error) {
-        next(error)
-    }
-}
-
-exports.getFile = (req, res, next)=>{
-    try {
-        const {file} = req.query;
-        let filePath = `${ROOTDIR}/public/files/template/`;
-        switch(file){
-            case 'user': {
-                filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
-                req.filePath = filePath;
-                break;
+//utils
+const excelToImportJSON = (xlData, type, data) => {
+    const {formCriteria, formUsersMap, userFormsMap, evaluateFormsMap} = data;
+    switch(type){
+        case 'number': {
+            let evaluateCriterias = []
+            for(row of xlData){
+                let evaluateCriteriaObj = {}
+                evaluateCriteriaObj.description = {}
+                for(key in row){
+                    switch(key){
+                        case 'MSVC': {
+                            const staff_id = row[key];
+                            const formUser = formUsersMap[staff_id];
+                            const userForm = userFormsMap[formUser];
+                            const evaluateForm = evaluateFormsMap[userForm];
+                            evaluateCriteriaObj.evaluateForm = evaluateForm;
+                            break;
+                        }
+                        case 'Số lần': {
+                            evaluateCriteriaObj.description.value = row[key];
+                            break;
+                        }
+                    }
+                }
+                evaluateCriteriaObj.form_criteria = formCriteria._id;
+                const point = evaluateCriteriaObj.description.value * formCriteria.base_point;
+                const max_point = formCriteria.point;
+                evaluateCriteriaObj.point = max_point?((point>max_point)?max_point:point):point;
+                evaluateCriteriaObj.read_only = true;
+                evaluateCriterias.push(evaluateCriteriaObj);
             }
-            case 'department': {
-                filePath = `${ROOTDIR}/public/files/template/Department_template.xlsx`;
-                req.filePath = filePath;
-                break;
-            }
+            return evaluateCriterias;
         }
-        req.filePath = filePath;
-        next();
-    } catch (error) {
-        next(error);
+        case 'input': {
+            let evaluateCriterias = []
+            for(row of xlData){
+                let evaluateCriteriaObj = {}
+                evaluateCriteriaObj.description = {}
+                for(key in row){
+                    switch(key){
+                        case 'MSVC': {
+                            const staff_id = row[key];
+                            const formUser = formUsersMap[staff_id];
+                            const userForm = userFormsMap[formUser];
+                            const evaluateForm = evaluateFormsMap[userForm];
+                            evaluateCriteriaObj.evaluateForm = evaluateForm;
+                            break;
+                        }
+                        case 'Điểm': {
+                            const point = row[key]=="x"?null:row[key];
+                            if(point === null){
+                                evaluateCriteriaObj.point = null;
+                                break;
+                            }
+                            const max_point = formCriteria.point;
+                            evaluateCriteriaObj.point = max_point?((point>max_point)?max_point:point):point;
+                            break;
+                        }
+                    }
+                }
+                evaluateCriteriaObj.form_criteria = formCriteria._id;
+                evaluateCriteriaObj.read_only = true;
+                evaluateCriterias.push(evaluateCriteriaObj);
+            }
+            return evaluateCriterias;
+        }
+        case 'checkbox': {
+            let evaluateCriterias = []
+            for(row of xlData){
+                let evaluateCriteriaObj = {}
+                evaluateCriteriaObj.description = {}
+                for(key in row){
+                    switch(key){
+                        case 'MSVC': {
+                            const staff_id = row[key];
+                            const formUser = formUsersMap[staff_id];
+                            const userForm = userFormsMap[formUser];
+                            const evaluateForm = evaluateFormsMap[userForm];
+                            evaluateCriteriaObj.evaluateForm = evaluateForm;
+                            break;
+                        }
+                        case 'Điểm': {
+                            const point = row[key]=="x"?null:row[key];
+                            if(point === null){
+                                evaluateCriteriaObj.point = null;
+                                break;
+                            }
+                            const max_point = formCriteria.point;
+                            evaluateCriteriaObj.point = max_point?((point>max_point)?max_point:point):point;
+                            break;
+                        }
+                    }
+                }
+                evaluateCriteriaObj.form_criteria = formCriteria._id;
+                evaluateCriteriaObj.read_only = true;
+                evaluateCriterias.push(evaluateCriteriaObj);
+            }
+            return evaluateCriterias;
+        }
     }
 }
 
-exports.download = async (req,res,next)=>{
-    try {
-        const filePath = req.filePath;
-        res.download(filePath);
-        // res.send(filePath)
-    } catch (error) {
-        next(error)
+const jsonToExcelData = (body, type) => {
+    const {formUsers, criteria, formCriteria} = body;
+    switch (type) {
+        case 'number':{
+            const data = formUsers.map(user=>{
+                return {
+                    "MSVC": user.user_id.staff_id,
+                    "Họ và tên lót": user.user_id.lastname,
+                    "Tên": user.user_id.firstname,
+                    "Mã tiêu chí": criteria.code,
+                    "Tên tiêu chí": criteria.name,
+                    "Điểm/lần": formCriteria.base_point,
+                    "Điểm tối đa": formCriteria.point?formCriteria.point:"x",
+                    "Số lần": "",
+                    "Điểm": ""
+                }
+            })
+            return data;
+        }
+        case 'input':{
+            const data = formUsers.map(user=>{
+                return {
+                    "MSVC": user.user_id.staff_id,
+                    "Họ và tên lót": user.user_id.lastname,
+                    "Tên": user.user_id.firstname,
+                    "Mã tiêu chí": criteria.code,
+                    "Tên tiêu chí": criteria.name,
+                    "Điểm tối đa": formCriteria.point?formCriteria.point:"x",
+                    "Điểm": ""
+                }
+            })
+            return data;
+        }
+        case 'checkbox': {
+            const data = formUsers.map(user=>{
+                return {
+                    "MSVC": user.user_id.staff_id,
+                    "Họ và tên lót": user.user_id.lastname,
+                    "Tên": user.user_id.firstname,
+                    "Mã tiêu chí": criteria.code,
+                    "Tên tiêu chí": criteria.name,
+                    "Điểm tối đa": formCriteria.point?formCriteria.point:"x",
+                    "Điểm": ""
+                }
+            })
+            return data;
+        }
     }
-    
 }

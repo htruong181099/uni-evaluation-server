@@ -45,17 +45,19 @@ module.exports = function(app){
     //newest
     app.post("/form/:ufid/submitForm",
         evaluationController.submitEvaluation,
-        evaluationController.cloneEvaluateCriteria
+        evaluationController.cloneEvaluateCriteriaV2
     )
 
+    //newest
     app.post("/form/:ufid/saveForm",
         evaluationController.saveEvaluation
     )
 
+    //v2 - outdated
     app.post("/form/:ufid/saveForm/v2",
         evaluationController.saveEvaluationV2
     )
-    //v3
+    //v3 - outdated
     app.post("/form/:ufid/submitForm/v3",
         evaluationController.submitEvaluationV3,
         evaluationController.cloneEvaluateCriteria

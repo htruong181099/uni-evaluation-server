@@ -5,6 +5,7 @@ const DepartmentRouter = require("./admin/department.route");
 const UserFormRouter = require("./admin/userForm.route")
 const ReviewRouter = require("./admin/review.route");
 const userRouter = require("./admin/user.route");
+const FileRouter = require("./admin/file.route")
 
 //controller
 const {formRatingController, evaluationController, userFormController, criteriaController, fileController} = require("../controller/");
@@ -40,6 +41,7 @@ module.exports = function(app){
     CriteriaRouter(app);
     UserFormRouter(app);
     ReviewRouter(app);
+    FileRouter(app);
 
     //form
     //get form
@@ -249,28 +251,10 @@ module.exports = function(app){
         formDepartmentController.deleteDB
     )
 
-    app.post("/admin/user/file/import",
-        upload.single('file'),
-        fileController.readExcelUser,
-        fileController.importUsers,
-        fileController.deleteFile
-    )
-
-    app.get("/admin/user/file/download",
-        fileController.getFile,
-        fileController.download
-    )
-
     app.post("/:fcode/testA",
         upload.single('file'),
         fileController.readExcelEvaluateCriteria,
         fileController.importEvaluations,
         fileController.deleteFile
-    )
-
-    app.post("/admin/form/:fcode/file/export",
-        // fileController.validate("exportCriteria"),
-        fileController.createFile,
-        fileController.downloadAndDelete
     )
 }

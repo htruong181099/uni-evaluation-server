@@ -971,30 +971,38 @@ exports.saveEvaluation = async (req,res,next)=>{
                     point: criteriaObj.value?criteriaObj.value:0,
                 })
             }
-            let point = criteriaObj.value?criteriaObj.value:0;
-            point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
-            evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
+
+            //if readonly===true -> cannot be change
+            if(!evaluateCriteria.read_only){
+                let point = criteriaObj.value?criteriaObj.value:0;
+                point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
+                evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
+            }
+            
             const saved = await evaluateCriteria.save();
 
             if(criteriaObj.details && criteriaObj.details.length != 0){
                 for(detail of criteriaObj.details){
-                    let evaluateDescription = await EvaluateDescription.findOne({
-                        evaluateCriteria: saved._id,
-                    })
-                    if(!evaluateDescription){
-                        evaluateDescription = new EvaluateDescription({
+                    //if not read_only
+                    if(!evaluateCriteria.read_only){
+                        let evaluateDescription = await EvaluateDescription.findOne({
                             evaluateCriteria: saved._id,
-                            name: detail.name,
-                            value: detail.value,
-                            description: detail.description
                         })
+                        if(!evaluateDescription){
+                            evaluateDescription = new EvaluateDescription({
+                                evaluateCriteria: saved._id,
+                                name: detail.name,
+                                value: detail.value,
+                                description: detail.description
+                            })
+                            evaluateDescription.save();
+                            continue;
+                        }
+                        evaluateDescription.name = detail.name
+                        evaluateDescription.value = detail.value
+                        evaluateDescription.description = detail.description
                         evaluateDescription.save();
-                        continue;
                     }
-                    evaluateDescription.name = detail.name
-                    evaluateDescription.value = detail.value
-                    evaluateDescription.description = detail.description
-                    evaluateDescription.save();
                 }
             }
         }
@@ -1011,6 +1019,7 @@ exports.saveEvaluation = async (req,res,next)=>{
     }
 }
 
+//submit Evaluation
 exports.submitEvaluation = async (req,res,next)=>{
     try {        
         const {ufid} = req.params;
@@ -1091,33 +1100,39 @@ exports.submitEvaluation = async (req,res,next)=>{
                     evaluateForm: evaluateForm._id,
                     form_criteria: formCriteria._id,
                     point: criteriaObj.value?criteriaObj.value:0,
+                    read_only: false
                 })
             }
             
-            let point = criteriaObj.value?criteriaObj.value:0;
-            point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
-            evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
+            if(!evaluateCriteria.read_only){
+                let point = criteriaObj.value?criteriaObj.value:0;
+                point = formCriteria.point?(point>formCriteria.point? formCriteria.point:point):point;
+                evaluateCriteria.point = criteriaObj.value?criteriaObj.value:0;
+            }
+            
             const saved = await evaluateCriteria.save();
 
             if(criteriaObj.details && criteriaObj.details.length != 0){
-                for(detail of criteriaObj.details){
-                    let evaluateDescription = await EvaluateDescription.findOne({
-                        evaluateCriteria: saved._id,
-                    })
-                    if(!evaluateDescription){
-                        evaluateDescription = new EvaluateDescription({
+                if(!evaluateCriteria.read_only){
+                    for(detail of criteriaObj.details){
+                        let evaluateDescription = await EvaluateDescription.findOne({
                             evaluateCriteria: saved._id,
-                            name: detail.name,
-                            value: detail.value,
-                            description: detail.description
                         })
+                        if(!evaluateDescription){
+                            evaluateDescription = new EvaluateDescription({
+                                evaluateCriteria: saved._id,
+                                name: detail.name,
+                                value: detail.value,
+                                description: detail.description
+                            })
+                            evaluateDescription.save();
+                            continue;
+                        }
+                        evaluateDescription.name = detail.name
+                        evaluateDescription.value = detail.value
+                        evaluateDescription.description = detail.description
                         evaluateDescription.save();
-                        continue;
                     }
-                    evaluateDescription.name = detail.name
-                    evaluateDescription.value = detail.value
-                    evaluateDescription.description = detail.description
-                    evaluateDescription.save();
                 }
             }
         }
@@ -1166,6 +1181,7 @@ exports.submitEvaluation = async (req,res,next)=>{
         req.level = level;
         req.userForm_id = userForm._id;
         req.fbody = body;
+        req.previousEvaluateForm = evaluateForm._id;
         next();
         
     } catch (error) {
@@ -1173,7 +1189,7 @@ exports.submitEvaluation = async (req,res,next)=>{
     }
 }
 
-
+//get Evaluation
 exports.getEvaluationV2 = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
@@ -1237,6 +1253,128 @@ exports.getEvaluationV2 = async (req,res,next)=>{
             evaluateForms
         })
 
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+//clone Evaluation
+exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
+    try {
+        const {form_id, level, userForm_id, fbody, formUser_id, previousEvaluateForm} = req;
+        const body = fbody;
+        //get formdepartment level + 1
+        
+        let formDepartment;
+        if(level == 1){
+            const formUser = await FormUser.findOne({
+                _id: formUser_id,
+                isDeleted: false
+            })
+            formDepartment = await FormDepartment.findOne({
+                _id: formUser.department_form_id,
+                form_id: form_id,
+                level: level + 1,
+                isDeleted: false
+            })
+        }
+        else if(level >= 2){
+            formDepartment = await FormDepartment.findOne({
+                form_id: form_id,
+                level: level + 1,
+                isDeleted: false
+            }).select("_id head")
+        }
+
+        if(!formDepartment){
+            const userForm = await UserForm.findOne({
+                _id: userForm_id
+            })
+            const evaluateForm = await EvaluateForm.findOne({
+                userForm: userForm._id,
+                status: 1
+            }).sort({
+                "level": -1
+            })
+    
+            userForm.point = evaluateForm.point;
+            userForm.save();
+            return;
+        }
+
+        //head formuser
+        const upperLevelHead = await FormUser.findOne({
+            isDeleted: false,
+            department_form_id: formDepartment._id,
+            user_id: formDepartment.head
+        }).select("_id")
+
+        //clone head evaluate form
+        const evaluateForm = new EvaluateForm({
+            user: upperLevelHead._id,
+            userForm: userForm_id,
+            status: 0,
+            level: level + 1
+        })
+
+        //new upperlevel evaluateForm
+        const doc = await evaluateForm.save();
+
+        //find all previous evaluateCriteria
+        const previousEvaluateCriterias = await EvaluateCriteria.find({
+            evaluateForm: previousEvaluateForm
+        })
+        const previousEvaluateDescriptions = await EvaluateDescription.find({
+            evaluateCriteria: previousEvaluateCriterias.map(e=>e._id)
+        })
+        //maping EvaluateDescriptions
+        previousEvaluateDescriptionsMap = {}
+        previousEvaluateDescriptions.forEach(evaluateDescription => {
+            previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria]
+             = !previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria]
+             ? []
+             : [...previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria],evaluateDescription]
+        })
+
+        for(let evaluateCriteriaObj of previousEvaluateCriterias){
+            let evaluateCriteria = await EvaluateCriteria.findOne({
+                evaluateForm: doc._id,
+                form_criteria: evaluateCriteriaObj.form_criteria,
+                level: level+1
+            })
+    
+            if(!evaluateCriteria){
+                evaluateCriteria = new EvaluateCriteria({
+                    evaluateForm: doc._id,
+                    form_criteria: evaluateCriteriaObj.form_criteria,
+                    point: evaluateCriteriaObj.point,
+                    level: level+1
+                })
+            }
+
+            evaluateCriteria.point = evaluateCriteriaObj.point;
+            if(evaluateCriteriaObj.read_only){
+                evaluateCriteria.read_only = true;
+            }
+            
+            const saved = await evaluateCriteria.save();
+
+            if(previousEvaluateDescriptionsMap[evaluateCriteriaObj._id]){
+                const details = previousEvaluateDescriptionsMap[evaluateCriteriaObj._id];
+                const evaluateDescriptions = details.map(evaluateDescription => {
+                    const {name, value, description} = evaluateDescription;
+                    return {
+                        evaluateCriteria: saved._id,
+                        name,
+                        value,
+                        description
+                    }
+                })
+                EvaluateDescription.insertMany(evaluateDescriptions);
+            }
+            
+        }
 
     } catch (error) {
         next(error);
