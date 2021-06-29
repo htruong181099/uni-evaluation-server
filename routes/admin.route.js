@@ -257,4 +257,8 @@ module.exports = function(app){
         fileController.importEvaluations,
         fileController.deleteFile
     )
+
+    app.post("/wwe/",
+        fileController.a
+    )
 }

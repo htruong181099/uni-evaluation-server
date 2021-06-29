@@ -1027,7 +1027,7 @@ exports.submitEvaluation = async (req,res,next)=>{
         const user_id = req.userId;
 
         //query userform && formuser
-        const userForm = await UserForm.findById(ufid).select("_id form_id");
+        const userForm = await UserForm.findById(ufid).select("_id form_id form_user");
         if(!userForm){
             return res.status(404).json({
                 statusCode: 404,
@@ -1320,22 +1320,30 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
 
         //new upperlevel evaluateForm
         const doc = await evaluateForm.save();
+        console.log(doc);
 
         //find all previous evaluateCriteria
         const previousEvaluateCriterias = await EvaluateCriteria.find({
             evaluateForm: previousEvaluateForm
         })
+        console.log("EC");
+        console.log(previousEvaluateCriterias);
         const previousEvaluateDescriptions = await EvaluateDescription.find({
             evaluateCriteria: previousEvaluateCriterias.map(e=>e._id)
         })
+        console.log("ED");
+        console.log(previousEvaluateDescriptions);
         //maping EvaluateDescriptions
         previousEvaluateDescriptionsMap = {}
         previousEvaluateDescriptions.forEach(evaluateDescription => {
-            previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria]
-             = !previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria]
-             ? []
-             : [...previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria],evaluateDescription]
+            previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria] = []
         })
+        previousEvaluateDescriptions.forEach(evaluateDescription => {
+            let arr = previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria];
+            arr =[...arr,evaluateDescription]
+        })
+        console.log("Map");
+        console.log(previousEvaluateDescriptionsMap);
 
         for(let evaluateCriteriaObj of previousEvaluateCriterias){
             let evaluateCriteria = await EvaluateCriteria.findOne({
@@ -1371,7 +1379,10 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
                         description
                     }
                 })
-                EvaluateDescription.insertMany(evaluateDescriptions);
+                console.log("ED2");
+                console.log(evaluateDescriptions);
+                const re = await EvaluateDescription.insertMany(evaluateDescriptions);
+                console.log(re);
             }
             
         }

@@ -757,3 +757,21 @@ const jsonToExcelData = (body, type) => {
         }
     }
 }
+
+
+exports.a = async (req,res,next)=>{
+    try {
+        const b = await EvaluateCriteria.deleteMany({
+            evaluateForm: "60db33d7d25f5132987dbb74"
+        })
+
+        const a = await EvaluateForm.deleteOne({_id: "60db33d7d25f5132987dbb74"}
+        )
+        res.send({
+            b,
+            a
+        })
+    } catch (error) {
+        next(error)
+    }
+}
