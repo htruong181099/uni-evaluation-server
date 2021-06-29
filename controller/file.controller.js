@@ -339,7 +339,9 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
 
         let evaluateCriterias = excelToImportJSON(xlData, criteria.type, data);
 
+        req.evaluateForms = evaluateForms;
         req.evaluateCriterias = evaluateCriterias;
+        req.criteriaType = criteria.type;
         next();
 
     } catch (error) {
@@ -351,51 +353,66 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
 exports.importEvaluations = async (req,res,next)=>{
     try {
         const evaluateCriterias = req.evaluateCriterias;
+        const evaluateForms = req.evaluateForms;
         const criteriaType = req.criteriaType;
-        EvaluateCriteria.insertMany(evaluateCriterias, async (err, docs)=>{
-            if(err){console.error(err)}
+        const writeResult = await EvaluateCriteria.bulkWrite(
+            evaluateCriterias.map(evaluateCriteria => ({
+                updateOne: {
+                    filter: {
+                        evaluateForm: evaluateCriteria.evaluateForm,
+                        form_criteria: evaluateCriteria.form_criteria
+                    },
+                    update: {
+                        point: evaluateCriteria.point,
+                        read_only: true
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log(writeResult);
+
+        const docs = await EvaluateCriteria.find({evaluateForm: evaluateForms.map(e=>e._id)});
+        //if criteria type is number or detail -> add descriptions
+        if(docs && ['number', 'detail'].includes(criteriaType)){
+            docsMap = {}
+            docs.forEach(doc => {
+                docsMap[doc.evaluateForm] = {
+                    _id: doc._id,
+                    form_criteria : doc.form_criteria
+                }
+            })
             
-            //if criteria type is number or detail -> add descriptions
-            if(docs && ['number', 'detail'].includes(criteriaType)){
-                docsMap = {}
-                docs.forEach(doc => {
-                    docsMap[doc.evaluateForm] = {
-                        _id: doc._id,
-                        form_criteria : doc.form_criteria
-                    }
-                })
-                
-                evaluateDescriptions = []
-                evaluateCriterias.forEach(evaluateCriteria => {
-                    const {value, name, description} = evaluateCriteria.description;
-                    evaluateDescription = {
-                        evaluateCriteria: docsMap[evaluateCriteria.evaluateForm]._id,
-                        value,
-                        name,
-                        description
-                    }
-                    evaluateDescriptions.push(evaluateDescription)
-                })
+            evaluateDescriptions = []
+            evaluateCriterias.forEach(evaluateCriteria => {
+                const {value, name, description} = evaluateCriteria.description;
+                evaluateDescription = {
+                    evaluateCriteria: docsMap[evaluateCriteria.evaluateForm]._id,
+                    value,
+                    name,
+                    description
+                }
+                evaluateDescriptions.push(evaluateDescription)
+            })
 
-                const evaluateDescriptionWriteResult = await EvaluateDescription.bulkWrite(
-                    evaluateDescriptions.map(evaluateDescription => ({
-                        updateOne: {
-                            filter: {
-                                evaluateCriteria: evaluateDescription.evaluateCriteria
-                            },
-                            update: {
-                                value: evaluateDescription.value
-                            },
-                            upsert: true
-                        }
-                    }))
-                )
-                console.log(evaluateDescriptionWriteResult);
-            }
+            const evaluateDescriptionWriteResult = await EvaluateDescription.bulkWrite(
+                evaluateDescriptions.map(evaluateDescription => ({
+                    updateOne: {
+                        filter: {
+                            evaluateCriteria: evaluateDescription.evaluateCriteria
+                        },
+                        update: {
+                            value: evaluateDescription.value
+                        },
+                        upsert: true
+                    }
+                }))
+            )
+            console.log(evaluateDescriptionWriteResult);
+        }
 
-            req.doc = docs
-            next();
-        })
+        req.doc = docs
+        next();
 
     } catch (error) {
         next(error);
