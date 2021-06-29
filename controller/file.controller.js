@@ -162,14 +162,14 @@ exports.importUsers = async (req,res,next)=>{
 
 //--evaluations files
 exports.readExcelEvaluateCriteria = async (req,res,next)=>{
+    const filePath = (req.file&&req.file.path)?req.file.path:null;
     try {
-        const filePath = (req.file&&req.file.path)?req.file.path:null;
         const {fcode} = req.params;
         const {dcode, scode, ccode} = req.body;
 
         if(!filePath){
-            return res.status(400).json({
-                statusCode: 400,
+            return res.status(404).json({
+                statusCode: 404,
                 message: "File not found"
             })
         }
@@ -185,7 +185,7 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
                 statusCode: 400,
                 message: "Criteria code Mismatch"
             })
-            fs.unlinkSync(filePath)
+            fs.unlinkSync(filePath);
             return;
         }
 
@@ -344,6 +344,7 @@ exports.readExcelEvaluateCriteria = async (req,res,next)=>{
 
     } catch (error) {
         next(error);
+        fs.unlinkSync(filePath)
     }
 }
 
@@ -396,49 +397,6 @@ exports.importEvaluations = async (req,res,next)=>{
             next();
         })
 
-    } catch (error) {
-        next(error);
-    }
-}
-
-
-//--departments files
-exports.importDepartments = async (req,res,next)=>{
-    try {
-        const departments = req.departments;
-        const departmentsCount = departments.length;
-        Department.insertMany(departments, (err,doc)=>{
-            if(err){
-                console.error(err);
-            }
-            console.log(doc)
-            console.log(departmentsCount)
-            next();
-        })
-    } catch (error) {
-        next(error);
-    }
-}
-
-//--file utils
-exports.getTemplate = (req, res, next)=>{
-    try {
-        const {file} = req.query;
-        let filePath = `${ROOTDIR}/public/files/template/`;
-        switch(file){
-            case 'user': {
-                filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
-                req.filePath = filePath;
-                break;
-            }
-            case 'department': {
-                filePath = `${ROOTDIR}/public/files/template/Department_template.xlsx`;
-                req.filePath = filePath;
-                break;
-            }
-        }
-        req.filePath = filePath;
-        next();
     } catch (error) {
         next(error);
     }
@@ -551,6 +509,48 @@ exports.createFile = async (req,res,next)=>{
         const filePath = `${ROOTDIR}/public/files/${dcode}-${ccode}.xlsx`;
         
         //res.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        req.filePath = filePath;
+        next();
+    } catch (error) {
+        next(error);
+    }
+}
+
+//--departments files
+exports.importDepartments = async (req,res,next)=>{
+    try {
+        const departments = req.departments;
+        const departmentsCount = departments.length;
+        Department.insertMany(departments, (err,doc)=>{
+            if(err){
+                console.error(err);
+            }
+            console.log(doc)
+            console.log(departmentsCount)
+            next();
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+//--file utils
+exports.getTemplate = (req, res, next)=>{
+    try {
+        const {file} = req.query;
+        let filePath = `${ROOTDIR}/public/files/template/`;
+        switch(file){
+            case 'user': {
+                filePath = `${ROOTDIR}/public/files/template/User_template.xlsx`;
+                req.filePath = filePath;
+                break;
+            }
+            case 'department': {
+                filePath = `${ROOTDIR}/public/files/template/Department_template.xlsx`;
+                req.filePath = filePath;
+                break;
+            }
+        }
         req.filePath = filePath;
         next();
     } catch (error) {
