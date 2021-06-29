@@ -261,10 +261,10 @@ module.exports = function(app){
         fileController.download
     )
 
-    app.post("/testA",
+    app.post("/:fcode/testA",
         upload.single('file'),
-        fileController.readExcelUser,
-        // fileController.importUsers,
+        fileController.readExcelEvaluateCriteria,
+        fileController.importEvaluations,
         fileController.deleteFile
     )
 

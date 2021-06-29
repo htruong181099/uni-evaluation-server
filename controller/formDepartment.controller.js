@@ -212,6 +212,15 @@ exports.addFormDepartments = async (req,res,next)=>{
 exports.getFormDepartments = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
+        const {level} = req.query;
+
+        if(level && ![2,3].includes(parseInt(level))){
+            return res.status(422).json({
+                statusCode: 422,
+                message: "Invalid level"
+            })
+        }
+
         const form = await Form.findOne({code: fcode}).select("_id");
         if(!form){
             return res.status(404).json({
@@ -221,7 +230,8 @@ exports.getFormDepartments = async (req,res,next)=>{
         }
         const formDepartments = await FormDepartment.find({
             form_id: form._id,
-            isDeleted: false
+            isDeleted: false,
+            level: level?level: [2,3]
         })
         .lean()
         .populate("department_id","department_code name")

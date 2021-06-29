@@ -84,7 +84,7 @@ exports.getEvaluation = async (req,res,next)=>{
             const evaluateForm = evaluateForms[i];
             const evaluateCriteria = await EvaluateCriteria.find({
                 evaluateForm: evaluateForm._id
-            }).select("form_criteria point -_id")
+            }).select("form_criteria point read_only -_id")
             .populate({
                 path: "form_criteria",
                 select: "criteria_id criteria_order -_id",
@@ -1212,7 +1212,7 @@ exports.getEvaluationV2 = async (req,res,next)=>{
                 evaluateForm: evaluateForm._id
             })
             .lean()
-            .select("form_criteria point")
+            .select("form_criteria point read_only")
             .populate({
                 path: "form_criteria",
                 select: "criteria_id criteria_order -_id",

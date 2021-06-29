@@ -15,12 +15,16 @@ const Standard = db.standard;
 const FormStandard = db.formStandard;
 const User = db.user;
 const Form = db.form;
+const EvaluateCriteria = db.evaluateCriteria;
 
 //constant
 const ROOTDIR = path.dirname(require.main.filename);
 
 //validator
 const {body, param, query} = require("express-validator");
+const EvaluateForm = require("../model/evaluateForm.model");
+const UserForm = require("../model/userForm.model");
+const EvaluateDescription = require("../model/evaluateDescription.model");
 
 exports.readExcelUser = async (req,res,next)=>{
     try {
@@ -140,10 +144,268 @@ exports.importUsers = async (req,res,next)=>{
     }
 }
 
-exports.importDepartment = async (req,res,next)=>{
+exports.readExcelEvaluateCriteria = async (req,res,next)=>{
+    try {
+        const filePath = (req.file&&req.file.path)?req.file.path:null;
+        const {fcode} = req.params;
+        const {dcode, scode, ccode} = req.body;
+
+        if(!filePath){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "File not found"
+            })
+        }
+
+        //read excel file -> parse to JSON
+        const workbook = xlsx.readFile(filePath);
+        const sheetNameList = workbook.SheetNames;
+        const xlData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNameList[0]]);
+
+        //if criteria code from excel not match ccode -> return error
+        if(xlData[0]["Mã tiêu chí"] != ccode){
+            res.status(400).json({
+                statusCode: 400,
+                message: "Criteria code Mismatch"
+            })
+            fs.unlinkSync(filePath)
+            return;
+        }
+
+        //query form, standard, criteria
+        const [form, department, standard, criteria] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode}).select("_id"),
+            Standard.findOne({code: scode}).select("_id"),
+            Criteria.findOne({code: ccode}).select("-__v")
+        ])
+        
+        //return 404 if not found
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Form not found"
+            })
+        }
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Department not found"
+            })
+        }
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Standard not found"
+            })
+        }
+        if(!criteria){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Criteria not found"
+            })
+        }
+
+        //query formStandard
+        const [formStandard, formDepartment] = await Promise.all([
+            FormStandard.findOne({
+                form_id: form._id,
+                standard_id: standard._id
+            }).select("_id"),
+            FormDepartment.findOne({
+                form_id: form._id,
+                department_id: department._id
+            }).select("_id")
+        ])
+
+        if(!formStandard){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Form Criteria not found"
+            })
+        }
+
+        //query formCriteria
+        const [formCriteria, formUsers]= await Promise.all([
+            FormCriteria.findOne({
+                form_standard: formStandard._id,
+                criteria_id: criteria._id,
+                isDeleted: false
+            }).select("-__v"),
+            FormUser.find({
+                department_form_id: formDepartment._id,
+                form_id: form._id,
+                isDeleted: false
+            }).lean()
+            .select("_id user_id")
+            .populate("user_id", "staff_id")
+        ]) 
+
+        if(!formCriteria){
+            return res.status(404).json({
+                statusCode: 404, 
+                message: "Form Criteria not found"
+            })
+        }
+
+        //query userForms
+        const userFormWriteResult = await UserForm.bulkWrite(
+            formUsers.map((formUser)=>({
+                updateOne: {
+                    filter: {
+                        form_id: form._id, 
+                        form_user: formUser._id
+                    },
+                    update: {
+                        form_id: form._id,
+                        point: null
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log(userFormWriteResult);
+
+        const userForms = await UserForm.find({
+            form_user: formUsers.map(e=>e._id),
+            form_id: form._id
+        }).lean()
+        .select("_id form_user")
+        
+
+        //query EvaluationForms
+        const evaluateFormWriteResult = await EvaluateForm.bulkWrite(
+            userForms.map((userForm)=>({
+                updateOne: {
+                    filter: {
+                        userForm: userForm._id,
+                        user: userForm.form_user,
+                        level: 1
+                    },
+                    update: {
+                        status: 0,
+                        uptime: null
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log(evaluateFormWriteResult);
+
+        const evaluateForms = await EvaluateForm.find({
+            userForm: userForms,
+            user: formUsers,
+            level: 1
+        }).lean().select("_id userForm")
+
+        //dictionary mapping
+        const formUsersMap = {};
+        formUsers.forEach(formUser=>{
+            formUsersMap[formUser.user_id.staff_id] = formUser._id
+        })
+        const userFormsMap = {}
+        userForms.forEach(userForm => {
+            userFormsMap[userForm.form_user] = userForm._id
+        })
+        const evaluateFormsMap = {}
+        evaluateForms.forEach(evaluateForm => {
+            evaluateFormsMap[evaluateForm.userForm] = evaluateForm._id
+        })
+
+        let evaluateCriterias = []
+        for(row of xlData){
+            let evaluateCriteriaObj = {}
+            evaluateCriteriaObj.description = {}
+            for(key in row){
+                switch(key){
+                    case 'MSVC': {
+                        const staff_id = row[key];
+                        const formUser = formUsersMap[staff_id];
+                        const userForm = userFormsMap[formUser];
+                        const evaluateForm = evaluateFormsMap[userForm];
+                        evaluateCriteriaObj.evaluateForm = evaluateForm;
+                        break;
+                    }
+                    case 'Số lần': {
+                        evaluateCriteriaObj.description.value = row[key]
+                        break;
+                    }
+                }
+            }
+            evaluateCriteriaObj.form_criteria = formCriteria._id;
+            evaluateCriteriaObj.point = evaluateCriteriaObj.description.value * formCriteria.base_point;
+            evaluateCriteriaObj.read_only = true;
+            evaluateCriterias.push(evaluateCriteriaObj);
+        }
+
+        req.evaluateCriterias = evaluateCriterias;
+        next();
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.importEvaluations = async (req,res,next)=>{
+    try {
+        const evaluateCriterias = req.evaluateCriterias;
+        const evaluateCriteriasCount = evaluateCriterias.length;
+        EvaluateCriteria.insertMany(evaluateCriterias, async (err, docs)=>{
+            if(err){console.error(err)}
+            if(docs){
+                console.log("docs");
+                console.log(docs);
+
+                docsMap = {}
+                docs.forEach(doc => {
+                    docsMap[doc.evaluateForm] = {
+                        _id: doc._id,
+                        form_criteria : doc.form_criteria
+                    }
+                })
+                console.log("docsMap");
+                console.log(docsMap);
+                evaluateDescriptions = []
+                evaluateCriterias.forEach(evaluateCriteria => {
+                    evaluateDescription = {}
+                    evaluateDescription.evaluateCriteria = docsMap[evaluateCriteria.evaluateForm]._id;
+                    evaluateDescription.value = evaluateCriteria.description.value;
+                    evaluateDescriptions.push(evaluateDescription)
+                })
+
+
+                const evaluateDescriptionWriteResult = await EvaluateDescription.bulkWrite(
+                    evaluateDescriptions.map(evaluateDescription => ({
+                        updateOne: {
+                            filter: {
+                                evaluateCriteria: evaluateDescription.evaluateCriteria
+                            },
+                            update: {
+                                value: evaluateDescription.value
+                            },
+                            upsert: true
+                        }
+                    }))
+                )
+                console.log(evaluateDescriptionWriteResult);
+            }
+            req.doc = docs
+            next();
+        })
+        // res.status(200).json({
+        //     evaluateCriterias
+        // })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+exports.importDepartments = async (req,res,next)=>{
     try {
         const departments = req.departments;
-        const departmentsCount = users.length;
+        const departmentsCount = departments.length;
         Department.insertMany(departments, (err,doc)=>{
             if(err){
                 console.error(err);
@@ -173,7 +435,6 @@ exports.createFile = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const {dcode, scode, ccode} = req.body;
-        console.log(req.query);
 
         const [form, department, standard, criteria] = await Promise.all([
             Form.findOne({code: fcode}).select("_id"),
