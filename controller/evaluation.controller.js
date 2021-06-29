@@ -1320,30 +1320,23 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
 
         //new upperlevel evaluateForm
         const doc = await evaluateForm.save();
-        console.log(doc);
 
         //find all previous evaluateCriteria
         const previousEvaluateCriterias = await EvaluateCriteria.find({
             evaluateForm: previousEvaluateForm
         })
-        console.log("EC");
-        console.log(previousEvaluateCriterias);
+        
         const previousEvaluateDescriptions = await EvaluateDescription.find({
             evaluateCriteria: previousEvaluateCriterias.map(e=>e._id)
         })
-        console.log("ED");
-        console.log(previousEvaluateDescriptions);
         //maping EvaluateDescriptions
-        previousEvaluateDescriptionsMap = {}
+        let mapping = {}
         previousEvaluateDescriptions.forEach(evaluateDescription => {
-            previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria] = []
+            mapping[evaluateDescription.evaluateCriteria.toString()]
+                = !mapping[evaluateDescription.evaluateCriteria.toString()]
+                ? [evaluateDescription]
+                : [...mapping[evaluateDescription.evaluateCriteria.toString()], evaluateDescription]
         })
-        previousEvaluateDescriptions.forEach(evaluateDescription => {
-            let arr = previousEvaluateDescriptionsMap[evaluateDescription.evaluateCriteria];
-            arr =[...arr,evaluateDescription]
-        })
-        console.log("Map");
-        console.log(previousEvaluateDescriptionsMap);
 
         for(let evaluateCriteriaObj of previousEvaluateCriterias){
             let evaluateCriteria = await EvaluateCriteria.findOne({
@@ -1368,22 +1361,18 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
             
             const saved = await evaluateCriteria.save();
 
-            if(previousEvaluateDescriptionsMap[evaluateCriteriaObj._id]){
-                const details = previousEvaluateDescriptionsMap[evaluateCriteriaObj._id];
-                const evaluateDescriptions = details.map(evaluateDescription => {
+            let evaluateDescriptions = mapping[evaluateCriteriaObj._id]?mapping[evaluateCriteriaObj._id]:[];
+            if(evaluateDescriptions){
+                const descriptionData = evaluateDescriptions.map(evaluateDescription => {
                     const {name, value, description} = evaluateDescription;
                     return {
                         evaluateCriteria: saved._id,
-                        name,
-                        value,
-                        description
+                        name, value, description
                     }
                 })
-                console.log("ED2");
-                console.log(evaluateDescriptions);
-                const re = await EvaluateDescription.insertMany(evaluateDescriptions);
-                console.log(re);
+                EvaluateDescription.insertMany(descriptionData)
             }
+            
             
         }
 

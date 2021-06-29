@@ -261,4 +261,16 @@ module.exports = function(app){
     app.post("/wwe/",
         fileController.a
     )
+
+    app.post("/wwe2/",
+        fileController.a2
+    )
+
+    app.post("/wwe3/",
+        fileController.a3
+    )
+
+    app.post("/wwe4/",
+        fileController.a4
+    )
 }

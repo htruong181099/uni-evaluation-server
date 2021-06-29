@@ -761,15 +761,78 @@ const jsonToExcelData = (body, type) => {
 
 exports.a = async (req,res,next)=>{
     try {
-        const b = await EvaluateCriteria.deleteMany({
-            evaluateForm: "60db33d7d25f5132987dbb74"
+        const id = "60db5419e40ca5408c7455e3";
+        const d = await EvaluateCriteria.find({evaluateForm: id});
+        const c = await EvaluateDescription.deleteMany({
+            evaluateCriteria: d.map(e=>e._id)
         })
 
-        const a = await EvaluateForm.deleteOne({_id: "60db33d7d25f5132987dbb74"}
+        const b = await EvaluateCriteria.deleteMany({
+            evaluateForm: id
+        })
+
+        const a = await EvaluateForm.deleteOne({_id: id}
         )
         res.send({
+            c,
             b,
             a
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.a2 = async (req,res,next)=>{
+    try {
+        const a = await EvaluateForm.updateOne({_id: "60da0b348ef0eb21c3f81338"},
+            {status: 0}
+        )
+        res.send({
+            a
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.a3 = async (req,res,next)=>{
+    try {
+        const a = await EvaluateForm.findOne({_id: "60da0b348ef0eb21c3f81338"})
+        const b = await EvaluateCriteria.find({evaluateForm: a}).lean()
+        const c = await EvaluateDescription.find({evaluateCriteria: b}).lean()
+        let d = []
+        
+        let mapping = {}
+        c.forEach(evaluateDescription => {
+
+            mapping[evaluateDescription.evaluateCriteria.toString()]
+                = !mapping[evaluateDescription.evaluateCriteria.toString()]
+                ? [evaluateDescription]
+                : [...mapping[evaluateDescription.evaluateCriteria.toString()], evaluateDescription]
+        })
+
+        res.send({
+            mapping
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+exports.a4 = async (req,res,next)=>{
+    try {
+        const id = "60db4bb67e437101f474e3e2";
+        // const b = await EvaluateCriteria.deleteOne({
+        //     _id: id
+        // })
+        const c = await EvaluateCriteria.updateOne({
+            _id: "60db3598e506d82438a7d3b2"
+        }, {read_only: true})
+        res.send({
+            // b,
+            c
         })
     } catch (error) {
         next(error)
