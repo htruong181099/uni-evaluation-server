@@ -14,6 +14,12 @@ module.exports = function(app){
         reviewController.getUserReviews
     );
 
+    app.get("/review/:rcode",
+        reviewController.validate('getEvaluationReview'),
+        getValidationResult,
+        reviewController.getEvaluationReview
+    );
+
     //get forms from reviews
     app.get("/form/review/:rcode/form", 
         formController.validate("getUserForms"),

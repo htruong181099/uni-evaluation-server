@@ -204,7 +204,6 @@ getEvaluationReview = async (req,res,next)=>{
             isDeleted: false
         })
         .lean()
-        .sort({"end_date": 1})
         .select("-__v -isDeleted")
         if(!review){
             return res.status(404).json({
