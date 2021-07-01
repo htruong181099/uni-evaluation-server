@@ -404,8 +404,9 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             department_id: department._id,
             // head: user_id,
             isDeleted: false
-        }).select("_id level head")
-        .populate("head", "_id")
+        }).select("_id level head department_id")
+        .populate("head", "_id firstname lastname staff_id")
+        .populate("department_id", "-_id department_code name")
         if(!formDepartment){
             return res.status(404).json({
                 statusCode: 404,
@@ -467,6 +468,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
         return res.status(200).json({
             statusCode: 200,
             message: "Success",
+            formDepartment,
             formUsers: result
         })
 

@@ -132,7 +132,7 @@ exports.readExcelUser = async (req,res,next)=>{
                     }
                 }
             }
-            user.password = "password";
+            user.password = bcrypt.hashSync("password", 8);
             users.push(user);
         }
 
@@ -377,22 +377,25 @@ exports.importEvaluations = async (req,res,next)=>{
         if(docs && ['number', 'detail'].includes(criteriaType)){
             docsMap = {}
             docs.forEach(doc => {
-                docsMap[doc.evaluateForm] = {
+                docsMap[doc.evaluateForm.toString()] = {
                     _id: doc._id,
                     form_criteria : doc.form_criteria
                 }
             })
             
             evaluateDescriptions = []
+            console.log(evaluateCriterias);
             evaluateCriterias.forEach(evaluateCriteria => {
                 const {value, name, description} = evaluateCriteria.description;
-                evaluateDescription = {
-                    evaluateCriteria: docsMap[evaluateCriteria.evaluateForm]._id,
-                    value,
-                    name,
-                    description
+                if(evaluateCriteria.evaluateForm){
+                    evaluateDescription = {
+                        evaluateCriteria: docsMap[evaluateCriteria.evaluateForm]._id,
+                        value,
+                        name,
+                        description
+                    }
+                    evaluateDescriptions.push(evaluateDescription)
                 }
-                evaluateDescriptions.push(evaluateDescription)
             })
 
             const evaluateDescriptionWriteResult = await EvaluateDescription.bulkWrite(
@@ -778,7 +781,7 @@ const jsonToExcelData = (body, type) => {
 
 exports.a = async (req,res,next)=>{
     try {
-        const id = "60db5419e40ca5408c7455e3";
+        const id = "60db35984044ed67bf3d67d4";
         const d = await EvaluateCriteria.find({evaluateForm: id});
         const c = await EvaluateDescription.deleteMany({
             evaluateCriteria: d.map(e=>e._id)
