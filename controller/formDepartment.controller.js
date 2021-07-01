@@ -261,6 +261,7 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
         
         const existedDepartment = await FormDepartment.find({
             form_id: form._id,
+            level: 2,
             isDeleted: false
         })
         .populate("department_id", "department_code")
@@ -282,7 +283,8 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
             }
             let formDepartment = await FormDepartment.findOne({
                 form_id: form._id,
-                department_id: department._id
+                department_id: department._id,
+                level: 2
             });
             if(!formDepartment){
                 formDepartment = new FormDepartment({
@@ -364,6 +366,7 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
                 level: 3
             })
         }
+        formDepartment.isDeleted = false;
         const fd = await formDepartment.save();
 
         const users = await User.find({
