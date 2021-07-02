@@ -782,17 +782,20 @@ const jsonToExcelData = (body, type) => {
 exports.a = async (req,res,next)=>{
     try {
         const {id} = req.params;
-        const d = await EvaluateCriteria.find({evaluateForm: id});
+        const d = await EvaluateCriteria.find({
+            evaluateForm: id,
+            // read_only: false
+        });
         const c = await EvaluateDescription.deleteMany({
             evaluateCriteria: d.map(e=>e._id)
         })
 
         const b = await EvaluateCriteria.deleteMany({
-            evaluateForm: id
+            evaluateForm: id,
+            // read_only: false
         })
 
-        const a = await EvaluateForm.deleteOne({_id: id}
-        )
+        const a = await EvaluateForm.deleteOne({_id: id})
         res.send({
             c,
             b,
@@ -881,13 +884,21 @@ exports.delEC = async (req,res,next)=>{
 
 exports.tester = async (req,res,next)=>{
     try {
-        const a = await FormCriteria.findById("60dc0bd0e017604010d18d25")
-            .populate("form_standard");
-        const c = await Form.find({_id: a.form_standard.form_id})
-        const b = await EvaluateCriteria.findById("60dc0dbe4044ed67bf81a720")
+        // const a = await FormCriteria.findById("60dc0bd0e017604010d18d25")
+        //     .populate("form_standard");
+        // const c = await Form.findOne({_id: a.form_standard.form_id})
+        // const d = await FormStandard.find({
+        //     form_id: c._id
+        // })
+        // const e = await FormCriteria.find({
+        //     form_standard: "60dc0bd0e017604010d18d24"
+        // })
+        // const b = await EvaluateCriteria.findById("60dc0dbe4044ed67bf81a720")
+        const d = await FormStandard.findOne({
+            _id: "60d0c06f697dd44508850a1b"
+        }).populate("form_id")
         res.send({
-            a,
-            c
+            d
         })
     } catch (error) {
         next(error)
