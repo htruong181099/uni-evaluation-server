@@ -26,6 +26,12 @@ exports.validate = (method)=>{
                 param("fcode", "Invalid form").exists().isString()
             ]
         }
+        case 'getFormStandardAndCriteria': {
+            return [
+                param("fcode", "Invalid form").exists().isString(),
+                param("scode", "Invalid standard").exists().isString()
+            ]
+        }
     }
 }
 
@@ -280,6 +286,64 @@ exports.editFormStandard = async (req,res,next)=>{
             message: "Successful"
         })
         
+    } catch (error) {
+        next(error);
+    }
+}
+
+//get formStandard and its formCriteria(s)
+exports.getFormStandardAndCriteria = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const {scode} = req.params;
+        
+        //query form && standard
+        const [form, standard] = await Promise.all([
+            Form.findOne({
+                code: fcode
+            }).select("_id"),
+            Standard.findOne({
+                code: scode
+            }).select("_id")
+        ])
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found",
+            })
+        }
+        if(!standard){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Standard not found",
+            })
+        }
+
+        const formStandard = await FormStandard.findOne({
+            form_id: form._id,
+            standard_id: standard._id,
+            isDeleted: false
+        })
+        .lean()
+        .populate("standard_id","code name description")
+        .select("standard_id standard_order standard_point")
+
+        const formCriteria = await FormCriteria.find({
+            form_standard: formStandard._id,
+            isDeleted: false
+        })
+        .lean()
+        .select("-__v -isDeleted -form_standard")
+        .populate("criteria_id", "code name description")
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            formStandard,
+            formCriteria
+        })
+
     } catch (error) {
         next(error);
     }

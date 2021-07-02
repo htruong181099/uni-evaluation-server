@@ -151,6 +151,12 @@ module.exports = function(app){
         formStandardController.editFormStandard
     )
 
+    app.get("/admin/form/:fcode/standard/:scode/getFormStandardAndCriteria",
+        formStandardController.validate('getFormStandardAndCriteria'),
+        getValidationResult,
+        formStandardController.getFormStandardAndCriteria
+    )
+
     //formCriteria
     app.get("/admin/form/:fcode/standard/:scode/getFormCriteria",
         formCriteriaController.validate('getFormCriteria'),
@@ -258,7 +264,11 @@ module.exports = function(app){
         fileController.deleteFile
     )
 
-    app.post("/wwe/",
+    app.post("/xoarac/:id",
+        fileController.a
+    )
+
+    app.post("/wwe/:id",
         fileController.a
     )
 

@@ -781,7 +781,7 @@ const jsonToExcelData = (body, type) => {
 
 exports.a = async (req,res,next)=>{
     try {
-        const id = "60db35984044ed67bf3d67d4";
+        const {id} = req.params;
         const d = await EvaluateCriteria.find({evaluateForm: id});
         const c = await EvaluateDescription.deleteMany({
             evaluateCriteria: d.map(e=>e._id)
@@ -805,8 +805,8 @@ exports.a = async (req,res,next)=>{
 
 exports.a2 = async (req,res,next)=>{
     try {
-        const a = await EvaluateForm.updateOne({_id: "60da0b348ef0eb21c3f81338"},
-            {status: 0}
+        const a = await EvaluateForm.updateOne({_id: "60d2debd77a9d3381c37d278"},
+            {status: 1}
         )
         res.send({
             a
