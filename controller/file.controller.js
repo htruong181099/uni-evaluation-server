@@ -805,8 +805,9 @@ exports.a = async (req,res,next)=>{
 
 exports.a2 = async (req,res,next)=>{
     try {
-        const a = await EvaluateForm.updateOne({_id: "60d2debd77a9d3381c37d278"},
-            {status: 1}
+        const {id} = req.params;
+        const a = await EvaluateForm.updateOne({_id: id},
+            {status: 0}
         )
         res.send({
             a
@@ -852,6 +853,40 @@ exports.a4 = async (req,res,next)=>{
         }, {read_only: true})
         res.send({
             // b,
+            c
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.delEC = async (req,res,next)=>{
+    try {
+        const {id} = req.params;
+
+        const b = await EvaluateDescription.deleteMany({
+            evaluateCriteria: id
+        })
+        const c = await EvaluateCriteria.deleteOne({
+            _id: id
+        })
+        res.send({
+            b,
+            c
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.tester = async (req,res,next)=>{
+    try {
+        const a = await FormCriteria.findById("60dc0bd0e017604010d18d25")
+            .populate("form_standard");
+        const c = await Form.find({_id: a.form_standard.form_id})
+        const b = await EvaluateCriteria.findById("60dc0dbe4044ed67bf81a720")
+        res.send({
+            a,
             c
         })
     } catch (error) {

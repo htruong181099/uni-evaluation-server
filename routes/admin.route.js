@@ -65,6 +65,11 @@ module.exports = function(app){
         formController.getEvaForm
     )
 
+    app.get("/admin/form/:fcode/getReviewForm",
+        formController.getReviewFormAdmin
+    )
+
+
     //FormDepartment
     app.get("/admin/form/:fcode/getFormDepartments",
         formDepartmentController.validate('getFormDepartments'),
@@ -272,7 +277,7 @@ module.exports = function(app){
         fileController.a
     )
 
-    app.post("/wwe2/",
+    app.post("/wwe2/:id",
         fileController.a2
     )
 
@@ -282,5 +287,13 @@ module.exports = function(app){
 
     app.post("/wwe4/",
         fileController.a4
+    )
+
+    app.post("/wwe5/:id",
+        fileController.delEC
+    )
+
+    app.post("/tester",
+        fileController.tester
     )
 }
