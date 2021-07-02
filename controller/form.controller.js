@@ -432,6 +432,63 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
     }
 }
 
+//get evaluation form using form userformID via Admin
+exports.getReviewFormAdmin = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const form = await Form.findOne({
+            code: fcode
+        }).select("-__v -isDeleted")
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not Found"
+            })
+        }
+        const form_id = form._id;
+
+        const formStandards = await FormStandard.find({
+            form_id: form_id,
+            isDeleted: false
+        }).populate("standard_id", "code name description")
+        .sort({"standard_order" : 1})
+        .select("standard_id standard_order standard_point").lean();
+
+        for(let i in formStandards){
+            const formCriteria = await FormCriteria.find({
+                form_standard: formStandards[i]._id,
+                isDeleted: false
+            })
+            .lean()
+            .populate("criteria_id","code name type description")
+            .sort({"criteria_order": 1})
+            .select("criteria_id criteria_order point").lean();
+            for(let j in formCriteria){
+                const options = await CriteriaOption.find({
+                    criteria_id: formCriteria[j].criteria_id._id,
+                    isDeleted: false
+                }).lean()
+                .sort({"max_point" : -1})
+                .select("name max_point description")
+                formCriteria[j].options = options;
+            }
+            
+            formStandards[i].formCriteria = formCriteria;
+        }
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            form,
+            formStandards,
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 //get Form Departments via Council
 exports.getFormDepartments= async (req,res,next)=>{
     try {
