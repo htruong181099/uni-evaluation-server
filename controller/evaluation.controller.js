@@ -113,7 +113,6 @@ exports.getEvaluation = async (req,res,next)=>{
 exports.getEvaluationAdmin = async (req,res,next)=>{
     try {
         const {ufid} = req.params;
-        const user_id = req.userId;
 
         const userForm = await UserForm.findById(ufid)
             .select("_id form_id point");
@@ -126,25 +125,32 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
         }
 
         const evaluateForms = await EvaluateForm.find({
-            // user: formUser._id,
             userForm: userForm._id,
             status: [0,1]
-        }).select("_id status point").lean();
+        }).select("_id status level point").lean();
 
         for(let i in evaluateForms){
             const evaluateForm = evaluateForms[i];
             const evaluateCriteria = await EvaluateCriteria.find({
                 evaluateForm: evaluateForm._id
-            }).select("form_criteria point level -_id")
+            })
+            .lean()
+            .select("form_criteria point read_only")
             .populate({
                 path: "form_criteria",
-                select: "criteria_id criteria_order -_id",
+                select: "criteria_id criteria_order _id",
                 sort: {"criteria_order": 1},
                 populate: {
                     path: "criteria_id",
-                    select: "code -_id"
+                    select: "code"
                 }
             })
+    
+            for(ec of evaluateCriteria){
+                ec.details = await EvaluateDescription.find({
+                    evaluateCriteria: ec._id
+                }).lean().select("-evaluateCriteria -__v")
+            }
             evaluateForm.evaluateCriteria = evaluateCriteria;
         }
         
@@ -153,6 +159,8 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
             statusCode: 200,
             evaluateForms
         })
+
+
 
 
     } catch (error) {
