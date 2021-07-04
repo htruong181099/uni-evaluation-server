@@ -12,7 +12,15 @@ module.exports = (app) =>{
         fileController.deleteFile
     )
 
-    // download file using query
+    //import user excel to DB
+    app.post("/admin/department/file/import",
+        upload.single('file'),
+        fileController.readExcelDepartment,
+        fileController.importDepartments,
+        fileController.deleteFile
+    )
+
+    // download file using query (export template)
     app.get("/admin/file/download",
         fileController.validate("download"),
         getValidationResult,

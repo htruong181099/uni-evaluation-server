@@ -4,25 +4,25 @@ const path = require("path");
 
 //model
 const db = require("../model/");
+const Form = db.form;
 const Department = db.department;
+const User = db.user;
 const Criteria = db.criteria;
+const Standard = db.standard;
 const FormDepartment = db.formDepartment;
 const FormUser = db.formUser;
 const FormCriteria = db.formCriteria;
-const Standard = db.standard;
 const FormStandard = db.formStandard;
-const User = db.user;
-const Form = db.form;
+const UserForm = db.userForm;
 const EvaluateCriteria = db.evaluateCriteria;
+const EvaluateForm = db.evaluateForm;
+const EvaluateDescription = db.evaluateDescription;
 
 //constant
 const ROOTDIR = path.dirname(require.main.filename);
 
 //validator
 const {body, param, query} = require("express-validator");
-const EvaluateForm = require("../model/evaluateForm.model");
-const UserForm = require("../model/userForm.model");
-const EvaluateDescription = require("../model/evaluateDescription.model");
 
 exports.validate = (method) =>{
     switch(method){
@@ -70,7 +70,7 @@ exports.readExcelUser = async (req,res,next)=>{
                 parent: department.parent?.toString()
             }
         })
-        users = []
+        let users = []
         for(row of xlData){
             user = {}
             for(key in row){
@@ -153,13 +153,31 @@ exports.readExcelUser = async (req,res,next)=>{
 exports.importUsers = async (req,res,next)=>{
     try {
         const users = req.users;
-        const usersCount = users.length;
-        User.insertMany(users, (err,doc)=>{
-            if(err){
-                console.error(err);
-            }
-            next();
-        })
+        const userWriteResult = await User.bulkWrite(
+            users.map(user => ({
+                updateOne: {
+                    filter: {
+                        staff_id: user.staff_id
+                    },
+                    update: {
+                        firstname : user.firstname,
+                        lastname: user.lastname,
+                        birthday: user.birthday,
+                        gender: user.gender,
+                        email: user.email,
+                        password: user.password,
+                        phone: user.phone,
+                        department: user.department,
+                        isDeleted: false
+                    },
+                    upsert: true
+                }
+            }))
+        )
+
+        console.log("Users Write Result: ");
+        console.log(userWriteResult);
+        next();
     } catch (error) {
         next(error);
     }
@@ -543,18 +561,119 @@ exports.createFile = async (req,res,next)=>{
 }
 
 //--departments files
+exports.readExcelDepartment = async (req,res,next)=>{
+    const filePath = (req.file&&req.file.path)?req.file.path:null;
+    try {
+        if(!filePath){
+            res.status(400).json({
+                statusCode: 400,
+                message: "File not found"
+            })
+            fs.unlinkSync(filePath);
+            return;
+        }
+        
+        const workbook = xlsx.readFile(filePath);
+        const sheetNameList = workbook.SheetNames;
+        const xlData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNameList[0]]);
+
+        let parentDepartments = [];
+        let childDepartments = [];
+        for(row of xlData){
+            department = {}
+            for(key in row){
+                switch(key.trim()){
+                    case 'Mã đơn vị': {
+                        const department_code = row[key].trim();
+                        department.department_code = department_code;
+                        break;
+                    }
+                    case 'Tên đơn vị': {
+                        const name = row[key].trim();
+                        department.name = department_code;
+                        break;
+                    }
+                    case 'Thuộc': {
+                        const parent = row[key].trim();
+                        if(manger==0){
+                            department.parent = null;
+                            break;
+                        }
+                        department.parent = parent;
+                        break;
+                    }
+                }
+            }
+            department.manager = null;
+            if(department.parent === null){
+                parentDepartments.push(department);
+            }
+            else{
+                childDepartments.push(department);
+            }
+        }
+
+        req.parentDepartments = parentDepartments;
+        req.childDepartments = childDepartments;
+        next();
+
+    } catch (error) {
+        next(error);
+    }
+}
+
 exports.importDepartments = async (req,res,next)=>{
     try {
-        const departments = req.departments;
-        const departmentsCount = departments.length;
-        Department.insertMany(departments, (err,doc)=>{
-            if(err){
-                console.error(err);
-            }
-            console.log(doc)
-            console.log(departmentsCount)
-            next();
+        const parentDepartments = req.parentDepartments;
+        const childDepartments = req.childDepartments;
+
+        const parentWriteResult = await Department.bulkWrite(
+            parentDepartments.map(department => ({
+                updateOne: {
+                    filter: {
+                        department_code: department.department_code
+                    },
+                    update: {
+                        name : department.name,
+                        parent: null,
+                        isDeleted: false
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log("Parent Department Write Result: ");
+        console.log(parentWriteResult);
+
+        const departments = await Department.find({
+            department_code: parentDepartments.map(e=>e._id)
         })
+
+        departmentsMapping = {}
+        departments.forEach(department => {
+            departmentsMapping[department.department_code] = department._id;
+        })
+
+        const childrenWriteResult = await Department.bulkWrite(
+            childDepartments.map(department => ({
+                updateOne: {
+                    filter: {
+                        department_code: department.department_code
+                    },
+                    update: {
+                        name : department.name,
+                        parent: departmentsMapping[department.department_code],
+                        isDeleted: false
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log("Children Department Write Result: ");
+        console.log(childrenWriteResult);
+
+        next();
+
     } catch (error) {
         next(error);
     }

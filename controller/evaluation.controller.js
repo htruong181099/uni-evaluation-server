@@ -116,7 +116,7 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
         const user_id = req.userId;
 
         const userForm = await UserForm.findById(ufid)
-            .select("_id form_id");
+            .select("_id form_id point");
         
         if(!userForm){
             return res.status(404).json({
@@ -129,7 +129,7 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
             // user: formUser._id,
             userForm: userForm._id,
             status: [0,1]
-        }).select("_id status").lean();
+        }).select("_id status point").lean();
 
         for(let i in evaluateForms){
             const evaluateForm = evaluateForms[i];
