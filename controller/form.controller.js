@@ -392,9 +392,11 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
         const formStandards = await FormStandard.find({
             form_id: form_id,
             isDeleted: false
-        }).populate("standard_id", "code name description")
+        })
+        .lean()
+        .populate("standard_id", "code name description")
         .sort({"standard_order" : 1})
-        .select("standard_id standard_order standard_point").lean();
+        .select("standard_id standard_order standard_point");
 
         for(let i in formStandards){
             const formCriteria = await FormCriteria.find({
@@ -404,12 +406,13 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
             .lean()
             .populate("criteria_id","code name type description")
             .sort({"criteria_order": 1})
-            .select("criteria_id criteria_order point").lean();
+            .select("criteria_id criteria_order point base_point").lean();
             for(let j in formCriteria){
                 const options = await CriteriaOption.find({
                     criteria_id: formCriteria[j].criteria_id._id,
                     isDeleted: false
-                }).lean()
+                })
+                .lean()
                 .sort({"max_point" : -1})
                 .select("name max_point description")
                 formCriteria[j].options = options;
