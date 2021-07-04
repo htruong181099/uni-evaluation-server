@@ -10,17 +10,13 @@ module.exports = (app) =>{
         getValidationResult,
         formDepartmentController.getFormDepartments
     )
+
+    //new
     app.post("/admin/form/:fcode/addFormDepartments",
         formDepartmentController.validate('addFormDepartments'),
         getValidationResult,
         formDepartmentController.addFormDepartments,
         formUserController.addFormUsers
-    )
-    
-    app.get("/admin/form/:fcode/:dcode/getFormDepartment",
-        formDepartmentController.validate('getFormDepartment'),
-        getValidationResult,
-        formDepartmentController.getFormDepartment
     )
 
     app.post("/admin/form/:fcode/:dcode/delete",
@@ -29,10 +25,17 @@ module.exports = (app) =>{
         formDepartmentController.deleteFormDepartmentAndUsers
     )
 
+    app.get("/admin/form/:fcode/:dcode/getFormDepartment",
+        formDepartmentController.validate('getFormDepartment'),
+        getValidationResult,
+        formDepartmentController.getFormDepartment
+    )
+
     app.post("/admin/form/:fcode/:dcode/addCouncil",
         formDepartmentController.validate('addCouncil'),
         getValidationResult,
-        formDepartmentController.addFormDepartmentCouncil
+        formDepartmentController.addFormDepartmentCouncil,
+        formUserController.addFormUsers
     )
 
     app.get("/admin/form/:fcode/checkCouncil",

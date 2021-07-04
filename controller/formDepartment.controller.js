@@ -374,7 +374,11 @@ exports.addFormDepartmentsV2 = async (req,res,next)=>{
 exports.addFormDepartmentCouncil = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
-        const form = await Form.findOne({code: fcode}).select("_id");
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode, isDeleted: false})
+        ]);
+        
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
@@ -382,9 +386,6 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             });
         }
         
-        const department = await Department.findOne({
-            department_code: dcode
-        }).select("_id manager")
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -392,18 +393,12 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
             })
         }
 
-        if(!department.manager){
-            return res.status(400).json({
-                statusCode: 400,
-                message: "Head department not found"
-            })
-        }
-
-        let  formDepartment = await FormDepartment.findOne({
+        let formDepartment = await FormDepartment.findOne({
             form_id: form._id,
             department_id: department._id,
             level: 3
         })
+        
         if(!formDepartment){
             formDepartment = new FormDepartment({
                 form_id: form._id,
@@ -412,30 +407,14 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
                 level: 3
             })
         }
+
         formDepartment.isDeleted = false;
-        const fd = await formDepartment.save();
+        formDepartment.save();
 
-        const users = await User.find({
-            department: department._id,
-            isDeleted: false
-        }).select("_id")
+        req.form = form;
+        req.departments = [department];
 
-        const formUsers = users.map(user=>{
-            return {
-                user_id: user._id,
-                form_id: form._id,
-                department_form_id: fd._id
-            }
-        })
-
-        FormUser.insertMany(
-            formUsers
-        ,{})
-
-        return res.status(200).json({
-            statusCode: 200,
-            message: "Success"
-        })
+        next();
         
     } catch (error) {
         next(error);

@@ -134,7 +134,6 @@ exports.addFormUsers = async (req,res,next)=>{
             department_id: departments.map(e=>e._id)
         })
         
-
         for(formdepartment of formdepartments){
             const users = await User.find({
                 department: formdepartment.department_id,
@@ -297,79 +296,6 @@ exports.removeFormUser = async (req,res,next)=>{
             })
         })
 
-    } catch (error) {
-        next(error);
-    }
-}
-
-
-// version 2
-exports.addFormUsersV2 = async (req,res,next)=>{
-    try {
-        const {fcode} = req.params;
-        const form = await Form.findOne({code: fcode}).select("_id");
-
-        //set formuser isDeleted to false
-        const recoverFDepartments = req.recoverDepartments;
-        console.log(recoverFDepartments);
-        await FormUser.updateMany({
-            department_form_id: recoverFDepartments
-        },
-        {
-            isDeleted: false
-        })
-
-        //set formuser isDeleted to true
-        const deleteDepartmentsCode = req.deleteDepartments;
-        const deleteDepartments = await Department.find({
-            department_code: deleteDepartmentsCode
-        })
-        const deletedFormDepartments = await FormDepartment.find({
-            form_id: form._id,
-            department_id: deleteDepartments.map(e=>e._id)
-        }).select("_id")
-        const query = {
-            department_form_id: deletedFormDepartments.map(e=>e._id)
-        }
-        await FormUser.updateMany(query, {
-            isDeleted: true
-        })
-
-        //add new user to form
-        const formdepartments = await FormDepartment.find({
-            form_id: form._id,
-            isDeleted: false
-        })
-        .populate("department_id")
-        .select("_id department_id");
-        
-        for(let i in formdepartments){
-            if(!formdepartments[i].department_id.parent){
-                const users = await User.find({
-                    department: formdepartments[i].department_id._id,
-                    isDeleted: false
-                })
-                for(let x in users){
-                    if(!await FormUser.findOne({
-                        form_id: form._id,
-                        user_id: users[x]._id
-                    }).select("_id")){
-                        const formUser = new FormUser({
-                            user_id: users[x]._id,
-                            department_form_id: formdepartments[i]._id,
-                            form_id: form._id
-                        })
-                        await formUser.save()
-                    }
-                }
-            }
-        }
-
-        return res.status(200).json({
-            statusCode: 200,
-            message: 'Add form departments and users successfully'
-        })
-        
     } catch (error) {
         next(error);
     }
@@ -562,6 +488,84 @@ exports.getFormUsersAdmin = async (req,res,next)=>{
             formUsers: result
         })
 
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+
+
+
+
+//outdated
+// version 2
+exports.addFormUsersV2 = async (req,res,next)=>{
+    try {
+        const {fcode} = req.params;
+        const form = await Form.findOne({code: fcode}).select("_id");
+
+        //set formuser isDeleted to false
+        const recoverFDepartments = req.recoverDepartments;
+        console.log(recoverFDepartments);
+        await FormUser.updateMany({
+            department_form_id: recoverFDepartments
+        },
+        {
+            isDeleted: false
+        })
+
+        //set formuser isDeleted to true
+        const deleteDepartmentsCode = req.deleteDepartments;
+        const deleteDepartments = await Department.find({
+            department_code: deleteDepartmentsCode
+        })
+        const deletedFormDepartments = await FormDepartment.find({
+            form_id: form._id,
+            department_id: deleteDepartments.map(e=>e._id)
+        }).select("_id")
+        const query = {
+            department_form_id: deletedFormDepartments.map(e=>e._id)
+        }
+        await FormUser.updateMany(query, {
+            isDeleted: true
+        })
+
+        //add new user to form
+        const formdepartments = await FormDepartment.find({
+            form_id: form._id,
+            isDeleted: false
+        })
+        .populate("department_id")
+        .select("_id department_id");
+        
+        for(let i in formdepartments){
+            if(!formdepartments[i].department_id.parent){
+                const users = await User.find({
+                    department: formdepartments[i].department_id._id,
+                    isDeleted: false
+                })
+                for(let x in users){
+                    if(!await FormUser.findOne({
+                        form_id: form._id,
+                        user_id: users[x]._id
+                    }).select("_id")){
+                        const formUser = new FormUser({
+                            user_id: users[x]._id,
+                            department_form_id: formdepartments[i]._id,
+                            form_id: form._id
+                        })
+                        await formUser.save()
+                    }
+                }
+            }
+        }
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: 'Add form departments and users successfully'
+        })
+        
     } catch (error) {
         next(error);
     }
