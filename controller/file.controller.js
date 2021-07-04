@@ -26,6 +26,12 @@ const EvaluateDescription = require("../model/evaluateDescription.model");
 
 exports.validate = (method) =>{
     switch(method){
+        case 'download':{
+            return [
+                query("file", "Query not found").exists(),
+                query("file", "Invalid File").isString()
+            ]
+        }
         case 'exportEvaluation':
         case 'importEvaluation':
         {

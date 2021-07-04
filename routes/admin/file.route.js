@@ -13,7 +13,9 @@ module.exports = (app) =>{
     )
 
     // download file using query
-    app.get("/admin/user/file/download",
+    app.get("/admin/file/download",
+        fileController.validate("download"),
+        getValidationResult,
         fileController.getTemplate,
         fileController.download
     )
