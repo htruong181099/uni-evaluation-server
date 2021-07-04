@@ -16,6 +16,7 @@ exports.validate = (method)=>{
             ]
         }
         case 'getFormDepartment':
+        case 'deleteFormDepartmentAndUsers':
         case 'addCouncil':
         case 'addHead':
         {
@@ -34,7 +35,7 @@ exports.validate = (method)=>{
         case 'addFormDepartmentsV2': {
             return [
                 param("fcode","Invalid Form").exists().isString(),
-                body("dcodes").exists().isArray(),
+                body("dcodes", "Invalid Department codes").exists().isArray(),
             ]
         }
     }
@@ -98,14 +99,20 @@ exports.addFormDepartment = async (req,res,next)=>{
 exports.getFormDepartment = async (req,res,next)=>{
     try {
         const {fcode, dcode} = req.params;
-        const form = await Form.findOne({code: fcode}).select("_id");
+        
+        //query form, department
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode, isDeleted: false}).select("_id")
+        ])
+
+        //return 404 if not found
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             });
         }
-        const department = await Department.findOne({department_code: dcode, isDeleted: false}).select("_id");
         if(!department){
             return res.status(404).json({
                 statusCode: 404,
@@ -148,66 +155,105 @@ exports.getFormDepartment = async (req,res,next)=>{
     }
 }
 
+//new
 exports.addFormDepartments = async (req,res,next)=>{
     try {
         const {fcode} = req.params;
         const {dcodes} = req.body;
-        const form = await Form.findOne({code: fcode}).select("_id");
+
+        if(dcodes.length == 0){
+            return res.status(422).json({
+                statusCode: 422,
+                message: "Invalid Department codes"
+            })
+        }
+
+        const [form, departments] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.find({department_code: dcodes})
+        ])
+
         if(!form){
             return res.status(404).json({
                 statusCode: 404,
                 message: "Form not found"
             });
         }
-        for(let i in dcodes){
-            const department = await Department.findOne({department_code: dcodes[i]}).select("_id");
-            if(!department){
-                return res.status(404).json({
-                    statusCode: 404,
-                    message: "Department not found"
-                });
+
+        FormDepartment.bulkWrite(
+            departments.map((department)=>({
+            updateOne: {
+                filter: {
+                    form_id: form._id, 
+                    department_id: department._id
+                },
+                update: {
+                    head: department.manager,
+                    level: 2
+                },
+                upsert: true
             }
-            const exist = await FormDepartment.findOne({
-                form_id : form._id,
-                department_id: department._id,
-            }).select("_id");
-            if(!exist){
-                const formDepartment = new FormDepartment({
-                    form_id : form._id,
-                    department_id: department._id,
-                    level: 1
-                })
-                await formDepartment.save(async (err)=>{
-                    const children = await Department.find({parent: department._id}).select("_id");
-                    for(let index in children){
-                        const childDepartment = await Department.findById(children[index]._id).select("_id");
-                        if(!childDepartment){
-                            return res.status(404).json({
-                                statusCode: 404,
-                                message: "Department not found"
-                            });
-                        }
-                        const existChild = await FormDepartment.findOne({
-                            form_id : form._id,
-                            department_id: childDepartment._id,
-                        }).select("_id");
-                        if(!existChild){
-                            const childFormDepartment = new FormDepartment({
-                                form_id : form._id,
-                                department_id: childDepartment._id,
-                                level: 2
-                            })
-                            await childFormDepartment.save();
-                        }
-                    }
-                });
-            }
-        }
+        })))
+
+        req.form = form;
+        req.departments = departments;
         next();
     } catch (error) {
         next(error);
     }
 }
+
+exports.deleteFormDepartmentAndUsers = async (req,res,next)=>{
+    try {
+        const {fcode, dcode} = req.params;
+        const [form, department] = await Promise.all([
+            Form.findOne({code: fcode}).select("_id"),
+            Department.findOne({department_code: dcode})
+        ])
+
+        if(!form){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+        if(!department){
+            return res.status(404).json({
+                statusCode: 404,
+                message: "Form not found"
+            });
+        }
+
+        const formDepartment = await FormDepartment.findOne({
+            form_id: form._id,
+            department_id: department._id,
+        }).select("_id")
+
+        const delete_formUsers_result = await FormUser.deleteMany({
+            department_form_id: formDepartment._id
+        })
+
+        console.log("Delete FormDepartment result:")
+        console.log(delete_formUsers_result)
+
+        const delete_formDepartment_result = await FormDepartment.deleteOne({
+            _id: formDepartment._id
+        })
+
+        console.log("Delete FormDepartment result:")
+        console.log(delete_formDepartment_result)
+
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success"
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+//end new
 
 exports.getFormDepartments = async (req,res,next)=>{
     try {

@@ -2,7 +2,7 @@ const db = require("../model/");
 const Department = db.department;
 const User = db.user;
 
-const {body, param} = require("express-validator");
+const {body, param, query} = require("express-validator");
 
 exports.validate = (method)=>{
     switch(method){
@@ -137,6 +137,7 @@ exports.addUserDepartment = async (req,res,next)=>{
 //get all departments
 exports.getDepartments = async (req,res,next)=>{
     try{
+        const {page, pageSize} = req.query;
         const departments = await Department.find({
             isDeleted: false
         })

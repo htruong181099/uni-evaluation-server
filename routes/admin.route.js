@@ -1,11 +1,5 @@
 //router
-const CriteriaRouter = require("./admin/criteria.route");
-const StandardRouter = require("./admin/standard.route");
-const DepartmentRouter = require("./admin/department.route");
-const UserFormRouter = require("./admin/userForm.route")
-const ReviewRouter = require("./admin/review.route");
-const userRouter = require("./admin/user.route");
-const FileRouter = require("./admin/file.route")
+const AdminRouter = require("./admin/")
 
 //controller
 const {formRatingController, evaluationController, userFormController, criteriaController, fileController} = require("../controller/");
@@ -34,14 +28,8 @@ module.exports = function(app){
         });
     })
 
-    //router
-    userRouter(app);
-    DepartmentRouter(app);
-    StandardRouter(app);
-    CriteriaRouter(app);
-    UserFormRouter(app);
-    ReviewRouter(app);
-    FileRouter(app);
+    AdminRouter(app);
+    
 
     //form
     //get form
@@ -67,49 +55,6 @@ module.exports = function(app){
 
     app.get("/admin/form/:fcode/getReviewForm",
         formController.getReviewFormAdmin
-    )
-
-
-    //FormDepartment
-    app.get("/admin/form/:fcode/getFormDepartments",
-        formDepartmentController.validate('getFormDepartments'),
-        getValidationResult,
-        formDepartmentController.getFormDepartments
-    )
-    app.post("/admin/form/:fcode/addFormDepartments",
-        formDepartmentController.addFormDepartments,
-        formUserController.addFormUsers
-    )
-
-    app.post("/admin/form/:fcode/addFormDepartments/v2",
-        formDepartmentController.validate('addFormDepartmentsV2'),
-        getValidationResult,
-        formDepartmentController.addFormDepartmentsV2,
-        formUserController.addFormUsersV2
-    )
-
-    app.get("/admin/form/:fcode/:dcode/getFormDepartment",
-        formDepartmentController.validate('getFormDepartment'),
-        getValidationResult,
-        formDepartmentController.getFormDepartment
-    )
-
-    app.post("/admin/form/:fcode/:dcode/addCouncil",
-        formDepartmentController.validate('addCouncil'),
-        getValidationResult,
-        formDepartmentController.addFormDepartmentCouncil
-    )
-
-    app.get("/admin/form/:fcode/checkCouncil",
-        formDepartmentController.validate('checkCouncil'),
-        getValidationResult,
-        formDepartmentController.checkCouncil
-    )
-
-    app.post("/admin/form/:fcode/:dcode/addHead",
-        formDepartmentController.validate('addHead'),
-        getValidationResult,
-        formDepartmentController.addHead
     )
 
     //formUser
