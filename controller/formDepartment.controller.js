@@ -180,7 +180,16 @@ exports.addFormDepartments = async (req,res,next)=>{
             });
         }
 
-        FormDepartment.bulkWrite(
+        console.log(await FormDepartment.countDocuments({
+            form_id: form._id,
+            level: 2
+        }))
+        console.log(await FormDepartment.find({
+            form_id: form._id,
+            level: 2
+        }).lean())
+
+        const writeResult = await FormDepartment.bulkWrite(
             departments.map((department)=>({
             updateOne: {
                 filter: {
@@ -189,11 +198,15 @@ exports.addFormDepartments = async (req,res,next)=>{
                 },
                 update: {
                     head: department.manager,
-                    level: 2
+                    level: 2,
+                    isDeleted: false
                 },
                 upsert: true
             }
         })))
+        
+        console.log("FormDepartment Write Result:");
+        console.log(writeResult)
 
         req.form = form;
         req.departments = departments;
