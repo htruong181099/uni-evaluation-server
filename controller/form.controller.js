@@ -10,6 +10,7 @@ const UserForm = db.userForm;
 const {body, param, query, validationResult} = require("express-validator");
 const FormUser = require("../model/formUser.model");
 const FormDepartment = require("../model/formDepartment.model");
+const FormRating = require("../model/formRating.model");
 
 
 exports.validate = (method)=>{
@@ -396,7 +397,8 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
         .lean()
         .populate("standard_id", "code name description")
         .sort({"standard_order" : 1})
-        .select("standard_id standard_order standard_point");
+        .select("standard_id standard_order standard_point")
+        
 
         for(let i in formStandards){
             const formCriteria = await FormCriteria.find({
@@ -423,7 +425,6 @@ exports.getEvaFormAdmin = async (req,res,next)=>{
 
         return res.status(200).json({
             statusCode: 200,
-            message: "Success",
             form: userForm.form_id,
             formStandards,
             user: userForm.form_user.user_id,

@@ -16,6 +16,7 @@ const EvaluateDescription = db.evaluateDescription;
 
 
 const {body, param, query} = require("express-validator");
+const FormRating = require("../model/formRating.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -124,10 +125,15 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
             })
         }
 
-        const evaluateForms = await EvaluateForm.find({
-            userForm: userForm._id,
-            status: [0,1]
-        }).select("_id status level point").lean();
+        const [formRatings, evaluateForms] = await Promise.all([
+            FormRating.find({
+                form_id: userForm.form_id
+            }),
+            EvaluateForm.find({
+                userForm: userForm._id,
+                status: [0,1]
+            }).select("_id status level point").lean()
+        ])
 
         for(let i in evaluateForms){
             const evaluateForm = evaluateForms[i];
@@ -154,14 +160,13 @@ exports.getEvaluationAdmin = async (req,res,next)=>{
             evaluateForm.evaluateCriteria = evaluateCriteria;
         }
         
+        const rating = calculateRating(formRatings, userForm.point);
 
         return res.status(200).json({
             statusCode: 200,
-            evaluateForms
+            evaluateForms,
+            rating
         })
-
-
-
 
     } catch (error) {
         next(error);
@@ -1261,7 +1266,7 @@ exports.getEvaluationV2 = async (req,res,next)=>{
         const user_id = req.userId;
 
         const userForm = await UserForm.findById(ufid)
-            .select("_id form_id");
+            .select("_id form_id point");
         
         if(!userForm){
             return res.status(404).json({
@@ -1270,10 +1275,15 @@ exports.getEvaluationV2 = async (req,res,next)=>{
             })
         }
 
-        const formUser = await FormUser.findOne({
-            user_id,
-            form_id: userForm.form_id
-        }).select("_id");
+        const [formRatings, formUser] = await Promise.all([
+            FormRating.find({
+                form_id: userForm.form_id
+            }),
+            FormUser.findOne({
+                user_id,
+                form_id: userForm.form_id
+            }).select("_id")
+        ])
 
         if(!formUser){
             return res.status(404).json({
@@ -1312,10 +1322,12 @@ exports.getEvaluationV2 = async (req,res,next)=>{
             evaluateForm.evaluateCriteria = evaluateCriteria;
         }
         
+        const rating = calculateRating(formRatings, userForm.point)
 
         return res.status(200).json({
             statusCode: 200,
-            evaluateForms
+            evaluateForms,
+            rating
         })
 
 
@@ -1443,4 +1455,20 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
     } catch (error) {
         next(error);
     }
+}
+
+
+//utils
+const calculateRating = (formRatings, point)=>{
+    if((formRatings && formRatings.length === 0) || point === null){
+        return null;
+    }
+
+    for(let i in formRatings){
+        const formRating = formRatings[i];
+        if(point <= formRating.max_point && point >= formRating.min_point){
+            return formRating.name;
+        }
+    }
+    return null;
 }

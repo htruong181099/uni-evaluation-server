@@ -9,6 +9,7 @@ const User = db.user;
 
 //validator
 const {body, param, query} = require("express-validator");
+const FormRating = require("../model/formRating.model");
 
 exports.validate = (method)=>{
     switch(method){
@@ -328,14 +329,20 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             })
         }
 
-        const formDepartment = await FormDepartment.findOne({
-            form_id: form._id,
-            department_id: department._id,
-            // head: user_id,
-            isDeleted: false
-        }).select("_id level head department_id")
-        .populate("head", "_id firstname lastname staff_id")
-        .populate("department_id", "-_id department_code name")
+        //query formRatings && formDepartment
+        const [formRatings , formDepartment] = await Promise.all([
+            FormRating.find({
+                form_id: form._id
+            }).sort({"max_point": -1}),
+            FormDepartment.findOne({
+                form_id: form._id,
+                department_id: department._id,
+                // head: user_id,
+                isDeleted: false
+            }).select("_id level head department_id")
+            .populate("head", "_id firstname lastname staff_id")
+            .populate("department_id", "-_id department_code name")
+        ])
         if(!formDepartment){
             return res.status(404).json({
                 statusCode: 404,
@@ -390,6 +397,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
                 }).select("_id status level point")
                 .sort({"level": 1}).lean();
                 formUser.evaluateForm = evaluateForm;
+                formUser.userForm.rating = calculateRating(formRatings, userForm.point);
             }
             result.push(formUser)
         }
@@ -431,11 +439,19 @@ exports.getFormUsersAdmin = async (req,res,next)=>{
             })
         }
 
-        const formDepartment = await FormDepartment.findOne({
-            form_id: form._id,
-            department_id: department._id,
-            isDeleted: false
-        }).select("_id");
+         
+        //query formRatings && formDepartment
+        const [formRatings , formDepartment] = await Promise.all([
+            FormRating.find({
+                form_id: form._id
+            }).sort({"max_point": -1}),
+            FormDepartment.findOne({
+                form_id: form._id,
+                department_id: department._id,
+                isDeleted: false
+            }).select("_id")
+        ])
+        
         if(!formDepartment){
             return res.status(404).json({
                 statusCode: 404,
@@ -466,7 +482,7 @@ exports.getFormUsersAdmin = async (req,res,next)=>{
             const userForm = await UserForm.findOne({
                 form_user: formUser._id,
                 form_id: form._id
-            }).select("_id")
+            }).lean().select("_id point")
             
             formUser.evaluateForm = null;
             formUser.userForm = userForm;
@@ -476,6 +492,7 @@ exports.getFormUsersAdmin = async (req,res,next)=>{
                 }).select("_id status level point")
                 .sort({"level": 1}).lean();
                 formUser.evaluateForm = evaluateForm;
+                formUser.userForm.rating = calculateRating(formRatings, userForm.point);
             }
             
             result.push(formUser)
@@ -493,9 +510,20 @@ exports.getFormUsersAdmin = async (req,res,next)=>{
     }
 }
 
+//utils
+const calculateRating = (formRatings, point)=>{
+    if((formRatings && formRatings.length === 0) || point === null){
+        return null;
+    }
 
-
-
+    for(let i in formRatings){
+        const formRating = formRatings[i];
+        if(point <= formRating.max_point && point >= formRating.min_point){
+            return formRating.name;
+        }
+    }
+    return null;
+}
 
 
 //outdated
