@@ -387,7 +387,7 @@ exports.getFormUserIfHead = async (req,res,next)=>{
             const userForm = await UserForm.findOne({
                 form_user: formUser._id,
                 form_id: form._id
-            }).select("_id")
+            }).select("_id point").lean()
             
             formUser.userForm = userForm;
             formUser.evaluateForm = null;
