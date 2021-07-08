@@ -50,7 +50,13 @@ exports.validate = (method)=>{
                 param("fcode","Invalid FormCode").exists().isString(),
             ]
         }
-        case 'getEvaFormv2':
+        case 'getEvaFormv2': {
+            return [
+                param("ufid","Invalid FormCode").exists().isMongoId(),
+                query("level", "Invalid level").optional().isNumeric()
+            ]
+        }
+
         case 'getEvaluation': {
             return [
                 param("ufid","Invalid FormCode").exists().isMongoId()

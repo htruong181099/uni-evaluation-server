@@ -5,6 +5,7 @@ const formController = require("../controller/form.controller");
 const {userFormController, evaluationController} = require("../controller/");
 
 const {getValidationResult} = require("../middleware/validate.middleware");
+const {checkFormAccess} = require("../middleware/formAccess.middleware");
 
 module.exports = function(app){
     app.use("/form/", 
@@ -37,6 +38,7 @@ module.exports = function(app){
     app.get("/form/:ufid/v2", 
         formController.validate("getEvaFormv2"),
         getValidationResult,
+        checkFormAccess,
         userFormController.getUserFormV2,
         formController.getEvaFormV2
     );

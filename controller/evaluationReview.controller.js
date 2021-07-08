@@ -42,6 +42,12 @@ validate = (method)=>{
 addEvaluationReview = async (req,res,next)=>{
     try{
         const {code, name, start_date, end_date, description} = req.body;
+        if((new Date(start_date)).getTime() >= (new Date(end_date)).getTime()){
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Invalid date"
+            })
+        }
         const evaluationReview = new EvaluationReview({
             code,
             name,
@@ -57,9 +63,9 @@ addEvaluationReview = async (req,res,next)=>{
                 });
             }
             
-            return res.status(200).json({
-                statusCode: 200,
-                message: "Add Evaluation Review successfully"
+            return res.status(201).json({
+                statusCode: 201,
+                message: "Success"
             })
         })
     }

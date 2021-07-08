@@ -1142,7 +1142,6 @@ exports.submitEvaluation = async (req,res,next)=>{
         .populate("standard_id", "code name")
 
         const body = dataToSend;
-        console.log(dataToSend);
         for(let criteriaObj of body){
             const criteria = await Criteria.findOne({
                 code: criteriaObj.name,

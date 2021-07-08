@@ -30,7 +30,7 @@ exports.validate = (method)=>{
                 param('ucode', "Invalid User ID").exists().isString(),
                 body("fname", "Invalid firstname").exists().isString(),
                 body("lname", "Invalid lastname").exists().isString(),
-                body("email", "Invalid email").exists().isString(),
+                body("email", "Invalid email").exists().isEmail(),
                 body("roles", "Invalid roles").exists().isString()
             ]
         };
