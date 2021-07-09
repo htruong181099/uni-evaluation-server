@@ -98,8 +98,8 @@ exports.addFormUser = async (req,res,next)=>{
                 form_id: form._id
             })
             formUser.save();
-            return res.status(200).json({
-                statusCode: 200,
+            return res.status(201).json({
+                statusCode: 201,
                 message: 'Add FormUser successfully'
             })
         }

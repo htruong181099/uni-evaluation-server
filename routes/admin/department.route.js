@@ -75,5 +75,8 @@ module.exports = (app) =>{
     )
 
     
+    app.post("/department/:dcode/deleteDB",
+        departmentController.deleteDepartmentDB
+    )
 
 }

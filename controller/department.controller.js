@@ -18,7 +18,7 @@ exports.validate = (method)=>{
             return [
                 body("department_code", "Invalid Department").exists().isString(),
                 body("name", "Invalid name").exists().isString(),
-                body("manager", "Invalid manager").optional().isString(),
+                body("manager", "Invalid manager").optional(),
                 body("parent", "Invalid parent").optional().isString(),
             ]
         }
@@ -59,16 +59,19 @@ exports.validate = (method)=>{
 exports.addDepartment = async (req,res,next)=>{
     try{
         const {department_code, name, manager, parent} = req.body;
+        // console.log(req.body);
         const department = new Department({
             department_code,
-            name
+            name,
+            isDeleted: false
         })
         //check if have manager
+        let user = null;
         if(manager){
-            const user = await User.findOne({
+            user = await User.findOne({
                 staff_id: manager,
                 isDeleted: false
-            }).select("_id");
+            }).select("_id staff_id lastname firstname");
             if(!user){
                 return res.status(404).json({
                     statusCode: 404,
@@ -93,19 +96,18 @@ exports.addDepartment = async (req,res,next)=>{
             department.parent = dep._id;
         }
         await department.save(async (err, dep)=>{
-            if(err){
-                if (err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
-                    return res.status(409).send({
-                        statusCode: 409,
-                        message: 'Department already exists!'
-                    });
-                }
-                return next(err);
+            if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn
+                return res.status(409).send({
+                    statusCode: 409,
+                    message: 'Department already exists!'
+                });
             }
             
-            res.status(200).json({
-                statusCode: 200,
-                message: "Add Department successfully"
+            res.status(201).json({
+                statusCode: 201,
+                message: "Success",
+                dep,
+                manager: user
             })
             req.department_code = department_code;
             next();
@@ -118,7 +120,7 @@ exports.addDepartment = async (req,res,next)=>{
 
 //add user's department after add department
 exports.addUserDepartment = async (req,res,next)=>{
-    const {department_code} = req.department_code;
+    const department_code = req.department_code;
     const department = await Department.findOne({
         department_code,
         isDeleted: false
@@ -298,7 +300,7 @@ exports.getChildDepartments = async (req,res,next)=>{
             isDeleted: false
         })
         .lean()
-        .select("-__v -isDeleted")
+        .select("-__v -isDeleted -parent")
         .populate("manager", "staff_id firstname lastname")
 
         res.status(200).json({
@@ -539,6 +541,25 @@ exports.getDeletedChildren = async (req,res,next)=>{
             statusCode: 200,
             departments
         })
+    } catch (error) {
+        next(error);
+    }
+}
+
+//set delete
+exports.deleteDepartmentDB = async (req,res,next)=>{
+    try {
+        const {dcode} = req.params;
+        const deleted = await Department.deleteOne({
+            department_code: dcode
+        })
+        
+        return res.status(200).json({
+            statusCode: 200,
+            message: "Success",
+            deleted
+        })
+
     } catch (error) {
         next(error);
     }
