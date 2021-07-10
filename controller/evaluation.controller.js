@@ -1240,10 +1240,19 @@ exports.submitEvaluation = async (req,res,next)=>{
         evaluateForm.uptime = new Date();
         evaluateForm.point = final_point;
         await evaluateForm.save();
+
+        let rating = null;
+        if(level == 3){
+            const formRatings = await FormRating.find({
+                form_id: form_id
+            }).sort({max_point: -1})
+            rating = calculateRating(formRatings, final_point);
+        }
         
         res.status(200).json({
             statusCode: 200,
-            message: "Submit evaluation successfully"
+            message: "Submit evaluation successfully",
+            rating
         })
         
         req.form_id = userForm.form_id;
@@ -1277,7 +1286,7 @@ exports.getEvaluationV2 = async (req,res,next)=>{
         const [formRatings, formUser] = await Promise.all([
             FormRating.find({
                 form_id: userForm.form_id
-            }),
+            }).sort({max_point: -1}),
             FormUser.findOne({
                 user_id,
                 form_id: userForm.form_id

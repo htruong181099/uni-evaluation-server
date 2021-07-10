@@ -35,7 +35,7 @@ module.exports = (app) =>{
         formDepartmentController.validate('addCouncil'),
         getValidationResult,
         formDepartmentController.addFormDepartmentCouncil,
-        formUserController.addFormUsers
+        // formUserController.addFormUsers
     )
 
     app.get("/admin/form/:fcode/checkCouncil",

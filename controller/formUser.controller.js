@@ -130,18 +130,24 @@ exports.addFormUsers = async (req,res,next)=>{
     try {
         const {form, departments} = req;
         
+        console.log(form);
+
         const formdepartments = await FormDepartment.find({
             form_id: form._id,
             department_id: departments.map(e=>e._id)
         })
+
+        console.log(formdepartments);
         
         for(formdepartment of formdepartments){
+            console.log(formdepartment);
             const users = await User.find({
                 department: formdepartment.department_id,
                 isDeleted: false
             })
+            console.log(users);
 
-            FormUser.bulkWrite(
+            const result = await FormUser.bulkWrite(
                 users.map((user)=>({
                     updateOne: {
                         filter: {
@@ -156,6 +162,7 @@ exports.addFormUsers = async (req,res,next)=>{
                     }
                 }))
             )
+            console.log(result);
         }
 
         return res.status(201).json({

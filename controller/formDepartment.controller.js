@@ -422,12 +422,37 @@ exports.addFormDepartmentCouncil = async (req,res,next)=>{
         }
 
         formDepartment.isDeleted = false;
-        formDepartment.save();
+        const doc = await formDepartment.save();
 
-        req.form = form;
-        req.departments = [department];
+        const users = await User.find({
+            department: department._id,
+        })
 
-        next();
+        const result = await FormUser.bulkWrite(
+            users.map((user)=>({
+                updateOne: {
+                    filter: {
+                        department_form_id: doc._id, 
+                        user_id: user._id,
+                        form_id: form._id
+                    },
+                    update: {
+                        isDeleted: false
+                    },
+                    upsert: true
+                }
+            }))
+        )
+        console.log(result);
+        return res.status(201).json({
+            statusCode: 201,
+            message: 'Success'
+        })
+
+        // req.form = form;
+        // req.departments = [department];
+
+        // next();
         
     } catch (error) {
         next(error);
@@ -557,21 +582,16 @@ exports.addHead = async (req,res,next)=>{
 
 exports.deleteDB = async (req,res,next)=>{
     try {
-        const {fcode} = req.params;
-        const form = await Form.findOne({
-            code: fcode
-        }).select("_id")
-        const formDepartments = await FormDepartment.find({
-            form_id: form._id,
-            level: 3
+        const {id} = req.params;
+        const formDepartment = await FormDepartment.findOne({
+            _id: id
         })
         FormUser.deleteMany({
-            department_form_id: formDepartments.map(e=>e._id),
-            form_id: form._id
+            department_form_id: formDepartment._id
         },async(err, doc)=>{
             // console.log(doc);
-            const result = await FormDepartment.deleteMany({
-                _id: formDepartments.map(e=>e._id)
+            const result = await FormDepartment.deleteOne({
+                _id: id
             })
             return res.status(200).json({
                 statusCode: 200,
