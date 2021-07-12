@@ -86,7 +86,7 @@ exports.getFormRatings = async (req,res,next)=>{
         })
         .lean()
         .select("-__v")
-        .sort({min_point: 1})
+        .sort({max_point: -1})
 
         return res.status(200).json({
             statusCode: 200,
