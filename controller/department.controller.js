@@ -59,12 +59,15 @@ exports.validate = (method)=>{
 exports.addDepartment = async (req,res,next)=>{
     try{
         const {department_code, name, manager, parent} = req.body;
+        const {type} = req.body;
         // console.log(req.body);
         const department = new Department({
             department_code,
             name,
+            type,
             isDeleted: false
         })
+
         //check if have manager
         let user = null;
         if(manager){
@@ -151,6 +154,25 @@ exports.getDepartments = async (req,res,next)=>{
         return res.status(200).json({
             statusCode: 200,
             message: "OK",
+            departments
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+//get council departments
+exports.getCouncilDepartments = async (req,res,next)=>{
+    try{
+        const departments = await Department.find({
+            type: 'council',
+            isDeleted: false
+        })
+        .lean()
+        .select("-__v -isDeleted");
+        return res.status(200).json({
+            statusCode: 200,
             departments
         })
     }
@@ -348,7 +370,7 @@ exports.getParentsWithChildren = async (req,res,next)=>{
 exports.editDepartment = async (req,res,next)=>{
     try {
         const {dcode} = req.params;
-        const {new_dcode, name, manager, parent} = req.body;
+        const {new_dcode, name, type, manager, parent} = req.body;
         const department = await Department.findOne({
             department_code: dcode,
             isDeleted: false
@@ -362,6 +384,7 @@ exports.editDepartment = async (req,res,next)=>{
 
         department.department_code = new_dcode;
         department.name = name;
+        department.type = type;
         
         department.save((err)=>{
             if (err && err.name === 'MongoError' && err.code === 11000) {  // Duplicate isbn

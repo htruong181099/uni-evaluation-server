@@ -245,4 +245,8 @@ module.exports = function(app){
     app.post("/fd/:id/deleteDB",
         formDepartmentController.deleteDB
     )
+
+    app.post("/upModel",
+        fileController.upmodel
+    )
 }

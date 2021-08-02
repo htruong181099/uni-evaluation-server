@@ -969,7 +969,6 @@ exports.a3 = async (req,res,next)=>{
     }
 }
 
-
 exports.a4 = async (req,res,next)=>{
     try {
         const id = "60db4bb67e437101f474e3e2";
@@ -1027,5 +1026,20 @@ exports.tester = async (req,res,next)=>{
         })
     } catch (error) {
         next(error)
+    }
+}
+
+exports.upmodel = async (req,res,next)=>{
+    try {
+        const result = await Department.updateMany({
+            department_code: 'HDDG'
+        },
+            {type: 'council'}    
+        )
+        res.send({
+            result
+        })
+    } catch (error) {
+        next(error);
     }
 }

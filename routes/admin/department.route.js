@@ -29,6 +29,10 @@ module.exports = (app) =>{
         departmentController.getDeletedChildren
     )
 
+    app.get("/admin/departments/council/",
+        departmentController.getCouncilDepartments
+    )
+
     app.get("/admin/department/:id",
         departmentController.validate('getDepartment'),
         getValidationResult,

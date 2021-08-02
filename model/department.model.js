@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const TYPE = ['default','council'];
 
 const Department = mongoose.model(
     "Department",
@@ -19,6 +20,12 @@ const Department = mongoose.model(
         parent: {
             type: mongoose.Schema.Types.ObjectId,
             ref : "Department"
+        },
+        type: {
+            type: String,
+            enum: TYPE,
+            default: 'default',
+            required: true
         },
         isDeleted: {
             type: Boolean,
