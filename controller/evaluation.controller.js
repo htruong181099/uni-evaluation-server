@@ -1148,7 +1148,6 @@ exports.submitEvaluation = async (req,res,next)=>{
         .populate("standard_id", "code name")
 
         const body = dataToSend;
-        console.log(body);
         
         for(let criteriaObj of body){
             const criteria = await Criteria.findOne({
@@ -1476,7 +1475,9 @@ exports.cloneEvaluateCriteriaV2 = async (req,res,next)=>{
         }
 
     } catch (error) {
-        next(error);
+        console.log("err")
+        console.error(error)
+        // next(error);
     }
 }
 
