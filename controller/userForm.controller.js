@@ -95,7 +95,7 @@ exports.getUserFormV2 = async (req,res,next)=>{
 
         const userForm = await UserForm.findOne({
             _id: ufid
-        }).populate("form_id", "code name")
+        }).populate("form_id", "code name _id")
         .populate({
             path: "form_user",
             populate: [{
@@ -119,7 +119,8 @@ exports.getUserFormV2 = async (req,res,next)=>{
         }
         
         const user = await FormUser.findOne({
-            user_id
+            user_id,
+            form_id: userForm.form_id._id
         }).select("_id")
         if(!user){
             return res.status(404).json({
@@ -127,7 +128,6 @@ exports.getUserFormV2 = async (req,res,next)=>{
                 message: "FormUser not found"
             })
         }
-
         let evaluateForm = await EvaluateForm.findOne({
             userForm: userForm._id,
             level: 1

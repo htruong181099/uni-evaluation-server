@@ -1031,11 +1031,9 @@ exports.tester = async (req,res,next)=>{
 
 exports.upmodel = async (req,res,next)=>{
     try {
-        const result = await Department.updateMany({
-            department_code: 'HDDG'
-        },
-            {type: 'council'}    
-        )
+        const result = await EvaluateForm.findOne({
+            _id: "60e94eb04044ed67bfa2077a"
+        })
         res.send({
             result
         })

@@ -1009,7 +1009,13 @@ exports.saveEvaluation = async (req,res,next)=>{
 
             let ECPoint = criteriaObj.value?criteriaObj.value:0;
             const ec_max_point = formCriteria.point;
-            ECPoint = ec_max_point?(ECPoint<ec_max_point? ECPoint: ec_max_point):ECPoint;
+
+            if(ec_max_point && ec_max_point<0 && ECPoint == 0){
+                ECPoint = 0;
+            }
+            else{
+                ECPoint = ec_max_point?(ECPoint<ec_max_point? ECPoint: ec_max_point):ECPoint;
+            }
 
             if(!evaluateCriteria){
                 evaluateCriteria = new EvaluateCriteria({
@@ -1142,6 +1148,8 @@ exports.submitEvaluation = async (req,res,next)=>{
         .populate("standard_id", "code name")
 
         const body = dataToSend;
+        console.log(body);
+        
         for(let criteriaObj of body){
             const criteria = await Criteria.findOne({
                 code: criteriaObj.name,
@@ -1162,7 +1170,14 @@ exports.submitEvaluation = async (req,res,next)=>{
 
             let ECPoint = criteriaObj.value?criteriaObj.value:0;
             const ec_max_point = formCriteria.point;
-            ECPoint = ec_max_point?(ECPoint<ec_max_point? ECPoint: ec_max_point):ECPoint;
+            
+
+            if(ec_max_point && ec_max_point<0 && ECPoint == 0){
+                ECPoint = 0;
+            }
+            else{
+                ECPoint = ec_max_point?(ECPoint<ec_max_point? ECPoint: ec_max_point):ECPoint;
+            }
 
             if(!evaluateCriteria){
                 evaluateCriteria = new EvaluateCriteria({
