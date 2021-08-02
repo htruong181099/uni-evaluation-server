@@ -53,7 +53,7 @@ module.exports = function(app){
     //newest
     app.post("/form/:ufid/submitForm",
         evaluationController.submitEvaluation,
-        // evaluationController.cloneEvaluateCriteriaV2
+        evaluationController.cloneEvaluateCriteriaV2
     )
 
     //newest
