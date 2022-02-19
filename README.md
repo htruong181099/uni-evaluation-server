@@ -1,6 +1,6 @@
 # uni-evaluation-server
-University Evaluation System (server)
-Hệ thống đánh giá công việc ở Trường Đại Học
+University Evaluation System (server).\
+Hệ thống đánh giá công việc ở Trường Đại Học.
 
 ### `npm start`
 
